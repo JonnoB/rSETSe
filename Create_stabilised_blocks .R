@@ -1,4 +1,4 @@
-Create_stabilised_blocks <- function(g, OriginBlock, OriginBlock_number, tstep=0.1, tol = 1e-10, distance, maxIter, kbase, kdiff, mass){
+Create_stabilised_blocks <- function(g, OriginBlock, OriginBlock_number, force ="BalencedPower", flow = "PowerFlow", capacity = "Link.Limit",  tstep=0.1, tol = 1e-10, distance, maxIter, mass){
   #This function finds the z displacement of all the nodes in the network.
   #g and igraph object of the network
   #OriginBlock a dataframe, output of the Find_network_Balance function of the graph, should be stable or almost stable. mass and K of this block
@@ -21,8 +21,9 @@ Create_stabilised_blocks <- function(g, OriginBlock, OriginBlock_number, tstep=0
   
   StabilModels <- BlockNumbers %>% 
     map(~{
-      
-      Out <- Find_network_balance(List_of_BiConComps[[.x]], tstep = 0.1, tol = 1e-10, distance = "distance", maxIter = 4000, kbase = 200, kdiff = 1000, mass = 500, verbose = FALSE)
+
+      Out <- Find_network_balance(List_of_BiConComps[[.x]],force =force, flow = flow, capacity = capacity,  
+                                  tstep = tstep, tol = tol, distance = distance, maxIter =  maxIter, mass =  mass, verbose = FALSE)
       
       print(paste("Block" ,.x, "of", max(BlockNumbers) ,"termination", nrow(Out$results) ))
       #print(Out$results)

@@ -1,4 +1,4 @@
-distance <- function(z, v, a, t0, t1 ){
+Distance <- function(z, v, a, t0, t1 ){
   #Calculates the total distance a node will be from the origin for a given time step
   #z, distance at current time
   #v velcoity at current time

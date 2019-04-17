@@ -1,4 +1,4 @@
-Create_balanced_blocks <- function(g){
+Create_balanced_blocks <- function(g, force = "BalencedPower"){
   #This function creates a list of biconnected components or blocks.
   #These blocks are balanced such that the connecting vertices contain all the power of the missing part of the network
   #balancing prevents the network reaching a steady state non-zero velocity.
@@ -35,12 +35,11 @@ Create_balanced_blocks <- function(g){
             filter( (membership %in% discard_components)) %>% pull(Nodes) %>% {get.vertex.attribute(g, "name") %in% .} %>%
             (1:vcount(g))[.] %>%
             delete_vertices(g, v = .) %>% 
-            get.vertex.attribute(., "BalencedPower") %>% sum  %>% #get the net power of the rest of the network
+            get.vertex.attribute(., force) %>% sum  %>% #get the net power of the rest of the network
             tibble(name = CurrArt, AuxPower = .)
         }) %>%
         left_join(biconnected_component, ., by = "name") %>%
-        mutate(#AuxPower = ifelse(is.na(AuxPower), 0, AuxPower),
-               BalencedPower = ifelse(is.na(AuxPower), BalencedPower, AuxPower))
+        mutate(temp = ifelse(is.na(AuxPower), .[,1], AuxPower)) #is there a better way of getting the force variable?
       
       
       Component_j <- {!(get.vertex.attribute(g, "name") %in% balanced_component_df$name)} %>%
@@ -49,8 +48,8 @@ Create_balanced_blocks <- function(g){
       
       balanced_component <- tibble(name = get.vertex.attribute(Component_j, "name")) %>%
         left_join(balanced_component_df, by = "name") %>%
-        pull(BalencedPower) %>%
-        set.vertex.attribute(Component_j, name = "BalencedPower", value = .)
+        pull(temp) %>%
+        set.vertex.attribute(Component_j, name = force, value = .)
       
       return(balanced_component)
     })

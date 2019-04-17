@@ -4,7 +4,7 @@ Calc_System_Dynamics <- function(NodeStatus, EdgeNode, kvect, dvect, tstep = 1, 
   Friction_vect <- Calc_Damping_matrix(EdgeNode, NodeStatus$velocity, kvect, NodeStatus$mass) %>% rowMeans()
   
   NodeStatus2 <- NodeStatus %>%
-    mutate(z = distance(z, velocity, acceleration, t0 = t, t1 = t + tstep),
+    mutate(z = Distance(z, velocity, acceleration, t0 = t, t1 = t + tstep),
            velocity = velocity(velocity, acceleration, t, t + tstep),
            NetTension =  Tension_vect,
            friction = Friction_vect*frctmultiplier, #velocity*10,
