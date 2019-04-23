@@ -29,7 +29,7 @@ Create_Tension_matrix <- function(EdgeNode, zvect, kvect, dvect){
   
   Hmat <- sqrt(dZmat^2 + Dmat^2)
   
-  Ften_mat<- kmat*(Hmat-Dmat)*dZmat/Hmat
+  Ften_mat <- kmat*(Hmat-Dmat)*dZmat/Hmat
   Ften_mat[!is.finite(Ften_mat)] <-0
   
   return (Ften_mat)

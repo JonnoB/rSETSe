@@ -14,7 +14,7 @@ Create_stabilised_blocks <- function(g, OriginBlock, OriginBlock_number, force =
   
   #Seperate out the graph into balanced blocks
   #This step will have already been done, but it is fast and simplifies the requirements for the function
-  List_of_BiConComps <- Create_balanced_blocks(g)
+  List_of_BiConComps <- Create_balanced_blocks(g, force = force)
   
   #remove the Origin block so it doesn't have to be calculated again
   BlockNumbers <-(1:length(List_of_BiConComps))[-OriginBlock_number]
@@ -53,9 +53,8 @@ Create_stabilised_blocks <- function(g, OriginBlock, OriginBlock_number, force =
   #The height of each node relative to the origin and normalised
   final_z <-fix_z_to_origin(relative_blocks1, ArticulationVect) %>%
     group_by(node) %>%
-    summarise_all(first)
-  
-  
+    summarise_all(mean) %>%
+    mutate(Articulation_node = Articulation_node==1)
   return(final_z)
   
 }
