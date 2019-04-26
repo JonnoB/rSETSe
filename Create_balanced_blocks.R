@@ -39,7 +39,7 @@ Create_balanced_blocks <- function(g, force = "BalencedPower"){
             tibble(name = CurrArt, AuxPower = .)
         }) %>%
         left_join(biconnected_component, ., by = "name") %>%
-        mutate(temp = ifelse(is.na(AuxPower), .[,1], AuxPower)) #is there a better way of getting the force variable?
+        mutate(temp = ifelse(is.na(AuxPower), .[,force], AuxPower)) #is there a better way of getting the force variable?
       
       
       Component_j <- {!(get.vertex.attribute(g, "name") %in% balanced_component_df$name)} %>%

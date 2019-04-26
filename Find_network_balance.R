@@ -18,7 +18,7 @@ Find_network_balance <- function(g, force ="BalencedPower", flow = "PowerFlow", 
   A <- A %>% select(-Link) %>%
     as.matrix()
   
-  rownames(rowdat)
+  rownames(A) <-rowdat
   
   rm(rowdat)
   
