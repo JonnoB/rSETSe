@@ -1,5 +1,5 @@
-FindStabilSystem2 <- function(NodeStatus, EdgeNode, kvect, dvect,  tstep, maxIter = 1000, frctmultiplier = 1, tol = 1e-10, verbose = TRUE){
-  
+FindStabilSystem2 <- function(NodeStatus, EdgeNode, kvect, dvect,  tstep, maxIter = 1000, frctmultiplier = 1, tol = 1e-10, verbose = TRUE, friction_Stop= FALSE){
+  #friction_stop fricton is a stopping condition. defualts to FALSE. 
   NodeList <- NodeStatus
   
   results <- as.list(rep(NA,maxIter))
@@ -28,12 +28,21 @@ FindStabilSystem2 <- function(NodeStatus, EdgeNode, kvect, dvect,  tstep, maxIte
   
     NodeList <- temp
     
-    system_stable <- results[[Iter]]$friction < tol & results[[Iter]]$max_accel < tol & results[[Iter]]$max_Delta_accel < tol #check if system is stable
+    system_stable <- results[[Iter]]$max_accel < tol & results[[Iter]]$max_Delta_accel < tol #check if system is stable
+    
+    if(friction_Stop){
+      
+      system_stable <- system_stable & results[[Iter]]$friction < tol #includes friction as a stopping condition. useful in some situations
+    }
+    
     
     if(verbose){
       
-      print(paste("Iteration", Iter, "z", round(results[[Iter]]$z, 5)," velocity", round(results[[Iter]]$velocity,5), 
-                  "max acceleration", round(results[[Iter]]$max_accel, 5), "friction",  results[[Iter]]$friction )) # print result
+      print(paste("Iteration", Iter, "z", signif(results[[Iter]]$z, 3),
+                  " velocity", signif(results[[Iter]]$velocity, 3), 
+                  "max acceleration", signif(results[[Iter]]$max_accel, 3), 
+                  "friction",  signif(results[[Iter]]$friction, 3) )
+            ) # print result
       
     }
     Iter <- Iter + 1 # add next iter
