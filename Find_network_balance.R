@@ -1,6 +1,8 @@
 Find_network_balance <- function(g, force ="BalencedPower", flow = "PowerFlow", capacity = "Link.Limit",  tstep = 0.5, distance = "Imp", 
                                  mass = 2000, maxIter =2000, frctmultiplier = 1, tol = 1e-10, verbose = TRUE,
-                                 TwoNodeSolution = TRUE){
+                                 TwoNodeSolution = TRUE,
+                                 theta_var_tol = 13e-3,
+                                 window_size = Inf){
   #needs an edge attribute "distance"
   #converges faster if the network has been decomposed into blocks
   #TwoNodeSolution: Logical value if true blocks that are a node pair will be solved by Newton Raphson method for speed
@@ -59,10 +61,13 @@ Find_network_balance <- function(g, force ="BalencedPower", flow = "PowerFlow", 
     temp <- NodeStatus %>%
       mutate(z = ifelse(force>0, 
                         tan(coefficients(solution_angle))/2, #height above mid point
-                        -tan(coefficients(solution_angle))/2 ),
+                        -tan(coefficients(solution_angle))/2 ), #height below mid-point
              acceleration = 0,
              t = 0,
-             Delta_acceleration = 0) #height below mid-point
+             Delta_acceleration = 0,
+             theta_rads = solution_angle,
+             theta_degs = solution_angle*360/(2*pi)
+    ) 
     
     Out <- list(results = temp, 
                 NodeList = temp
@@ -72,7 +77,8 @@ Find_network_balance <- function(g, force ="BalencedPower", flow = "PowerFlow", 
     
   } else{
 
-    Out <- FindStabilSystem2(NodeStatus, A, Link$k, Link$distance, tstep, maxIter, frctmultiplier, tol, verbose = verbose) 
+    Out <- FindStabilSystem2(NodeStatus, A, Link$k, Link$distance, tstep, maxIter, frctmultiplier, tol, verbose = verbose, g = g,
+                             theta_var_tol = theta_var_tol, window_size = window_size) 
     
   }
 
