@@ -2,6 +2,8 @@ Find_network_balance <- function(g, force ="BalencedPower", flow = "PowerFlow", 
                                  mass = 2000, maxIter =2000, frctmultiplier = 1, tol = 1e-10, verbose = TRUE,
                                  TwoNodeSolution = TRUE){
   #needs an edge attribute "distance"
+  #converges faster if the network has been decomposed into blocks
+  #TwoNodeSolution: Logical value if true blocks that are a node pair will be solved by Newton Raphson method for speed
   
   g <- set.edge.attribute(g, "distance", value = get.edge.attribute(g, distance))
   

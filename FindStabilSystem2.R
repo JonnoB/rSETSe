@@ -1,4 +1,7 @@
-FindStabilSystem2 <- function(NodeStatus, EdgeNode, kvect, dvect,  tstep, maxIter = 1000, frctmultiplier = 1, tol = 1e-10, verbose = TRUE, friction_Stop= FALSE){
+FindStabilSystem2 <- function(NodeStatus, EdgeNode, kvect, dvect,  tstep, maxIter = 1000, frctmultiplier = 1, 
+                              tol = 1e-10, verbose = TRUE, friction_Stop= FALSE){
+  #Runs the physics model to find the convergence of the system.
+  
   #friction_stop fricton is a stopping condition. defualts to FALSE. 
   NodeList <- NodeStatus
   
@@ -13,6 +16,8 @@ FindStabilSystem2 <- function(NodeStatus, EdgeNode, kvect, dvect,  tstep, maxIte
     # print(NodeList[[n]])
     temp <- NodeList %>%
       Calc_System_Dynamics(., EdgeNode, kvect, dvect, tstep, frctmultiplier)
+    
+    #Calculates current angle of the system
     
     results[[Iter]] <- temp %>%
       group_by(t) %>%
