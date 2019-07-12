@@ -1,16 +1,15 @@
 FindStabilSystem2 <- function(NodeStatus, EdgeNode, kvect, dvect,  tstep, maxIter = 1000, frctmultiplier = 1, 
-                              tol = 1e-10, verbose = TRUE, window_size = Inf,  theta_var_tol = 13e-3, friction_Stop= FALSE, g ){
+                              tol = 1e-10, verbose = TRUE, friction_Stop= FALSE ){
   #Runs the physics model to find the convergence of the system.
   
   #friction_stop fricton is a stopping condition. defualts to FALSE. 
   NodeList <- NodeStatus
   
   #results <- as.list(rep(NA,maxIter))
-  results <- matrix(data = NA, nrow = maxIter, ncol = 11) %>%
+  results <- matrix(data = NA, nrow = maxIter, ncol = 9) %>%
     as_tibble() %>%
     set_names(c("t", "z", "NetForce", "velocity", "acceleration", "max_accel", 
-                "max_Delta_accel", "friction", "theta_rads", "theta_degs",
-                "theta_sd"))
+                "max_Delta_accel", "friction", "theta_sd"))
   
   Iter <- 1
   system_stable <- FALSE
@@ -32,17 +31,7 @@ FindStabilSystem2 <- function(NodeStatus, EdgeNode, kvect, dvect,  tstep, maxIte
                 max_Delta_accel = max(abs(Delta_acceleration)),
                 friction = max(abs(friction))) %>%
       ungroup
-    
 
-    #Calculates current angle of the system
-    current_angle <- angle_from_solved_heights(temp, g)
-
-    results$theta_rads[Iter] <- current_angle$theta_rads
-    results$theta_degs[Iter] <- current_angle$theta_degs
-    # results[[Iter]] <- results[[Iter]] %>%
-    #   mutate(theta_rads = current_angle$theta_rads,
-    #        theta_degs = current_angle$theta_degs)
-  
     NodeList <- temp
     
     #system_stable <- results[[Iter]]$max_accel < tol & results[[Iter]]$max_Delta_accel < tol #check if system is stable
