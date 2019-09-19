@@ -7,7 +7,7 @@ Normalize_load <- function(g,
                            VertexName = name){
   #This function normalised the power on the nodes and edges so that the power on the nodes so that the positive generation on the nodes sums to 1.
   #The edge capacities are then normalised so that the alpha values are the same as pre normalisation
-  #This process oonly works for DC power-flow
+  #This process only works for DC power-flow
   
   Net_gen <- enquo(Net_Generation) %>% as_label()
   

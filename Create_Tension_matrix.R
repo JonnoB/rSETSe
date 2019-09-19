@@ -1,6 +1,7 @@
 Create_Tension_matrix <- function(EdgeNode, zvect, kvect, dvect){
   #Creates a matrix showing the forces exerted by the contracting spring for each edge of a node
   #positive numbers pull down (like the force of mg) and negative forces pull up
+  #The v_vect, kvect and mvect all have to be ordered alphanumerically!
   #EdgeNode <- The edgenode matrix 
   #zvect the height of each node
   #kvect the vector of spring stiffness for each edge
@@ -22,7 +23,7 @@ Create_Tension_matrix <- function(EdgeNode, zvect, kvect, dvect){
   Adj
   
   Zmat <- Adj*zvect #The adjacency matrix weight by node height
-  dZmat <- t(Zmat)- Zmat #The differenec in height between adjacent nodes
+  dZmat <- t(Zmat)- Zmat #The difference in height between adjacent nodes
   #Create the absolute K (spring stiffness) a and distance matrices
   kmat <- t(EdgeNode) %*% diag(kvect, nrow = length(kvect)) %*% EdgeNode %>% abs 
   Dmat <- t(EdgeNode) %*% diag(dvect, nrow = length(kvect)) %*% EdgeNode %>% abs

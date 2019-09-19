@@ -15,7 +15,7 @@ Create_stabilised_blocks <- function(g, OriginBlock, OriginBlock_number, force =
   
   #Seperate out the graph into balanced blocks
   #This step will have already been done, but it is fast and simplifies the requirements for the function
-  List_of_BiConComps <- Create_balanced_blocks(g, force = force)
+  List_of_BiConComps <- Create_balanced_blocks(g, force = force, flow = flow)
   
   #remove the Origin block so it doesn't have to be calculated again
   BlockNumbers <-(1:length(List_of_BiConComps))[-OriginBlock_number]
@@ -23,8 +23,16 @@ Create_stabilised_blocks <- function(g, OriginBlock, OriginBlock_number, force =
   StabilModels <- BlockNumbers %>% 
     map(~{
 
-      Out <- Find_network_balance(List_of_BiConComps[[.x]],force =force, flow = flow, capacity = capacity,  
-                                  tstep = tstep, tol = tol, distance = distance, maxIter =  maxIter, mass =  mass, verbose = FALSE)
+      Out <- Find_network_balance(List_of_BiConComps[[.x]],
+                                  force =force, 
+                                  flow = flow, 
+                                  capacity = capacity,  
+                                  tstep = tstep, 
+                                  tol = tol, 
+                                  distance = distance, 
+                                  maxIter =  maxIter, 
+                                  mass =  mass, 
+                                  verbose = FALSE)
       
       print(paste("Block" ,.x, "of", max(BlockNumbers) ,"termination", nrow(Out$results) ))
       #print(Out$results)
@@ -41,7 +49,7 @@ Create_stabilised_blocks <- function(g, OriginBlock, OriginBlock_number, force =
   #place all nodes relative to the origin
   relative_blocks1 <- 1:length(StabilModels) %>% 
     map_df(~{
-      
+      print(.x)
       StabilModels[[.x]]$NodeList %>%
         mutate(Reference_ID = .x)
       

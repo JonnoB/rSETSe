@@ -1,4 +1,4 @@
-Find_network_balance <- function(g, force ="BalencedPower", flow = "PowerFlow", capacity = "Link.Limit",  tstep = 0.5, distance = "Imp", 
+Find_network_balance <- function(g, force ="BalencedPower", flow = "PowerFlow", capacity = "capacity", distance = "distance", tstep = 0.5, 
                                  mass = 2000, maxIter =2000, frctmultiplier = 1, tol = 1e-10, verbose = TRUE,
                                  TwoNodeSolution = TRUE){
   #needs an edge attribute "distance"
@@ -6,53 +6,13 @@ Find_network_balance <- function(g, force ="BalencedPower", flow = "PowerFlow", 
   #converges faster if the network has been decomposed into blocks
   #TwoNodeSolution: Logical value if true blocks that are a node pair will be solved by Newton Raphson method for speed
   
-  #g <- List_of_BiConComps[[81]]
-  
-  g <- set.edge.attribute(g, "distance", value = get.edge.attribute(g, distance))
-  
-  A <- as_data_frame(g) %>% 
-    select(Link, from, to) %>% 
-    gather(key = type, Node, -Link) %>%
-    arrange(Node) %>%
-    mutate(value = ifelse(type =="from", 1, -1)) %>%
-    ungroup %>%
-    select(-type) %>%
-    spread(key = Node, value, fill = 0) %>%
-    arrange(Link)
-  
-  rowdat <- A$Link
-  
-  A <- A %>% select(-Link) %>%
-    as.matrix()
-  
-  rownames(A) <-rowdat
-  
-  rm(rowdat)
-  
-  NodeStatus <- as_data_frame(g, what = "vertices") %>%
-    select(node = name, force = force ) %>%
-    mutate(
-      z = 0,
-      mass = mass,
-      NetTension = 0, velocity = 0, 
-      friction = 0,
-      NetForce = force + NetTension - friction,
-      acceleration = NetForce/mass,
-      t = 0)
-  
-  Link <- as_data_frame(g)  %>%
-    rename(flow = flow,
-           capacity = capacity) %>%
-    mutate(EdgeName = Link, LL = abs(flow)/capacity, k = Area*E/distance) %>% #This sets a floor and ceiling 
-    #to the k values. the more highly loaded a line is the more it should stretch. as LL varies between 0, no loading (stiffness)
-    #to 1, overload point, (most elastic). The larger kdiff is the larger the difference in elasticity for highly and lightly loaded lines.
-    #Very large kdiff means very little elasticty on lightly loaded lines
-    select(EdgeName, distance, k) 
+  #helper function that prepares the data
+  Prep <- Prepare_data_for_find_network_balance(g, force, flow, distance, mass)
   
   #do special case solution
-  if(nrow(Link)==1 & TwoNodeSolution){
+  if(nrow(Prep$Link)==1 & TwoNodeSolution){
     
-    if(NodeStatus$force[1]==0 &NodeStatus$force[1]==0){
+    if(Prep$NodeStatus$force[1]==0 &Prep$NodeStatus$force[2]==0){
       
       solution_angle <-0
       
@@ -60,12 +20,12 @@ Find_network_balance <- function(g, force ="BalencedPower", flow = "PowerFlow", 
       #uses the non-linear optimiser from minpack.lm to find the solution to the two node special case, this is much faster
       solution_angle <- nlsLM(Force ~ ForceV_from_angle(target_angle, k = k, d = d), 
                               start = c(target_angle = pi/4), 
-                              data = list(Force = abs(NodeStatus$force[1]), k = Link$k, d = Link$distance), 
+                              data = list(Force = abs(Prep$NodeStatus$force[1]), k = Prep$Link$k, d = Prep$Link$distance), 
                               upper = pi/2) %>% coefficients()      
       
     }
     
-    temp <- NodeStatus %>%
+    temp <- Prep$NodeStatus %>%
       mutate(z = ifelse(force>0, 
                         tan(solution_angle)/2, #height above mid point
                         -tan(solution_angle)/2 ), #height below mid-point
@@ -77,10 +37,23 @@ Find_network_balance <- function(g, force ="BalencedPower", flow = "PowerFlow", 
     Out <- list(results = temp, 
                 NodeList = temp
     )
-    
+    #Solves using the iterative method.
   } else{
     
-    Out <- FindStabilSystem2(NodeStatus, A, Link$k, Link$distance, tstep, maxIter, frctmultiplier, tol, verbose = verbose) 
+    Out <- FindStabilSystem(
+      g = g,
+      distance = distance,
+      NodeStatus = Prep$NodeStatus, 
+      EdgeNode = Prep$A, 
+      flow = flow,
+      kvect = Prep$Link$k, 
+      dvect = Prep$Link$distance,
+      capacity = capacity,
+      tstep = tstep, 
+      maxIter = maxIter, 
+      frctmultiplier = frctmultiplier, 
+      tol = tol, 
+      verbose = verbose) 
     
   }
   

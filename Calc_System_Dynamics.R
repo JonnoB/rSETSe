@@ -10,7 +10,7 @@ Calc_System_Dynamics <- function(NodeStatus, EdgeNode, kvect, dvect, tstep = 1, 
            friction = Friction_vect*frctmultiplier, #velocity*10,
            NetForce = force + NetTension - friction,
            acceleration = NetForce/mass,
-           Delta_acceleration = acceleration-NodeStatus$acceleration, #Find change in acceleration, used in early termination
+           Delta_acceleration = (acceleration-NodeStatus$acceleration)/tstep, #Find change in acceleration, used in early termination
            t = t + tstep)
   
   paste("acceleration", sum(abs(NodeStatus2$acceleration)), "velocity", sum(abs(NodeStatus2$velocity)))

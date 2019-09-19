@@ -1,4 +1,4 @@
-Create_balanced_blocks <- function(g, force = "BalencedPower"){
+Create_balanced_blocks <- function(g, force = "BalencedPower", flow = "PowerFlow"){
   #This function creates a list of biconnected components or blocks.
   #These blocks are balanced such that the connecting vertices contain all the power of the missing part of the network
   #balancing prevents the network reaching a steady state non-zero velocity.
@@ -11,7 +11,7 @@ Create_balanced_blocks <- function(g, force = "BalencedPower"){
   List_of_BiConComps <-1:length(bigraph$components) %>%
     map(~{
       Comp_num <- .x
-      
+      print(Comp_num)
       #nodes in the current block
       Nodes_in_j <- get.vertex.attribute(g, "name", bigraph$components[[Comp_num]]) 
       
@@ -58,7 +58,7 @@ Create_balanced_blocks <- function(g, force = "BalencedPower"){
       if(nrow(edge_df)==1){
         balanced_component_df <- balanced_component_df %>%
           mutate(temp = edge_df %>%
-                   pull(., PowerFlow) %>% c(., -.) %>% round(., 10)) #rounding stops tiny values
+                   pull(., !!sym(flow)) %>% c(., -.) %>% round(., 10)) #rounding stops tiny values
       }
       
       Component_j <- {!(get.vertex.attribute(g, "name") %in% balanced_component_df$name)} %>%
