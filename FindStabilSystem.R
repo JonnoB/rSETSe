@@ -1,4 +1,5 @@
-FindStabilSystem <- function(g, distance, NodeStatus, EdgeNode, flow, kvect, dvect, capacity, tstep, maxIter = 1000, frctmultiplier = 1, 
+FindStabilSystem <- function(g, distance, NodeStatus, EdgeNode, flow, kvect, dvect, capacity, edge_name = edge_name, 
+                             tstep, maxIter = 1000, frctmultiplier = 1, 
                               tol = 1e-10, verbose = TRUE, friction_Stop= FALSE ){
   #Runs the physics model to find the convergence of the system.
   
@@ -25,7 +26,9 @@ FindStabilSystem <- function(g, distance, NodeStatus, EdgeNode, flow, kvect, dve
                                     solved_height_df = temp, 
                                     distance = distance, 
                                     capacity = capacity, 
-                                    flow = flow)
+                                    flow = flow,
+                                    edge_name = edge_name
+                                    )
    
     #results[[Iter]] 
     results[Iter,]<- temp %>%

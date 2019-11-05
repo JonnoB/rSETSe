@@ -1,4 +1,21 @@
-Create_balanced_blocks <- function(g, force = "BalencedPower", flow = "PowerFlow"){
+#' Create balanced blocks
+#' 
+#' Separates the network into a series of bi-connected components that can be solved separately. 
+#' Solving smaller subgraphs using the bi-connected component method reduces the risk of network divergence.
+#' 
+#' When networks are separated into the bi-connected subgraphs or blocks. The overall network balance needs to be maintained. 
+#' \code{create_balanced_blocks} maintains the balance by summing the net force across the all the nodes that are being removed from
+#' the subgraph. Therefore a node that is an articulation point has a force value equal to the total of all the nodes on the adjacent
+#' bi-connected component.
+#' 
+#' @param g An igraph object. The network for which embeddings will be found
+#' @param force A character vector. The name of the node attribute that is the force exerted by the nodes
+#' @param flow A character vector. The name of the edge attribute that contains the flow over each edge
+#' @return A list containing all the bi connected component where each component is balanced to have a net force of 0.
+#' 
+#' @export
+
+create_balanced_blocks <- function(g, force = "net_generation", flow = "power_flow"){
   #This function creates a list of biconnected components or blocks.
   #These blocks are balanced such that the connecting vertices contain all the power of the missing part of the network
   #balancing prevents the network reaching a steady state non-zero velocity.
@@ -11,7 +28,7 @@ Create_balanced_blocks <- function(g, force = "BalencedPower", flow = "PowerFlow
   List_of_BiConComps <-1:length(bigraph$components) %>%
     map(~{
       Comp_num <- .x
-      print(Comp_num)
+
       #nodes in the current block
       Nodes_in_j <- get.vertex.attribute(g, "name", bigraph$components[[Comp_num]]) 
       

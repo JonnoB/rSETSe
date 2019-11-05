@@ -1,5 +1,14 @@
-Create_stabilised_blocks <- function(g, OriginBlock, OriginBlock_number, force ="BalencedPower", flow = "PowerFlow", capacity = "Link.Limit",  
-                                     tstep=0.1, tol = 1e-10, distance, maxIter, mass){
+Create_stabilised_blocks <- function(g, OriginBlock, OriginBlock_number, 
+                                     force ="net_generation", 
+                                     flow = "power_flow", 
+                                     capacity = "edge_limit", 
+                                     edge_name = "edge_name",  
+                                     tstep=0.1, 
+                                     tol = 1e-10, 
+                                     distance, 
+                                     maxIter, 
+                                     mass, 
+                                     verbose = TRUE){
   #This function finds the z displacement of all the nodes in the network.
   #g and igraph object of the network
   #OriginBlock a dataframe, output of the Find_network_Balance function of the graph, should be stable or almost stable. mass and K of this block
@@ -30,12 +39,14 @@ Create_stabilised_blocks <- function(g, OriginBlock, OriginBlock_number, force =
                                   tstep = tstep, 
                                   tol = tol, 
                                   distance = distance, 
+                                  edge_name = edge_name,
                                   maxIter =  maxIter, 
                                   mass =  mass, 
                                   verbose = FALSE)
       
-      print(paste("Block" ,.x, "of", max(BlockNumbers) ,"termination", nrow(Out$results) ))
-      #print(Out$results)
+      #print if the print requirement is on otherwise silent
+      if(!verbose){print(paste("Block" ,.x, "of", max(BlockNumbers) ,"termination", nrow(Out$results) )) }
+      
       return(Out)
       
     })

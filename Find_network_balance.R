@@ -1,16 +1,25 @@
-Find_network_balance <- function(g, force ="BalencedPower", flow = "PowerFlow", capacity = "capacity", distance = "distance", tstep = 0.5, 
-                                 mass = 2000, maxIter =2000, frctmultiplier = 1, tol = 1e-10, verbose = TRUE,
-                                 TwoNodeSolution = TRUE){
+Find_network_balance <- function(g, force ="net_generation", 
+                                 flow = "power_flow", 
+                                 capacity = "capacity", 
+                                 distance = "distance", 
+                                 edge_name = "edge_name",
+                                 tstep = 0.5, 
+                                 mass = 2000, 
+                                 maxIter =2000, 
+                                 frctmultiplier = 1, 
+                                 tol = 1e-10, 
+                                 verbose = TRUE,
+                                 two_node_solution = TRUE){
   #needs an edge attribute "distance"
   #needs an edge attribute "Link" for the the edge name
   #converges faster if the network has been decomposed into blocks
-  #TwoNodeSolution: Logical value if true blocks that are a node pair will be solved by Newton Raphson method for speed
+  #two_node_solution: Logical value if true blocks that are a node pair will be solved by Newton Raphson method for speed
   
   #helper function that prepares the data
-  Prep <- Prepare_data_for_find_network_balance(g, force, flow, distance, mass)
+  Prep <- Prepare_data_for_find_network_balance(g, force, flow, distance, mass, edge_name)
   
   #do special case solution
-  if(nrow(Prep$Link)==1 & TwoNodeSolution){
+  if(nrow(Prep$Link)==1 & two_node_solution){
     
     if(Prep$NodeStatus$force[1]==0 &Prep$NodeStatus$force[2]==0){
       
@@ -49,6 +58,7 @@ Find_network_balance <- function(g, force ="BalencedPower", flow = "PowerFlow", 
       kvect = Prep$Link$k, 
       dvect = Prep$Link$distance,
       capacity = capacity,
+      edge_name = edge_name,
       tstep = tstep, 
       maxIter = maxIter, 
       frctmultiplier = frctmultiplier, 
