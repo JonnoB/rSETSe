@@ -1,4 +1,31 @@
-Create_stabilised_blocks <- function(g, OriginBlock, OriginBlock_number, 
+#' Create stabilosed blocks
+#' 
+#' decomposes the network into bi-connected components using articulation points. This speeds up the convergence process
+#' and reduces the chances of the SETS algorithm diverging
+#' 
+#' @param g An igraph object
+#' @param Origin block
+#' @param OriginBlock_number An integer. this is the origin block chosen from the \{create_stable_blocks} function. 
+#' Usually this will be the largest block.
+#' @param force A character string. This is the node attribute that contains the force the nodes exert on the network.
+#' @param flow A character string. This is the edge attribute that is the power flow on the edges.
+#' @param capacity A character string. This is the edge attribute that is the flow limit of the edges.
+#' @param edge_name A character string. This is the edge attribute that contains the edge_name of the edges.
+#' @param tstep A numeric. The time interval used to iterate through the network dynamics.
+#' @param tol A numeric. The tolerance factor for early stopping.
+#' @param distance A character string. The edge attribute that contains the original/horizontal distance between nodes.
+#' @param maxIter An integer. The maximum number of iterations before stopping. Larger networks usually need more iterations.
+#' @param mass A numeric. This is the mass constant of the nodes in normalised networks this is set to 1.
+#' @param verbose Logical. This value sets whether messages generated during the process are supressed or not.
+#' 
+#' @seealso \code{\link{Create_stabilised_blocks}} \code{\link{Find_network_balance}}
+#' @return A dataframe with the height embeddings of the network
+#' 
+#' 
+#' @export
+Create_stabilised_blocks <- function(g, 
+                                     OriginBlock, 
+                                     OriginBlock_number, 
                                      force ="net_generation", 
                                      flow = "power_flow", 
                                      capacity = "edge_limit", 
@@ -24,7 +51,7 @@ Create_stabilised_blocks <- function(g, OriginBlock, OriginBlock_number,
   
   #Seperate out the graph into balanced blocks
   #This step will have already been done, but it is fast and simplifies the requirements for the function
-  List_of_BiConComps <- Create_balanced_blocks(g, force = force, flow = flow)
+  List_of_BiConComps <- create_balanced_blocks(g, force = force, flow = flow)
   
   #remove the Origin block so it doesn't have to be calculated again
   BlockNumbers <-(1:length(List_of_BiConComps))[-OriginBlock_number]

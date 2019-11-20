@@ -1,4 +1,29 @@
-Find_network_balance <- function(g, force ="net_generation", 
+#' Find the network balance
+#' 
+#' This simulates the dynamics of the network for a set number of iterations or until convergence which ever is the sooner.
+#' 
+#' This function is often used in conjunction with \code{Create_stabilised_blocks} and \code{create_balanced_blocks}
+#' 
+#' @param g An igraph object
+#' @param force A character string. This is the node attribute that contains the force the nodes exert on the network.
+#' @param flow A character string. This is the edge attribute that is the power flow on the edges.
+#' @param capacity A character string. This is the edge attribute that is the flow limit of the edges.
+#' @param distance A character string. The edge attribute that contains the original/horizontal distance between nodes.
+#' @param edge_name A character string. This is the edge attribute that contains the edge_name of the edges.
+#' @param tstep A numeric. The time interval used to iterate through the network dynamics.
+#' @param mass A numeric. This is the mass constant of the nodes in normalised networks this is set to 1.
+#' @param maxIter An integer. The maximum number of iterations before stopping. Larger networks usually need more iterations.
+#' @param frctmultiplier A numeric. This sets the multiplier of friction. Only use if you want to be annoyed and confused
+#' @param tol A numeric. The tolerance factor for early stopping.
+#' @param verbose Logical. This value sets whether messages generated during the process are supressed or not.
+#' @param two_node_solution Logical. The 
+#' 
+#' @return A data frame with the height embeddings of the network
+#' @seealso \code{\link{Create_stabilised_blocks}} \code{\link{create_balanced_blocks}}
+#' @export
+
+Find_network_balance <- function(g, 
+                                 force ="net_generation", 
                                  flow = "power_flow", 
                                  capacity = "capacity", 
                                  distance = "distance", 
