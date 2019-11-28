@@ -1,0 +1,10 @@
+Package: NetworkSpringEmbedding
+Title: Calculating the Strain Elevation Tension Spring embeddings for a network
+Version: 0.1
+Authors@R: person("Jonathan", "Bourne", email = "jonathan.bourne.15@ucl.ac.uk.com", role = c("aut", "cre"))
+Description: This package is used to calculate the strain elevation and tension embeddings produced by the SETS algorithm. It also contains some additional functions for analysis of the results
+Depends: R (>= 3.4.2)
+License: GNU General Public License v3 (GPL-3)
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.1

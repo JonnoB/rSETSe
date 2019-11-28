@@ -1,0 +1,388 @@
+---
+title: "Untitled"
+author: "Jonathan Bourne"
+date: "22 March 2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+https://github.com/schochastics/graphlayouts
+
+https://github.com/hackl/tikz-network
+
+
+some IEEE datasets
+https://icseg.iti.illinois.edu/power-cases/
+
+annpotate points with rectangles
+https://ggforce.data-imaginist.com/reference/geom_mark_rect.html
+
+#Set up
+```{r Setup}
+
+packages <- c("tidyverse", "igraph","readr","readxl", "broom", "stringr", "xtable", "rlang", "animation", "caret", "sf", "rgdal", "sf", "gstat", "automap", "rayshader", "latex2exp", "yardstick", "minpack.lm", "gganimate", "tmaptools", "rgeos", "raster", "tigris")
+
+new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+
+select <- dplyr::select
+arrange <- dplyr::arrange
+sapply(packages, library, character.only = TRUE)
+
+library(PowerGridNetworking)
+library(NetworkSpringEmbedding)
+
+#Set up file system to read the correct folders this switches between aws and windows mode
+
+basewd <- "/home/jonno/Dropbox/Jonathan_Bourne_Phd_Folder"
+datafile <- "/home/jonno/Dropbox/Jonathan_Bourne_Phd_Folder/ETYSAppendixB"
+LatexFolder <- "/home/jonno/Dropbox/Apps/ShareLaTeX/Spring Embeddings" 
+FiguresFolder <- file.path(LatexFolder, "Figures")
+TablesFolder <- file.path(LatexFolder, "Tables")
+MatricesFolder <- file.path(LatexFolder, "Matrices")
+Tariff <- file.path(basewd,"Tariff and Transport")
+PLwd <- "/media/jonno/Seagate Expansion Drive/System_Dynamics"
+Deletion_Order_Folder <-  file.path("/home/jonno/Dropbox/AWS_Simulation_Files") #Only one of the deletion order folders is needed. Either Nodes or Edges
+IEEE_Project_folder <- "/home/jonno/Dropbox/IEEE_Networks" #"/media/jonno/Seagate Expansion Drive/IEEE_Networks"
+base_attack_folder <-"/media/jonno/Seagate Expansion Drive/System_Dynamics/Profile_attacks"
+
+#Load necessary datasets and great the base powergrid network
+source(file.path("/home/jonno/ProportionalLoading", "CreateGBase.R"))
+
+#Load some other useful functions
+list.files("/home/jonno/Useful_PhD__R_Functions", pattern = ".R", full.names = T) %>%
+  walk(~source(.x))
+
+VertexMetaData2 <- VertexMetaData %>%
+  mutate(NodeType = case_when(
+    BalencedPower>0 ~"Generator",
+    BalencedPower< 0~"Demand",
+    TRUE ~ "Transfer"
+  ),
+  NodeType2 = case_when(
+    Demand>0 & Generation>0 ~"Hybrid",
+    TRUE ~ NodeType
+  )) %>% select(Name, NodeType, NodeType2, BalencedPower)
+
+
+
+```
+
+
+#Psychadelic beard/boat
+
+This plots the strain values of a 4 node three edge graph with a constant EC and varying alpha. It shows that strain is more expressive than either alpha, ec or a combination of the two
+
+The code giveing the animation that shows convergence has been lost. The animation is pretty helpful so it is a good idea to do it again.
+```{r}
+
+#The function that calculate the force from the angle
+ForceV_from_angle <- function(target_angle, k, d){
+  #allows us to tune an angle to get a specific force. alternatively we can tune k and d!
+  tibble(H = sqrt(d^2 * (1 + tan(target_angle)^2)),
+         ForceT = k*(H-d), 
+         ForceV = ForceT*sin(target_angle)) %>%
+    pull(ForceV)
+  
+}
+
+#Get all the possible combinations of each edge excluding height data
+fixed_mean_alpha  <- 20:80 %>%
+  map_df(~{
+     BranchEC <-100-.x -20
+    
+     tibble(A = .x,
+           B =10 + BranchEC*(0:100)/100,
+           C = 10 +  BranchEC*(100:0)/100,)
+    
+  } ) %>%
+  mutate(groupID = 1:n()) %>%
+  gather(key = edge, value = capacity, - groupID) %>%
+  left_join(tibble(edge = c("A", "B", "C"), 
+                   flow = c(20,10,10)), #edge flow is always postive! 
+            by = "edge") %>%
+  mutate(alpha = capacity/abs(flow)) %>% #calculate alpha from the flow and edge capacity
+  group_by(groupID) %>%
+  mutate(mean_alpha = mean(alpha),
+         mean_load = mean(1/alpha), #The harmonic mean of alpha aka mean load
+         flow_fract = abs(flow)/sum(ifelse(flow>0,flow,0)),
+         excess_cap = sum(alpha*flow_fract)/3) %>%
+  group_by(mean_alpha) %>%
+  mutate(counts = n(),
+         k = 100*(10-1)*(1-1/alpha)+100,
+         rank = rank(excess_cap, ties.method = "random")) %>% 
+  ungroup 
+
+#Minimise the data down to only the usefully distinct data
+Edge_combos <- fixed_mean_alpha  %>%
+  distinct(alpha, flow, .keep_all = TRUE) %>%
+  mutate(groupID2 = 1:n())
+
+#Calculate heights for each node pair combination
+Edge_combos_delta_z <- Edge_combos$groupID2  %>% 
+  map_df(~{  
+    if((.x/100)%%1 == 0){ (print(.x))} #print every 100
+    
+    current_settings <- Edge_combos   %>%
+      filter(groupID2 == .x)
+    
+    solution_angle <- nlsLM(Force ~ ForceV_from_angle(target_angle, k = k, d = 1), 
+                            start = c(target_angle = pi/4), 
+                            data = list(Force = current_settings$flow, k = current_settings$k), 
+                            upper = pi/2)
+    
+    
+    Out <- current_settings %>%
+      mutate( theta_rads = coef(solution_angle)[1],
+              theta_degs = theta_rads*360/(2*pi),
+              delta_z = tan(theta_rads),
+              delta_h = sqrt(delta_z^2 + 1)-1,
+              strain = delta_h # this is because the distance is 1 and strain = (H-d)/d and H = delta_h+d
+      ) %>%
+      select(groupID, theta_rads, theta_degs, delta_z, flow, alpha, k, delta_h, strain)
+  })  
+
+#calculate the ratio of excess capacity split between B and C then join with the alpha value by group
+#using capcity or 1/alpha gives the same value 
+toy_theta_temp <-  fixed_mean_alpha %>%
+  select(groupID, edge, alpha, counts) %>%
+  spread(key = edge, value = alpha) %>%
+  mutate(
+   B= 1/B, #It appears to make no difference if alpha or load level is used
+    C = 1/C,
+    ratio = (B)/(C+B)) %>%
+  left_join(fixed_mean_alpha %>%
+  select(groupID, mean_alpha, mean_load) %>%
+    distinct) %>%
+    select(-A, -B, -C)
+
+#get combine the previous df's together to get the strain across the system for all combinations
+toy_height_data <- fixed_mean_alpha %>%
+select(groupID, edge, flow, alpha) %>%
+  #add in the height data
+  left_join(Edge_combos_delta_z %>% select(-groupID))  %>%
+  select(groupID, edge, strain) %>%
+  #Use spread to keep the delta values for each edge
+  spread(key = edge, value = strain) %>%
+  mutate(mean_strain = (A+B+C)/3) %>%
+  left_join(toy_theta_temp, by = "groupID")
+
+
+  toy_height_data %>%
+    # some of the mean_alpha values are seperating on machine tolerance or something
+        mutate(mean_alpha = signif(mean_alpha,5)) %>% 
+    #filter(mean_alpha <=2.5) %>%
+    ggplot(aes(x = ratio, y = mean_strain, colour = mean_alpha, group = mean_alpha)) + 
+    geom_line(size = 1) +
+    scale_colour_viridis_c() +
+    labs(title ="Strain and System Tolerance in terms of capacity fraction in edge B", 
+         y = "System Strain", 
+         x= latex2exp::TeX("$\\frac{\\tau_{B}}{\\tau_{B}+\\tau_{C}}$"),
+         colour = "System \ntolerance") #latex2exp::TeX(paste("system", "$\\alpha$"))
+  ggsave(file.path(FiguresFolder, "Constant_excess_capacity.pdf"))
+
+"Relationship between alpha, excess capacity and theta"
+
+latex2exp::TeX(paste("The relationship between strain and ", 
+                                     "$\\alpha \\,$", 
+                                     " in terms of capacity fraction in edge B" ))
+
+
+#This is the mean load.... What the hell is going on?
+  toy_height_data %>%
+    mutate(mean_load = signif(mean_load,3)) %>% 
+    ggplot(aes(x = ratio, y = mean_strain, colour = mean_load)) + 
+    geom_point() +
+    scale_colour_viridis_c()
+  
+  
+  #The relationship between load and strain is wierd and looks similar to entropy
+    toy_height_data %>%
+   mutate(mean_load = signif(mean_load,5)) %>% 
+    ggplot(aes(colour = mean_alpha, y = mean_strain, x = mean_load, group = mean_alpha)) + 
+    geom_line(size = 1)+
+    scale_colour_viridis_c() +
+      scale_x_reverse()
+
+toy_height_data %>%
+  filter((mean_strain == min(mean_strain)))
+
+fixed_mean_alpha %>%
+  filter(groupID==2879)
+
+
+test <- toy_height_data %>%
+  group_by(alpha = round(mean_alpha,5)) %>%
+  summarise(min_strain = min(mean_strain),
+            max_strain = max(mean_strain)) %>%
+  mutate(strain_diff = (min_strain-max_strain)/min_strain,
+         strain_rat = max_strain/min_strain)
+
+test %>%
+ggplot(aes(x = alpha, y = strain_rat)) +
+  geom_line()
+```
+
+##Entropic degree
+```{r}
+
+entropy_data <- fixed_mean_alpha %>%
+  group_by(groupID) %>%
+  mutate(p_capacity = capacity/sum(capacity), #fraction of total capacity
+         p_alpha = alpha/sum(alpha), #fraction of total alpha
+         entrop_capacity = -p_capacity*log(p_capacity), #
+         entrop_alpha = -p_alpha*log(p_alpha)) %>%
+  summarise(capacity = sum(entrop_capacity),
+            alpha = sum(entrop_alpha)) %>%
+  #normalise the entropy relative to the highest value
+  mutate(capacity = capacity/max(capacity), 
+         alpha = alpha/max(alpha))
+
+toy_height_data %>%
+  select(groupID, mean_strain, mean_alpha) %>%
+  left_join(entropy_data) %>%
+  gather(key = type, value = div, -mean_strain, - mean_alpha,-groupID ) %>%
+    mutate(mean_alpha = signif(mean_alpha,5)) %>%  # some of the mean_alpha values are seperating on machine tolerance or something
+  filter(type =="capacity") %>%
+  ggplot(aes(x = div, y = mean_strain, colour = mean_alpha, group = mean_alpha)) + 
+  geom_line(size = 1) +
+  scale_colour_viridis_c() +
+  facet_grid(~type) +
+  labs(title = "The relationship between strain, system tolerance and entropy", 
+       x = "Normalised entropy", 
+       y ="system strain", 
+       colour =  "Sytem tolerance")
+ggsave(file.path(FiguresFolder, "entropy_theta.pdf"))
+
+
+
+test <- toy_height_data %>%
+  select(groupID, mean_strain, mean_alpha) %>%
+  left_join(entropy_data)
+
+rm(entropy_data)
+```
+
+
+
+#Redistribution of the edges on IEEE-118
+This is a plot of the impact on harmonic mean of the redistribution function. It shows that load is skewed more when fraction = 1
+
+```{r}
+
+```
+
+
+#Fraction and K analysis
+
+This section looks at the relationship between fraction K and ability to model collapse point. This analysis uses only IEEE-118
+
+
+```{r}
+
+```
+
+#Model across all graphs
+
+After demonstrating the effectiveness on a single graph this chunk loads the data from all graphs used in the analysis, creates the resulting scatter plots and measures the effeectiveness at modelling giant component collapse.
+
+
+```{r}
+
+```
+
+##Optional
+
+Include the tube map as a strain graph where routes are decided based on shortest path after each attack.
+
+```{r}
+
+```
+
+#UK map 
+
+This chunk plots the UK high voltage network in geospace and shows how SETse provides interpretable results
+
+##Set up UK Graph
+```{r}
+
+g <- RemoveDeadEnds(gbase) #remove non-valid ends from the graph
+#Ensure there is powerflow
+SlackRef <- SlackRefFunc(g) #find the most appropriate node to be the slack bus
+g <- PowerFlow(g, SlackRef$name) #calculate power flow
+
+test <- as_data_frame(g, what = "vertices")
+
+#useful at various stages
+energy_types <- c("Coal", "Gas", "Renewable", "Nuclear")
+sim_names <- paste0("No_", energy_types)
+```
+
+##UK strain
+Calculate the strain on the UK grid under base load
+
+```{r}
+
+```
+
+
+##Kriged map
+
+Plot the results of the SETS embedding in geographical space. Show that this representation is interpretable
+```{r}
+
+spdf <- as(GB, "Spatial") %>% st_as_sf %>%
+  st_crop(c(xmin = -7.5, ymin = 50, xmax = 2, ymax = 59)) %>%
+  as_Spatial()
+
+kriged_height_strain_data <- krige_height_strain_maps(g = set.edge.attribute(g, "distance", value = 1), 
+                                                      height_df = final_z, 
+                                                      coords = MakeMapDF(g, read_csv(file.path(basewd, "point.csv")))  %>%
+                                                        filter(PositionType=="Geo Space"), 
+                                                      distance = "distance", 
+                                                      capacity = "Link.Limit",
+                                                      flow = "PowerFlow",
+                                                      spatial_df = spdf)
+
+kriged_height_strain_data %>%
+  mutate(type = fct_relevel(type, "Line Load", after = Inf)) %>%
+  ggplot(aes(x=Longitude, y=Latitude)) + 
+  geom_tile(aes(fill=value_perc)) + coord_equal() +
+  facet_grid(~type) +
+  scale_fill_viridis_c() +
+scale_colour_viridis_c(option = "plasma") +
+  labs(title = "Height and Strain of the UK high-voltage power grid under base load generation", 
+       fill = "Percentile") +
+  theme(axis.title = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        legend.position = "right",
+        plot.margin=unit(c(-60,0,-60,0),"mm")) #the legend position may want changing back to the more convential side.
+  ggsave(file.path("/home/jonno/Dropbox/Apps/ShareLaTeX/Spring Systems extended abstract", "BritainKrigedTopology2.eps"), dpi = 600)
+
+
+```
+
+
+#Optional Failure groups
+Optional! show the relationship between the clustering produced by SETS and failure groups, 
+compare with the hierarchically clustered based on topology and seperately wieghted with edge load.
+Ground truth is thr groups formed by probability of joint failure.
+
+```{r}
+
+```
+
+#package update
+This chunk is the code to quickly update the package
+```{r}
+library(devtools)
+library(roxygen2)
+roxygenise( "/home/jonno/network_spring_embedding")
+
+install("~/network_spring_embedding")
+detach("package:NetworkSpringEmbedding", unload = TRUE)
+library(NetworkSpringEmbedding)
+```
+

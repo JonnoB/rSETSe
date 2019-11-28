@@ -5,8 +5,8 @@
 #' 
 #' @param g An igraph object
 #' @param Origin block
-#' @param OriginBlock_number An integer. this is the origin block chosen from the \{create_stable_blocks} function. 
-#' Usually this will be the largest block.
+#' @param OriginBlock_number An integer. this is the origin block chosen from the
+#' create_stable_blocks function. Usually this will be the largest block.
 #' @param force A character string. This is the node attribute that contains the force the nodes exert on the network.
 #' @param flow A character string. This is the edge attribute that is the power flow on the edges.
 #' @param capacity A character string. This is the edge attribute that is the flow limit of the edges.
