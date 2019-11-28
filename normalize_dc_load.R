@@ -13,7 +13,7 @@
 #' @param power_flow A character string. The name of the edge atribute that contains the flow data
 #' @export
 
-normalise__dc_load <- function(g, 
+normalise_dc_load <- function(g, 
                            generation = "generation", 
                            demand  = "demand",
                            net_generation = "net_generation", 

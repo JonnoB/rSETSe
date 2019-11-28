@@ -1,3 +1,12 @@
+#' Create tension matrix
+#' 
+#' Calculates the edge tension in the network. This is a helper function and is seldom called directly
+#' @param Edgenode A dataframe. represents the edge node matrix
+#' @param zvect A numeric vector. The node elevation.
+#' @param kvect A numeric vector. The vector of spring coefficients between connected nodes.
+#' @param dvect A numeric vector. The original distance between adjacent nodes.
+#' 
+#' @export
 Create_Tension_matrix <- function(EdgeNode, zvect, kvect, dvect){
   #Creates a matrix showing the forces exerted by the contracting spring for each edge of a node
   #positive numbers pull down (like the force of mg) and negative forces pull up

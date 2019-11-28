@@ -1,3 +1,19 @@
+#' Logistic sprin area
+#' 
+#' Calculate the spring area of an edge based on a logistic curve
+#' 
+#' This function allows for variable cross sectional area of an edge. This might be because
+#' there is a complex relationship between the flow and it's physical interpretation.
+#' The output of this function is a graph with an area attribute "Area".
+#' 
+#' @param g  an igraph object
+#' @param Force a character string that is the name of the edge atribute that is used as force
+#' @param Capacity a character string that is the ame of the edge atribute for edge capacity
+#' @param eta the range of possible logistic values
+#' @param gamma the minimum value the logistic function will produce
+#' @param kappa the squashing parameter of the logistic function
+#' @export
+
 Calc_logistic_Spring_Area <- function(g, Force, Capacity, eta, gamma, kappa){
   #g  an igraph object
   #Force a character string that is the name of the edge atribute that is used as force

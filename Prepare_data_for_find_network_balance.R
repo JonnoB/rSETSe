@@ -10,6 +10,7 @@
 #'@param distance a character string. The edge attribute that contains the distance of the edge.
 #'@param mass a character string. the node attribute that contains the mass of the nodes.
 #'@param edge_name a character string. The edge attribute that contains the names of all the edges.
+#'@export
 
 Prepare_data_for_find_network_balance <-function(g, force, flow, distance, mass, edge_name = edge_name){
   #this is a helper function that goes inside the the find network balance function to help make the code easier to read

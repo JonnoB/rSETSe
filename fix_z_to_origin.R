@@ -1,3 +1,13 @@
+#' fix z to origin
+#' 
+#' This function makes the elevation of the different blocks all relative to the same fixed point, this allows easy use of bi-connected components
+#' 
+#' The function needs to be renamed to make it more SETSe friendly something like fix_elevation_to_origin. But I need to see what it will impact first
+#' 
+#' @param relative_blocks a data frame containing the outputs from the 
+#' @param ArticulationVect The articulation nodes of the network.
+#' @export
+
 fix_z_to_origin <- function(relative_blocks, ArticulationVect){
   #This function makes the z values of the different blocks al relative to the same fixed point
   #a single component is chosen, usually the largest and this is given the ID = 0.

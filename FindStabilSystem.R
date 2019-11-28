@@ -1,3 +1,23 @@
+#' Find stabil system
+#' 
+#' This function uses the SETS embedding to find the equilibrium position of a network or a bi-connected component
+#' @param g An igraph object. The network
+#' @param NodeStatus A data frame The current dynamics and forces experienced by the node a data frame.
+#' @param EdgeNode 
+#' @param flow A character string. This is the edge attribute that is the power flow on the edges.
+#' @param kvect A numeric vector of the spring stiffnesses
+#' @param dvect A numeric vector of the initial distances between the nodes
+#' @param capacity A character string. This is the edge attribute that is the flow limit of the edges
+#' @param edge_name A character string. This is the edge attribute that contains the edge_name of the edges.
+#' @param tstep A numeric value. The time step, measured in seconds, that will be used to calculate the new dynamic state
+#' @param maxIter An integer. The maximum number of iterations before stopping. Larger networks usually need more iterations.
+#' @param frctmultiplier A numeric value. Used to set a multiplier on the friction value. Generally leave this alone..s.
+#' @param tol A numeric. The tolerance factor for early stopping.
+#' @param verbose Logical. This value sets whether messages generated during the process are supressed or not.
+#' @param friction_stop Logical. Includes friction as a stopping condition. useful in some situations
+#' @export
+
+
 FindStabilSystem <- function(g, distance, NodeStatus, EdgeNode, flow, kvect, dvect, capacity, edge_name = edge_name, 
                              tstep, maxIter = 1000, frctmultiplier = 1, 
                               tol = 1e-10, verbose = TRUE, friction_Stop= FALSE ){

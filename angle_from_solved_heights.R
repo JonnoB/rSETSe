@@ -1,3 +1,11 @@
+#' Angle from solved heights
+#'
+#' This function is borderline for deletion
+#' It calculates the angle between two edges
+#' @param height_solution the height embeddings of the graph
+#' @param g A igraph object
+#' @export 
+
 angle_from_solved_heights <- function(height_solution, g = IEEE_118 ){
   #This function creates a dataframe with the network theta from a solved height dataframe.
   max_height_diff <- height_solution %>% 

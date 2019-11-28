@@ -1,3 +1,11 @@
+#' Create Voronoi
+#' 
+#' Creates a voronoi tessalation from a collection of points whilst preserving desired node properties
+#' 
+#' This possibly outputs a voronoi tesselation, it definately outputs and sf object
+#' 
+#' @param node_values  A dataframe containing a Node column a Longitude column a Latitude column as well as any desired attribute columns
+#' @param sfc_map An sfc object defining the geometry of the area that the nodes are in. 
 Create_Voronoi <- function(node_values, sfc_map){
   #node values a dataframe containing a Node columns a Longitude column a Latitude column as well as any desired attribute columns
   #sfc_map and sfc object describing the area that the nodes are in.

@@ -1,6 +1,7 @@
 #' Calculate the spring constant
 #' 
-#' This function adds the graph characteristic k which is the spring constant.
+#' This function adds the graph characteristic k which is the spring constant. When A and distance are both set to 1
+#' \code{k=E} and the spring constant is equivalent to youngs modulus.
 #' 
 #' The values A and distance are edge atributes referring to the crossectional area of the edge and the horizontal distance of the edge,
 #' in other words the distance between the two nodes at each end of the edge. These values can be set to anything the user wishes, they may be
@@ -17,6 +18,7 @@
 #' @param A a character string. The cross sectional area of the line. The defualt is A. see details on values of A
 #' @param distance A character string. See details on values of distance
 #' @return and edge atribute called k with value \code{EA/distance}
+#' @seealso [calc_spring_youngs_modulus]
 #' @export
 #' 
 calc_spring_constant <- function(g, E = "E", A = "A", distance = "distance"){

@@ -8,6 +8,7 @@
 #' @param capcity A character string. The name of the edge attribute that contains the flow capacity of the edge between two nodes. 
 #' @param flow A character string. The name of the edge attribute that contains the flow between the two nodes at the end of the edge. The default is "power_flow".
 #' @param edge_name   A character string. The name of the edge attribute that contains the edge name. The default is "edge_name".
+#' @export
 
 Calc_line_strain <- function(g, solved_height_df, distance = "distance", capacity, flow = "power_flow", edge_name = "edge_name"){
 
