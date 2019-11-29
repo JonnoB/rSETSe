@@ -1,0 +1,340 @@
+---
+title: "HPC prep and test"
+author: "Jonathan Bourne"
+date: "27/11/2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+This markdown contains the code that is used to feed the HPC as well as the post HPC processing
+
+#Set up
+```{r}
+packages <- c("rlang", "tidyverse", "igraph", "devtools", "minpack.lm")
+
+new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+
+sapply(packages, library, character.only = TRUE)
+
+#install_github("JonnoB/PowerGridNetworking")
+library(PowerGridNetworking)
+
+#Set up file system to read the correct folders this switches between aws and windows mode
+
+#creates the correct root depending on whether this is on the cloud or not
+if(dir.exists("/home/jonno")){
+  #This folder is for use on my machine
+  project_folder <- "/home/jonno/Dropbox/IEEE_Networks"
+  basewd <- "/home/jonno"
+}else{
+  #This is for the folder that is on the cloud
+  project_folder <- "~/Dropbox/IEEE_Networks"
+  basewd <- "~/Dropbox"
+}
+
+power_grid_graphs_path <- file.path(project_folder, "power_grid_graphs") #The path where the base igraph representations of the power grids are
+collapse_sets_path <- file.path(project_folder, "collapse_sets") #the full collapse set of each power grid and the permutations are stored here
+collapse_set_summaries_path <- file.path(project_folder, "collapse_set_summaries")
+permuted_IEEE_118_path <- file.path(power_grid_graphs_path, "Permuted_IEEE_118") #The permuted base IEEE-118 igraphs are stored here
+pl_IEEE_path <- file.path(power_grid_graphs_path, "pl_IEEE") 
+edge_scramble_keys_path <- file.path(project_folder, "edge_scramble_keys")
+edge_scramble_keys_IEEE_permutation_path <- file.path(edge_scramble_keys_path, "Permuted_IEEE_118")
+analysis_parameter_file_path <- file.path(project_folder, "analysis_parameter_files")
+HPC_startup_parameter_file_path <- file.path(project_folder, "HPC_parameter_files")
+embeddings_path <- file.path(project_folder, "embeddings") 
+
+#make sure all the paths exist
+ls(pattern = "_path") %>% walk(~{
+  if(!file.exists(.x)) dir.create(.x, recursive = T)
+})
+
+#Load some other useful functions
+list.files(file.path(basewd, "Useful_PhD__R_Functions"), pattern = ".R", full.names = T) %>%
+  walk(~source(.x))
+
+list.files(file.path(basewd, "Flow_Spring_System"), pattern = ".R", full.names = T) %>%
+  walk(~source(.x))
+
+```
+
+
+##Run collapse script
+
+```{r}
+#If this is put in a loop or walk mapping then it will "arguably" calculate the data for all the maps and systems
+#Load the params file. 
+
+#Load the params file. 
+
+#This appears to be considerably faster than the parallel version
+1:nrow(288) %>% walk(~{
+  
+  task_id <- .x #this is the compute group to be used
+  
+  load_file <- "IEEE_118_igraph"
+
+  source(file.path("/home/jonno/Spring_Embeddings_Paper", "HPC_strain_script.R"), local = TRUE)
+  
+  return(NULL)
+  
+} )
+
+
+```
+
+##Run Strain script
+```{r}
+#If this is put in a loop or walk mapping then it will "arguably" calculate the data for all the maps and systems
+#Load the params file. 
+
+
+#This appears to be considerably faster than the parallel version
+1:nrow(3456) %>% walk(~{
+  
+  task_id <- .x #this is the compute group to be used
+  
+  load_file <- "IEEE_118_igraph"
+
+  source(file.path("/home/jonno/Spring_Embeddings_Paper", "HPC_strain_script.R"), local = TRUE)
+  
+  return(NULL)
+  
+} )
+
+
+```
+
+
+#Extract the data from the zip files
+
+The attack data produced by the HPC is tarred as a larged collection of files and needs to be extracted before it can be used.
+
+This chunk does that extraction.
+
+```{r}
+
+list.files("/home/jonno/Dropbox/IEEE_Networks/strain") %>% walk(~{
+  
+  untar_myriad_strain_files("/home/jonno/Dropbox/IEEE_Networks/strain", .x, extraction_directory = file.path(project_folder, "test_strain"))
+  
+})
+
+tar_path <-"/home/jonno/HPC_jobs"
+  
+tar_file <- "files_from_job_2059520.30.tgz"
+
+untar_myriad_collapse_summaries(tar_path, tar_file, extraction_directory = file.path(project_folder, "test_collapse"))
+
+list.files("/home/jonno/HPC_jobs") %>% walk(~{
+  
+  untar_myriad_collapse_summaries("/home/jonno/HPC_jobs", tar_file = .x, extraction_directory = file.path(project_folder, "test_collapse"))
+  
+})
+
+
+```
+
+
+
+#Load and aggregate data
+
+Once the data has been moved from the HPC and extracted into a usable format the data can be loaded and aggregated into a single file for speedy access
+
+##Attack data
+
+This takes a very long time.
+Like half an hour
+```{r}
+
+#compile the data into a single data frame from all attack files
+IEEE_118_results <- list.files(path = "/home/jonno/HPC_jobs/IEEE_118_igraph", 
+                                        full.names = TRUE, 
+                                        recursive = TRUE) %>%
+  map_df(~{read_rds(.x) %>%
+           mutate(file_path = dirname(.x)) %>%
+  arrange(-nodes) %>%
+  mutate_at(.vars = 5:8, .funs = first) %>%
+  mutate(has_gc = mean_degree_sqrd > 2*mean_degree) %>%
+  filter(!has_gc) %>%
+  slice(1)
+    })
+
+
+#The previous loop takes a long time so an rds should be saved for speed
+saveRDS(IEEE_118_results, file = file.path("/home/jonno/Dropbox/IEEE_Networks", "IEEE_118_attack_results.rds") )
+
+```
+
+
+##Strain data
+```{r}
+
+#load strain from all individual files
+strain_df <- list.files("/home/jonno/test_strain/IEEE_118_igraph/IEEE_118_igraph", 
+                          full.names = T)%>%
+  map_df(~{
+    
+    elements <- basename(.x) %>% str_remove(pattern = ".rds") %>% str_split(pattern = "_")
+    
+    edge_embeddings <-read_rds(.x)$edge_embeddings  %>%
+      summarise(mean_strain = mean(strain),
+                median_strain = median(strain),
+                mean_tension = mean(tension),
+                median_tension = median(tension)) %>%
+      mutate(fract = elements[[1]][2],
+             carrying_capacity = elements[[1]][4],
+             largest = elements[[1]][6],
+             smallest = elements[[1]][8],
+             robin_hood_mode = elements[[1]][11])
+    
+    return(edge_embeddings)
+    
+  }) %>%
+  mutate(
+    fract = as.numeric(fract),
+    carrying_capacity = as.numeric(carrying_capacity),
+         largest = as.numeric(largest),
+         smallest = as.numeric(smallest),
+         robin_hood_mode = as.logical(robin_hood_mode)) #this needs to be checked when FALSE is present
+
+#The previous loop takes a long time so an rds should be saved for speed
+saveRDS(strain_df, file = file.path("/home/jonno/Dropbox/IEEE_Networks", "strain_df.rds") )
+```
+
+
+#Aggregate and plot IEEE-118 data
+
+The results of this plot show that SETS is less affect by the change in concentration than alpha of load
+```{r}
+
+#using the combined data frame aggregate the results by parameter group
+IEEE_118_agg_res <- readRDS(file = file.path("/home/jonno/Dropbox/IEEE_Networks", "IEEE_118_attack_results.rds") ) %>%
+  group_by(file_path) %>%
+  summarise_all(mean) %>%
+  mutate(mean_alpha = 1/mean_alpha,
+         median_alpha = 1/median_alpha) %>%
+  select(-median_alpha) %>%
+  mutate(carrying_capacity = signif(carrying_capacity),
+         smallest = signif(smallest),
+         largest = signif(largest),
+         fract = signif(fract))
+
+
+#function that finds what fraction of the full range the metric is
+kappa <- function(value){
+  
+  (value-min(value))/(max(value)-min(value))
+  
+}
+
+#convert to range values
+strain_norm_df <- readRDS(file = file.path("/home/jonno/Dropbox/IEEE_Networks", "strain_df.rds") )%>%
+  mutate(#force strain to be relative
+  mean_strain = kappa(mean_strain),
+                median_strain = kappa(median_strain),
+                mean_tension = kappa(mean_tension),
+                median_tension = kappa(median_tension)
+)
+
+#bind the attack and strain data together
+all_metrics_df <- IEEE_118_agg_res %>%
+  left_join(strain_norm_df, by = c("carrying_capacity", "smallest", "largest", "fract", "robin_hood_mode")) %>%
+  rename(harmonic_alpha = mean_loading) %>%
+  filter(!is.na(mean_strain)) %>%
+    pivot_longer(., cols = c("harmonic_alpha", "median_loading", "mean_alpha", "mean_tension", "mean_strain", "median_strain",
+                             "mean_tension", "median_tension"), 
+                 names_to = "metric" ) %>%
+  mutate(embeddings = case_when(
+    grepl("tension|strain", metric) ~ "embeddings",
+    TRUE ~"alpha" 
+  ))
+
+#plot the results for the IEEE-118 data
+all_metrics_df %>%
+   filter(
+        # fract ==1,
+        # carrying_capacity==20
+          ) %>%
+  ggplot(aes(x = value, y = attack_round, colour = as.factor(carrying_capacity), group = metric)) + 
+  geom_point() +
+  facet_wrap(~embeddings + metric) +
+  labs(colour = "Capacity", y = "Attack round", x = "Fraction of total range")+
+  geom_smooth(method = "loess",se = FALSE)
+ggsave(file.path(Figures_path, "IEEE_118_robustness.pdf"))
+
+```
+
+#Model attack data
+
+The loess model created here shows that mean tension is the best predictor of giant component collapse
+```{r}
+  #compare the different metrics in terms of accuracy using a loess model
+  multi_metric <- metric_set(rmse, rsq, mae, smape)
+  results <-unique(all_metrics_df$metric) %>%
+    map_df(~{
+      
+      temp <- all_metrics_df %>%
+        filter(
+          !is.na(value),
+          fract==1,
+          metric ==.x)
+      
+      loess_mod <- loess(formula =attack_round~ value, 
+                         data = temp)
+      
+      model_comp <- temp  %>%
+        mutate(preds = predict(loess_mod)
+        )
+      
+      multi_metric(data = model_comp, truth = attack_round, estimate = preds) %>% 
+        mutate(type = .x)
+      
+    })
+  
+  
+results %>%
+  group_by(.metric) %>%
+  mutate(estimate =kappa(.estimate)) %>%
+  ggplot(aes(x = .metric, y = estimate, colour = type, group = type)) + geom_line() + geom_point()
+```
+
+#Find missing
+
+In the case that some of the data was not calculated properly and has not been created. this code chunk can be used to find the missing files for recalculation
+```{r}
+missing_df <- generate_concentrator_parameters("IEEE_118_igraph") 
+
+
+missing_attack <- missing_df %>%
+  left_join(IEEE_118_results %>% 
+              mutate(missing = FALSE) %>% 
+              rename(fraction = fract) %>% 
+              select(simulation_id:robin_hood_mode, missing)) %>%
+  filter(is.na(missing)) %>%
+  mutate(missing = TRUE)
+#only missing from two groups this is clearly a timing issue
+table(missing_attack$compute_group)
+
+missing_strain <- missing_df %>%
+  filter(simulation_id ==1) %>%
+  left_join(strain_df %>%  
+              mutate(missing = FALSE) %>% 
+              rename(fraction = fract) %>% 
+              select(fraction:robin_hood_mode, missing)) %>%
+  filter(is.na(missing)) %>%
+  mutate(compute_group_strain_2 = 1:n()) %>%
+  select(embeddings_path, 
+          #compute_group_strain,
+         compute_group_strain_2
+         )
+  
+saveRDS(missing_strain, file.path(project_folder, "missing_files", "strain_concentrator.rds"))
+
+
+
+
+```
+
+

@@ -1,0 +1,2686 @@
+---
+title: "Untitled"
+author: "Jonathan Bourne"
+date: "22 March 2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+https://github.com/schochastics/graphlayouts
+
+https://github.com/hackl/tikz-network
+
+
+annpotate points with rectangles
+https://ggforce.data-imaginist.com/reference/geom_mark_rect.html
+
+
+stplanr R package for transport
+https://docs.ropensci.org/stplanr/articles/stplanr-od.html
+
+Origin destination data for London
+http://passenger.data.tfl.gov.uk/
+
+Some bike share stuff that can be used. has data and code. Might only need projection
+https://urbandatacyclist.com/2018/03/15/predicting-route-preferences-in-bike-sharing/
+
+
+#Set up
+```{r Setup}
+
+packages <- c("tidyverse", "igraph","readr","readxl", "broom", "stringr", "xtable", "rlang", "animation", "caret", "sf", "rgdal", "sf", "gstat", "automap", "rayshader", "latex2exp", "yardstick", "minpack.lm", "gganimate", "tmaptools", "rgeos", "raster", "tigris")
+
+new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+
+select <- dplyr::select
+arrange <- dplyr::arrange
+sapply(packages, library, character.only = TRUE)
+
+library(PowerGridNetworking)
+
+#Set up file system to read the correct folders this switches between aws and windows mode
+
+basewd <- "/home/jonno/Dropbox/Jonathan_Bourne_Phd_Folder"
+datafile <- "/home/jonno/Dropbox/Jonathan_Bourne_Phd_Folder/ETYSAppendixB"
+LatexFolder <- "/home/jonno/Dropbox/Apps/ShareLaTeX/Spring Embeddings" 
+FiguresFolder <- file.path(LatexFolder, "Figures")
+TablesFolder <- file.path(LatexFolder, "Tables")
+MatricesFolder <- file.path(LatexFolder, "Matrices")
+Tariff <- file.path(basewd,"Tariff and Transport")
+PLwd <- "/media/jonno/Seagate Expansion Drive/System_Dynamics"
+Deletion_Order_Folder <-  file.path("/home/jonno/Dropbox/AWS_Simulation_Files") #Only one of the deletion order folders is needed. Either Nodes or Edges
+IEEE_Project_folder <- "/home/jonno/Dropbox/IEEE_Networks" #"/media/jonno/Seagate Expansion Drive/IEEE_Networks"
+base_attack_folder <-"/media/jonno/Seagate Expansion Drive/System_Dynamics/Profile_attacks"
+
+#Load necessary datasets and great the base powergrid network
+source(file.path("/home/jonno/ProportionalLoading", "CreateGBase.R"))
+
+#Load some other useful functions
+list.files("/home/jonno/Useful_PhD__R_Functions", pattern = ".R", full.names = T) %>%
+  walk(~source(.x))
+
+list.files("/home/jonno/Flow_Spring_System", pattern = ".R", full.names = T) %>%
+  walk(~source(.x))
+
+VertexMetaData2 <- VertexMetaData %>%
+  mutate(NodeType = case_when(
+    BalencedPower>0 ~"Generator",
+    BalencedPower< 0~"Demand",
+    TRUE ~ "Transfer"
+  ),
+  NodeType2 = case_when(
+    Demand>0 & Generation>0 ~"Hybrid",
+    TRUE ~ NodeType
+  )) %>% select(Name, NodeType, NodeType2, BalencedPower)
+
+
+
+```
+
+#Toy examples
+The values created by this chunk are used for the toys examples in the paper
+```{r}
+    
+all_toys <- tibble(flow = c(10,10,10,10, 0.5, 1, 1,1, 0.5, 0.5), k = c(250,500, 100, 1100, 500,500, 100, 1100,100, 1100))
+toy_res <- 1:nrow(all_toys) %>% 
+  map_df(~{  
+current_settings <- all_toys %>% slice(.x)
+
+    solution_angle <- nlsLM(Force ~ ForceV_from_angle(target_angle, k = k, d = 1), 
+                            start = c(target_angle = pi/4), 
+                            data = list(Force = current_settings$flow, k = current_settings$k), 
+                            upper = pi/2)
+   
+    Out <- current_settings %>%
+      mutate( theta_rads = coef(solution_angle)[1],
+              theta_degs = theta_rads*360/(2*pi),
+              delta_z = tan(theta_rads),
+              delta_h = sqrt(delta_z^2 + 1)-1,
+              strain = signif(delta_h,3) # this is because the distance is 1 and strain = (H-d)/d and H = delta_h+d
+      ) %>%
+      select( theta_rads, theta_degs, delta_z, flow, k, delta_h, strain)
+    
+    return(Out)
+  })       
+
+rm(all_toys); rm(toy_res) #deleted so they don't clutter the work space. They are quick to calculate and are never used again
+   
+```
+
+
+
+#Psychadelic beard/boat
+
+This plots the strain values of a 4 node three edge graph with a constant EC and varying alpha. It shows that strain is more expressive than either alpha, ec or a combination of the two
+
+The code giveing the animation that shows convergence has been lost. The animation is pretty helpful so it is a good idea to do it again.
+```{r}
+
+#The function that calculate the force from the angle
+ForceV_from_angle <- function(target_angle, k, d){
+  #allows us to tune an angle to get a specific force. alternatively we can tune k and d!
+  tibble(H = sqrt(d^2 * (1 + tan(target_angle)^2)),
+         ForceT = k*(H-d), 
+         ForceV = ForceT*sin(target_angle)) %>%
+    pull(ForceV)
+  
+}
+
+#Get all the possible combinations of each edge excluding height data
+fixed_mean_alpha  <- 20:80 %>%
+  map_df(~{
+     BranchEC <-100-.x -20
+    
+     tibble(A = .x,
+           B =10 + BranchEC*(0:100)/100,
+           C = 10 +  BranchEC*(100:0)/100,)
+    
+  } ) %>%
+  mutate(groupID = 1:n()) %>%
+  gather(key = edge, value = capacity, - groupID) %>%
+  left_join(tibble(edge = c("A", "B", "C"), 
+                   flow = c(20,10,10)), #edge flow is always postive! 
+            by = "edge") %>%
+  mutate(alpha = capacity/abs(flow)) %>% #calculate alpha from the flow and edge capacity
+  group_by(groupID) %>%
+  mutate(mean_alpha = mean(alpha),
+         mean_load = mean(1/alpha), #The harmonic mean of alpha aka mean load
+         flow_fract = abs(flow)/sum(ifelse(flow>0,flow,0)),
+         excess_cap = sum(alpha*flow_fract)/3) %>%
+  group_by(mean_alpha) %>%
+  mutate(counts = n(),
+         k = 100*(10-1)*(1-1/alpha)+100,
+         rank = rank(excess_cap, ties.method = "random")) %>% 
+  ungroup 
+
+#Minimise the data down to only the usefully distinct data
+Edge_combos <- fixed_mean_alpha  %>%
+  distinct(alpha, flow, .keep_all = TRUE) %>%
+  mutate(groupID2 = 1:n())
+
+#Calculate heights for each node pair combination
+Edge_combos_delta_z <- Edge_combos$groupID2  %>% 
+  map_df(~{  
+    if((.x/100)%%1 == 0){ (print(.x))} #print every 100
+    
+    current_settings <- Edge_combos   %>%
+      filter(groupID2 == .x)
+    
+    solution_angle <- nlsLM(Force ~ ForceV_from_angle(target_angle, k = k, d = 1), 
+                            start = c(target_angle = pi/4), 
+                            data = list(Force = current_settings$flow, k = current_settings$k), 
+                            upper = pi/2)
+    
+    
+    Out <- current_settings %>%
+      mutate( theta_rads = coef(solution_angle)[1],
+              theta_degs = theta_rads*360/(2*pi),
+              delta_z = tan(theta_rads),
+              delta_h = sqrt(delta_z^2 + 1)-1,
+              strain = delta_h # this is because the distance is 1 and strain = (H-d)/d and H = delta_h+d
+      ) %>%
+      select(groupID, theta_rads, theta_degs, delta_z, flow, alpha, k, delta_h, strain)
+  })  
+
+#calculate the ratio of excess capacity split between B and C then join with the alpha value by group
+#using capcity or 1/alpha gives the same value 
+toy_theta_temp <-  fixed_mean_alpha %>%
+  select(groupID, edge, alpha, counts) %>%
+  spread(key = edge, value = alpha) %>%
+  mutate(
+   B= 1/B, #It appears to make no difference if alpha or load level is used
+    C = 1/C,
+    ratio = (B)/(C+B)) %>%
+  left_join(fixed_mean_alpha %>%
+  select(groupID, mean_alpha, mean_load) %>%
+    distinct) %>%
+    select(-A, -B, -C)
+
+#get combine the previous df's together to get the strain across the system for all combinations
+toy_height_data <- fixed_mean_alpha %>%
+select(groupID, edge, flow, alpha) %>%
+  #add in the height data
+  left_join(Edge_combos_delta_z %>% select(-groupID))  %>%
+  select(groupID, edge, strain) %>%
+  #Use spread to keep the delta values for each edge
+  spread(key = edge, value = strain) %>%
+  mutate(mean_strain = (A+B+C)/3) %>%
+  left_join(toy_theta_temp, by = "groupID")
+
+
+  toy_height_data %>%
+    # some of the mean_alpha values are seperating on machine tolerance or something
+        mutate(mean_alpha = signif(mean_alpha,5)) %>% 
+    #filter(mean_alpha <=2.5) %>%
+    ggplot(aes(x = ratio, y = mean_strain, colour = mean_alpha, group = mean_alpha)) + 
+    geom_line(size = 1) +
+    scale_colour_viridis_c() +
+    labs(title ="Strain and System Tolerance in terms of capacity fraction in edge B", 
+         y = "System Strain", 
+         x= latex2exp::TeX("$\\frac{\\tau_{B}}{\\tau_{B}+\\tau_{C}}$"),
+         colour = "System \ntolerance") #latex2exp::TeX(paste("system", "$\\alpha$"))
+  ggsave(file.path(FiguresFolder, "Constant_excess_capacity.pdf"))
+
+"Relationship between alpha, excess capacity and theta"
+
+latex2exp::TeX(paste("The relationship between strain and ", 
+                                     "$\\alpha \\,$", 
+                                     " in terms of capacity fraction in edge B" ))
+
+
+#This is the mean load.... What the hell is going on?
+  toy_height_data %>%
+    mutate(mean_load = signif(mean_load,3)) %>% 
+    ggplot(aes(x = ratio, y = mean_strain, colour = mean_load)) + 
+    geom_point() +
+    scale_colour_viridis_c()
+  
+  
+  #The relationship between load and strain is wierd and looks similar to entropy
+    toy_height_data %>%
+   mutate(mean_load = signif(mean_load,5)) %>% 
+    ggplot(aes(colour = mean_alpha, y = mean_strain, x = mean_load, group = mean_alpha)) + 
+    geom_line(size = 1)+
+    scale_colour_viridis_c() +
+      scale_x_reverse()
+
+toy_height_data %>%
+  filter((mean_strain == min(mean_strain)))
+
+fixed_mean_alpha %>%
+  filter(groupID==2879)
+
+
+test <- toy_height_data %>%
+  group_by(alpha = round(mean_alpha,5)) %>%
+  summarise(min_strain = min(mean_strain),
+            max_strain = max(mean_strain)) %>%
+  mutate(strain_diff = (min_strain-max_strain)/min_strain,
+         strain_rat = max_strain/min_strain)
+
+test %>%
+ggplot(aes(x = alpha, y = strain_rat)) +
+  geom_line()
+```
+
+##Entropic degree
+```{r}
+
+entropy_data <- fixed_mean_alpha %>%
+  group_by(groupID) %>%
+  mutate(p_capacity = capacity/sum(capacity), #fraction of total capacity
+         p_alpha = alpha/sum(alpha), #fraction of total alpha
+         entrop_capacity = -p_capacity*log(p_capacity), #
+         entrop_alpha = -p_alpha*log(p_alpha)) %>%
+  summarise(capacity = sum(entrop_capacity),
+            alpha = sum(entrop_alpha)) %>%
+  #normalise the entropy relative to the highest value
+  mutate(capacity = capacity/max(capacity), 
+         alpha = alpha/max(alpha))
+
+toy_height_data %>%
+  select(groupID, mean_strain, mean_alpha) %>%
+  left_join(entropy_data) %>%
+  gather(key = type, value = div, -mean_strain, - mean_alpha,-groupID ) %>%
+    mutate(mean_alpha = signif(mean_alpha,5)) %>%  # some of the mean_alpha values are seperating on machine tolerance or something
+  filter(type =="capacity") %>%
+  ggplot(aes(x = div, y = mean_strain, colour = mean_alpha, group = mean_alpha)) + 
+  geom_line(size = 1) +
+  scale_colour_viridis_c() +
+  facet_grid(~type) +
+  labs(title = "The relationship between strain, system tolerance and entropy", 
+       x = "Normalised entropy", 
+       y ="system strain", 
+       colour =  "Sytem tolerance")
+ggsave(file.path(FiguresFolder, "entropy_theta.pdf"))
+
+
+
+test <- toy_height_data %>%
+  select(groupID, mean_strain, mean_alpha) %>%
+  left_join(entropy_data)
+
+rm(entropy_data)
+```
+
+##The square
+```{r}
+
+alpha_values <- c(1,Inf, 1.05, 1.1, 2, 5)
+
+edge_alpha <- expand.grid(AB_alpha =alpha_values, AC_alpha =alpha_values, BD_alpha =alpha_values, CD_alpha =alpha_values) %>% 
+  as_tibble  %>%
+  mutate(ID = 1:nrow(.),
+         alpha = (AB_alpha+AC_alpha+BD_alpha+CD_alpha)/4,
+         capacity = (AB_alpha*15+AC_alpha*15+BD_alpha*5+CD_alpha*5) ) 
+%>%
+  filter(AB_alpha >=AC_alpha)
+
+grid_search_alpha <- 1:nrow(edge_alpha) %>% map_df(~{
+  #set up graph
+square_g <- tibble(from = c("A", "A", "B", "C"), 
+                   to = c("B","C", "D", "D"), 
+                   Link = paste0(from, to),
+                   flow = c(15,15,5,5),
+                   alpha = edge_alpha[.x,1:4] %>% as.numeric(), #545 is a good choice of row for testing
+                   capacity = flow*alpha) %>%
+  graph_from_data_frame(directed = FALSE)
+
+#addin missing attributes
+ square_g2 <-set.vertex.attribute(square_g, "Generation", value = c(30,-10,-10,-10))%>%
+   set.edge.attribute(., "distance", value = 1) %>%
+    Calc_Spring_Youngs_Modulus(., Force = "flow", Capacity = "capacity", 400, 40) %>%
+    set.edge.attribute(., "Area", value = 1)
+
+  #this needs to be normalised
+
+#find equilibrium
+ ptm <- proc.time()
+ Square_heights <- Find_network_balance(square_g2, force = "Generation",
+                                        flow = "flow",
+                                        capacity = "capacity",
+                                        tstep = 0.001, tol = 1e-10, distance = "distance", 
+                                        maxIter = 4000, mass = 1)
+
+# Stop the clock
+elapsed_time <-proc.time() - ptm
+#add iteration number and return
+ Out <- Square_heights$NodeList %>%
+   mutate(ID = .x,
+          elapsed_time = elapsed_time[3])
+ 
+ return(Out)
+ 
+ })
+ 
+write_rds(grid_search_alpha,file.path(PLwd, "grid_search_alpha.rds"))
+
+ Square_heights$results %>%
+   ggplot(aes(x = t, y = z)) + geom_line()
+   
+ grid_search_alpha %>%
+  ggplot(aes(x = z, colour = node)) + geom_density() +
+   labs(title = "Density of node height for the square graph")
+ 
+test <- grid_search_alpha %>% as_tibble %>%
+  select(node, z, ID) %>%
+  spread(key = node, value = z) %>%
+   mutate(AB_strain = sqrt((A-B)^2+1)-1,
+          AC_strain = sqrt((A-C)^2+1)-1,
+          BD_strain = sqrt((B-D)^2+1)-1,
+          CD_strain = sqrt((C-D)^2+1)-1,
+          strain = (AB_strain+AC_strain+BD_strain+CD_strain)/4) %>%
+   left_join(edge_alpha) %>%
+  mutate(joint = paste(alpha, capacity))
+
+test2 <- test %>%
+  group_by(joint) %>%
+  summarise(counts = n(),
+            strain_max = max(strain),
+            strain_min = min(strain)) %>%
+  mutate(diff = strain_max-strain_min)
+
+strain_sum = test %>%
+  mutate(strain = round(strain, 5)) %>%
+ # filter(strain ==0.01006)
+  group_by(strain, joint) %>%
+  summarise(counts = n())
+
+test %>%
+ # filter(alpha<1.2) %>%
+  ggplot(aes(colour = strain, y = alpha, x = (capacity), group = alpha)) +geom_point() +
+  scale_color_viridis_c()
+
+
+test2<- test %>%
+  filter(#capacity<50,
+         alpha<1.2)
+
+```
+
+
+##Convergance visualisation
+I am not sure if I really need to have this in the paper
+```{r}
+
+nodes_4_3 <- tibble(name = 1:4, Generation = c(20, 0,0,0), Demand = c(0,0,10,10), force = c(20, 0, -10, -10),
+                    norm_force = c(1, 0, -0.5, -0.5))
+
+
+g_4_3 <- matrix(c(0, 1, 0,0,
+          1,0,1,1,
+         0,1,0,0,
+         0,1,0,0), nrow = 4) %>%
+  graph_from_adjacency_matrix(., mode = "undirected") %>%
+  as_data_frame() %>% as_tibble %>%
+  mutate(Link = LETTERS[1:3],#c("M_1", "Z_2", "A_3"),#LETTERS[1:3], #this is to check edge ordering the alpha ordering is A, M,Z
+         alpha = c(1,1,7),
+         flow = c(20,10,10),
+         norm_flow = c(1,0.5,0.5),
+         capacity = alpha*flow,
+         norm_capacity = norm_flow*alpha) %>%
+  graph_from_data_frame(., directed = FALSE, vertices = nodes_4_3) %>% 
+  set.edge.attribute(., "distance", value = 1) %>%
+  Calc_Spring_Youngs_Modulus(., "flow", "capacity", minimum_value = 10, stretch_range = 100) %>%
+  set.edge.attribute(., "Area", value = 1) %>%
+  set.edge.attribute(., "Y", value = 1/c(1:3))%>%
+  set.vertex.attribute(., "name", value = c("Generation", "Transfer", "Demand 1", "Demand 2")) 
+
+  #use the largest block to set the simulation parameters k and m.
+  #k needs to be sufficiently stretch to allow enough topology variation. otherwise all that happens is a surface angled in the direct of net power flow. Which is interesting but not that interesting
+simple_converge <- Find_network_balance_expanded(g_4_3, 
+                                                 force = "force", 
+                                                 flow ="flow", 
+                                                 #capacity = "capacity", 
+                                                 tstep = 0.01,
+                                                 distance = "distance", 
+                                                 mass = 1, 
+                                                 maxIter = 250,
+                                                 frctmultiplier = 1)
+
+
+simple_converge %>%
+ # filter(t<400) %>%
+  ggplot(aes(y = z, x = t, colour = node)) + geom_line()
+ 
+```
+
+
+#I need to re-calc all of the IEEE scramble values! they have all gone or something I don't understand
+#IEEE118
+
+This section uses the IEEE_118 network to demonstrate that strain is a proxy for the robustness of the network under random attack.
+
+##plot IEEE118
+
+```{r}
+
+IEEE_118 <- readRDS(file.path(IEEE_Project_folder,"IEEE_network_files", "IEEE_118_igraph.rds"))
+
+#change index value back to 16. value is only 1 for test reasons
+
+#set node coordinates for IEEE118
+set.seed(2664)
+IEEE118_heights <- IEEE_118 %>%
+    as_data_frame(.) %>%
+    select(from, to, Link, PowerFlow) %>%
+    gather(key = "type", value = "Node",-Link,-PowerFlow) %>%
+  left_join(layout_with_fr(IEEE_118) %>% 
+    as_tibble %>% 
+    mutate(Node = names(V(IEEE_118)))) %>%
+  left_join(as_data_frame(IEEE_118, what = "vertices") %>%
+  rename(Node = name)) %>%
+  mutate(type = case_when(
+    Net_Generation>0~"Generator",
+    Net_Generation<0~"Demand",
+    TRUE~"Transfer"
+  )
+  ) %>%
+  left_join(., list.files(file.path(IEEE_Project_folder, "Solved_height_networks_PL"), full.names = TRUE)[1] %>%
+  read_rds(), by = c("Node"="node")
+  ) %>%
+  mutate(height_perc = percent_rank(z))
+
+
+
+#Plot IEEE118 with fruchtman reingold expansion 
+IEEE118_heights %>%
+  ggplot(aes(x = V1, y = V2, group = Link)) + 
+  geom_line() + #aes(colour = abs(PowerFlow)) 
+  geom_point(aes(colour = height_perc, shape = type ), size =3)+
+  labs(title = "IEEE118 power flow and node type, using Fruchtman Reingold expansion",
+       shape = "Node type",
+       colour = "Height Percentile") +
+  scale_colour_viridis_c() +
+  theme(axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank())
+  ggsave(file.path(FiguresFolder, "IEE118_map.pdf"))
+  
+#system strain is 
+  
+```
+
+##Strain alpha relationship
+
+```{r}
+fract_vect <- c(1, 0.75, 0.5, 0.25)
+
+#Load the target orders for the different fraction scrambles
+target_orders<- list.files(file.path(IEEE_Project_folder, "target_orders_orig"), full.names = TRUE) %>%
+  map_df(~read_rds(.x))
+
+#target_orders  <- readRDS(file.path(IEEE_Project_folder, "target_orders.rds"))
+
+IEEE_118_dist <- IEEE_118 %>%
+  set.edge.attribute(., "distance", value = 1)%>%
+  set.edge.attribute(., "Link.Limit", value = Inf)
+
+
+#Loads the strain from proportionally loaded IEEE networks. These strain include infinity and 1 alpha values
+IEEE_strain_by_alpha_PL <- list.files(file.path(IEEE_Project_folder, "Solved_height_networks_PL"), full.names = TRUE) %>%
+  map_df(~{
+    read_rds(.x) %>%
+    Calc_line_strain(IEEE_118_dist , ., distance = "distance", capacity = "Link.Limit", flow = "PowerFlow") %>%
+      summarise(strain = mean(strain)) %>%
+    #angle_from_solved_heights(.) %>%
+    mutate(alpha = basename(.x),
+           )  
+  }) %>%
+  mutate(alpha = gsub("IEEE_118_alpha_", "", alpha) %>%
+           gsub(".rds", "",.) %>% as.numeric())
+
+#Scrambled strain heights. Loads all the scramble fractions
+
+#This creates a dataframe of height files to load. it makes the code for loading mucheasier to understand  
+height_files_to_load <- fract_vect %>%
+  map_df(~{
+       
+    load_folder <- paste0("constant_ec_from_alpha_fract_", .x )
+    
+  all_fractions <- list.files(file.path(IEEE_Project_folder, load_folder), recursive = TRUE) %>%
+    tibble(file_path = .) %>%
+  mutate(v = basename(file_path),
+         ec = file_path %>% dirname(.),
+         fract = .x)
+         
+  }) %>%
+  mutate(v = gsub("(IEEE_118_alpha_)|(.rds)", "", v ) %>% as.integer(),
+         ec =  sub("Solved_height_networks_alpha_", "", ec ) %>% as.numeric())
+
+#Use the previously generated dataframe to load all the solved height networks and find the strain
+IEEE_strain_by_alpha_ec <- 1:nrow(height_files_to_load) %>%
+  map_df(~{
+    
+    load_file <- height_files_to_load %>% slice(.x)
+    
+    file_path <- file.path(IEEE_Project_folder,
+                           paste0("constant_ec_from_alpha_fract_", load_file$fract ), load_file$file_path )
+    
+    Out <- read_rds(file_path) %>%
+    Calc_line_strain(IEEE_118_dist , ., distance = "distance", capacity = "Link.Limit", flow = "PowerFlow") %>%
+      summarise(strain = mean(strain)) %>%
+      bind_cols(load_file, .)
+    
+    return(Out)
+  }) %>%
+  select(-file_path)
+
+#this is not used again so is removed here
+rm(height_files_to_load)
+```
+
+
+##load all sims and find critical threshold
+
+Data loaded from Create_IEEE_networks.Rmd
+
+##Extract Nodes version
+```{r}
+
+critical_threshold <- function(g){
+  #finds the critical threshold according to the molly reed criterion
+  node_degree <-degree(g)
+  k2_over_k <- mean(node_degree^2)/mean(node_degree)
+  
+  Out <- 1- 1/(k2_over_k-1)
+  
+  return(Out)
+}
+
+
+critical_threshold2 <- function(g){
+  #finds the critical threshold according to the molly reed criterion
+  node_degree <-degree(g)
+
+    Out <- (mean(node_degree^2) - 2*mean(node_degree))>0
+
+  return(Out)
+}
+
+
+#perc of nodes that need to be removed to lose giant component
+critical_threshold(IEEE_118)
+
+#remaining nodes
+IEEE_118_critical <- round(118- critical_threshold(IEEE_118)*118, 0)
+
+#Proportional loading
+ExtractAttackStats(file.path(IEEE_Project_folder, "IEEE118"), 
+                   file.path(IEEE_Project_folder, "SummaryData"),
+                   Generation = "Net_Generation",
+                   EdgeName = "Link")
+
+
+
+list.dirs(file.path(IEEE_Project_folder,"IEEE_permute_edge_ec"), recursive = F) %>%
+  walk(~{
+    
+    #scrambled edges alpha 2
+    ExtractAttackStats(.x, 
+                       file.path(IEEE_Project_folder, "SummaryData_ec_alpha_2", basename(.x)),
+                       Generation = "Net_Generation",
+                       EdgeName = "Link")
+    
+  })
+
+#scrambled edges alpha 2
+ExtractAttackStats(file.path(IEEE_Project_folder, "IEEE1118_const_ec"), 
+                   file.path(IEEE_Project_folder, "SummaryData_ec_alpha_2"),
+                   Generation = "Net_Generation",
+                   EdgeName = "Link")
+
+
+
+AttackRoundData <- list.files(path = file.path(IEEE_Project_folder,"SummaryData"), 
+                              pattern = ".rds", 
+                              full.names = TRUE) %>%
+   map_df(~read_rds(.x))   %>%
+  arrange(-TotalNodes) %>%
+  filter(TotalNodes<= IEEE_118_critical) %>%
+  group_by(simulationID, alpha) %>%
+  summarise_all(first) %>%
+  mutate(alpha = gsub("alpha_value_", "", alpha) %>% 
+           as.numeric()/100)
+
+
+
+AttackRoundData_ec_alpha_ec <- list.dirs(file.path(IEEE_Project_folder,"SummaryData_ec_alpha_2"), recursive = F) %>%
+  map_df(~{
+    
+    list.files(.x, full.names = TRUE) %>%
+      map_df(~read_rds(.x))     %>%
+  arrange(-TotalNodes) %>%
+  filter(TotalNodes<= IEEE_118_critical) %>%
+  group_by(simulationID, alpha) %>%
+  summarise_all(first) %>%
+      mutate(alpha_class = basename(.x))
+    
+  }) %>%
+  group_by(alpha, alpha_class) %>%
+  summarise(NodesAttacked = mean(NodesAttacked)) %>%
+  ungroup %>%
+  mutate(v = alpha %>% gsub("constant_ec_v", "", .) %>%
+           as.numeric(.),
+         ec = alpha_class %>% gsub("alpha_value_", "", .) %>%
+           as.numeric(.)/100) %>%
+  select(-alpha) %>%
+  left_join(target_orders, by = c("ec", "v"))
+
+
+
+
+
+```
+
+##Extract Edges version
+```{r}
+
+    if(!file.exists(file.path(IEEE_Project_folder, "Edge_Attack_Summaries_PL"))){
+      dir.create(file.path(IEEE_Project_folder, "Edge_Attack_Summaries_PL"))
+    }
+
+#Proportional loading
+ExtractAttackStats(file.path(IEEE_Project_folder, "IEEE118_edges"), 
+                   file.path(IEEE_Project_folder, "Edge_Attack_Summaries_PL"),
+                   Generation = "Net_Generation",
+                   EdgeName = "Link")
+
+
+#Extract the scrambled edges
+
+if(!file.exists(file.path(IEEE_Project_folder, "Edge_Attack_Summaries_by_fraction"))){
+  dir.create(file.path(IEEE_Project_folder, "Edge_Attack_Summaries_by_fraction"))
+}
+
+fract_vect %>%
+  walk(~{
+    
+    #select the fraction of scrambles to choose
+    load_folder <- paste0("IEEE_permute_edge_ec_Edge_fract_", .x ) 
+    print(load_folder)
+    
+    Summary_folder <- file.path(IEEE_Project_folder, "Edge_Attack_Summaries_by_fraction",
+                                paste0("Summary_IEEE_permute_edge_ec_Edge_fract_", .x))
+    
+    #Create the summary folder for that fraction
+    if(!file.exists(Summary_folder)){
+      dir.create(Summary_folder)
+    }
+    
+    list.dirs(file.path(IEEE_Project_folder, load_folder), recursive = F) %>%
+      walk(~{
+        
+        
+        #extract everything from each of the sub folders of each fraction
+        ExtractAttackStats(.x, 
+                           file.path(Summary_folder, basename(.x)),
+                           Generation = "Net_Generation",
+                           EdgeName = "Link")
+        
+      })
+    
+  })
+
+
+
+#I have managed to delete the attack round data! get it back from github asap!
+
+AttackRoundData <- list.files(path = file.path(IEEE_Project_folder,"Edge_Attack_Summaries_PL"), 
+                              pattern = ".rds", 
+                              full.names = TRUE) %>%
+   map_df(~read_rds(.x))   %>%
+  arrange(-TotalNodes) %>%
+    mutate(has_gc = mean_degree_sqrd > 2*mean_degree) %>%
+    filter(!has_gc) %>%
+    group_by(simulationID, alpha) %>%
+    summarise_all(first) %>%
+  mutate(alpha = gsub("alpha_value_", "", alpha) %>% 
+           as.numeric()/100)
+
+AttackRoundData_ec_alpha_ec <- list.files(path = file.path(IEEE_Project_folder,"Edge_Attack_Summaries_by_fraction"), 
+                                pattern = ".rds", 
+                                full.names = TRUE, 
+                                recursive = TRUE) %>%
+    map_df(~read_rds(.x)%>%
+             mutate(file_path = .x))   %>%
+    arrange(-TotalNodes) %>%
+    mutate(has_gc = mean_degree_sqrd > 2*mean_degree) %>%
+    filter(!has_gc) %>%
+    group_by(simulationID, file_path) %>%
+    summarise_all(first) %>% ungroup %>%
+    mutate(v = basename(file_path) %>% gsub("constant_ec_v", "", .) %>%
+             gsub(".rds", "", .) %>%  as.numeric(.),
+           ec = dirname(file_path) %>% basename() %>% gsub("alpha_value_", "", .) %>% 
+             as.numeric()/100,
+           fract = dirname(file_path) %>% dirname() %>% basename() %>% 
+             gsub("Summary_IEEE_permute_edge_ec_Edge_fract_", "", .) %>% 
+             as.numeric() ) %>%
+  group_by(ec, v, fract) %>%
+  summarise(NodesAttacked = mean(NodesAttacked)) %>%
+  left_join(target_orders %>% rename(fract = scramble_fract), by = c("ec", "v", "fract"))
+```
+
+
+##plot scramble results
+```{r}
+relative_position <- function(strain_vect, ref_strain_vect){
+  #this function finds the relative fraction of strain compared to the absolute max and min values of that parameter
+  #strain_vect a numeric value of the mean strain of a network
+  #ref_strain_vect a vector of values of at least two inclduing the strain in the network when k = c and k = RC
+  (strain_vect-min(ref_strain_vect))/(max(ref_strain_vect)-min(ref_strain_vect))
+  
+}
+
+#get the mean number of edges attacked per line loading alpha
+theta_crit_thresh <- AttackRoundData %>%
+  group_by(alpha) %>%
+  summarise_all(mean) %>%
+  left_join(IEEE_strain_by_alpha_PL) %>%
+  mutate(alpha = 1/alpha,
+         orig_strain = strain,
+     strain =   relative_position(strain, IEEE_strain_by_alpha_PL$strain) 
+     ) %>%
+  mutate(true_alpha = 1/alpha)
+
+#get the mean number of elements attacked for each of the hundred random attacks per scramble
+theta_crit_thresh_ec_2 <- AttackRoundData_ec_alpha_ec  %>%
+  left_join(IEEE_strain_by_alpha_ec %>% 
+              mutate(ec = ec %>% as.numeric(.)/100)) %>%
+  mutate(alpha = 1/alpha,
+                  orig_strain = strain,
+         strain =  relative_position(strain, IEEE_strain_by_alpha_PL$strain) #strian is blanked out for testing remove to make relative!
+         ) 
+
+#reshape so that the alpha and strain values can be plotted
+{
+PropLoad_line <- theta_crit_thresh %>%
+  select(alpha, NodesAttacked, strain) %>%
+  gather(key = type, value = value, -NodesAttacked) 
+  
+ PropLoad_line <-  bind_rows(PropLoad_line %>%
+  mutate(type = ifelse(type=="alpha" , "alpha[sys]", "1/kappa~strain"), 
+         bounded = FALSE),
+  PropLoad_line %>% 
+  mutate( type = ifelse(type=="alpha" , "1/alpha[sys]", "kappa~strain"), 
+          value = 1/value,
+          bounded = TRUE)) %>%
+   mutate(type = factor(type, levels = c("1/alpha[sys]", "kappa~strain", "alpha[sys]", "1/kappa~strain")),
+          Edge_perc = NodesAttacked/ecount(IEEE_118))
+
+#reshape so that the alpha and strain values can be plotted
+
+ scrambled_ec_points <- theta_crit_thresh_ec_2 %>% ungroup %>%
+               select(alpha, NodesAttacked, strain = strain, ec, v,fract) %>%
+               gather(key = type, value = value, -NodesAttacked, -ec, -v, -fract) %>%
+  mutate(ec = factor(ec)#,
+         #type = type %>%factor(., labels = c("1/alpha[sys]", "kappa~strain"))
+         ) %>%
+  mutate(alpha_limit = case_when(
+    v == 1~ "min",
+    v == 10~"max",
+    TRUE ~"0ther"
+  ))
+
+  scrambled_ec_points <-  bind_rows(scrambled_ec_points %>%
+  mutate(type = ifelse(type=="alpha" , "alpha[sys]", "1/kappa~strain"),
+          bounded = FALSE),
+  scrambled_ec_points %>% 
+  mutate( type = ifelse(type=="alpha" , "1/alpha[sys]", "kappa~strain"), 
+          value = 1/value,
+          bounded = TRUE)) %>%
+   mutate(type = factor(type, levels = c("1/alpha[sys]", "kappa~strain", "alpha[sys]", "1/kappa~strain")),
+          Edge_perc = NodesAttacked/ecount(IEEE_118))
+
+}
+
+
+#THis piece of code is just to plot the 50% scramble as well. I can delete when I understand what is going on
+theta_crit_thresh_ec_2  %>%
+  filter(ec %in% c(1.1,1.2,1.5,2)) %>%
+  ggplot(aes(y = alpha, x = orig_strain, colour = factor(ec), shape = factor(fract))) + 
+  geom_point() +
+  labs(title = "Analysing the spread of outcomes for mean loading and relative strain", 
+       colour = "Original\nsystem\ntolerance")  
+
+#plot the data to show that the strain value has a closer relationship to the proportional load than the alpha value does for both high and low values of strain.
+PropLoad_line  %>%
+  filter(bounded) %>%
+  ggplot(aes(x = 1/value, y = Edge_perc)) + 
+  geom_point(data = scrambled_ec_points %>% filter(bounded),
+             aes(colour = ec)) +
+    geom_path() +
+  geom_smooth(data = scrambled_ec_points %>% filter(bounded), se = FALSE, colour = "black", linetype = 2) +
+  facet_wrap(~type, labeller = label_parsed) + #parsing shows the plotmath
+  labs(title = "Analysing the spread of outcomes for mean loading and relative strain", 
+       y = "Fraction of Edges Attacked", x = "metric value",
+       colour = "Original\nsystem\ntolerance")  
+ggsave(file.path(FiguresFolder, "NodesAttacked_Strain_alpha_small_ec_118.pdf"))
+
+PropLoad_line %>%
+  filter(!bounded) %>%
+  ggplot(aes(y = 1/value, x = NodesAttacked)) + 
+  geom_path() +
+    geom_smooth(data = scrambled_ec_points %>% filter(!bounded), se = FALSE, colour = "black", linetype = 2) +
+  geom_point(data = scrambled_ec_points %>% filter(!bounded),
+             aes(colour = ec)) +
+  facet_wrap(~type, labeller = label_parsed) + #parsing shows the plotmath
+  labs(title = "Analysing the spread of outcomes for alpha and one over relative strain", 
+       x = "Edges Attacked", y = "metric value") +
+  coord_cartesian(ylim = c(0,200))
+ggsave(file.path(FiguresFolder, "NodesAttacked_Strain_alpha_large_ec_118.pdf"))
+
+#This shows that the extrema from each group act as a boundary to the scrambled loads
+PropLoad_line %>%
+  filter(bounded) %>%
+  ggplot(aes(y = 1/value, x = NodesAttacked)) + 
+  geom_path() +
+ # geom_line(data = scrambled_ec_points, aes(group = factor(v), colour = ec)) +
+  geom_point(data = scrambled_ec_points %>%  filter(bounded),
+             aes(colour = alpha_limit)) +
+  facet_wrap(~type, scales = "free", labeller = label_parsed) + #parsing shows the plotmath
+  labs(title = "Comparing strain for different alpha and excess capacity levels", 
+       y = "Edges Attacked") 
+
+```
+
+
+#UK map 
+
+##Set up UK Graph
+```{r}
+
+g <- RemoveDeadEnds(gbase) #remove non-valid ends from the graph
+#Ensure there is powerflow
+SlackRef <- SlackRefFunc(g) #find the most appropriate node to be the slack bus
+g <- PowerFlow(g, SlackRef$name) #calculate power flow
+
+test <- as_data_frame(g, what = "vertices")
+
+#useful at various stages
+energy_types <- c("Coal", "Gas", "Renewable", "Nuclear")
+sim_names <- paste0("No_", energy_types)
+```
+
+##UK strain
+
+###PL
+```{r}
+
+mean_alpha <- as_data_frame(g) %>%
+  mutate(alpha = abs(PowerFlow/Link.Limit) ) %>%
+  pull(alpha) %>% mean(.) %>%
+  {1/.} %>% signif(.,3)
+
+c(1, Inf, mean_alpha) %>% walk(~{
+  
+  alpha <- .x
+  
+  filename <- file.path(PLwd, "UK_strains", paste0("base_load_", alpha, ".rds"))
+  
+  print(paste("alpha value", alpha))
+  if(!file.exists(filename)){
+    
+  current_graph  <- g %>%
+    set.edge.attribute(. , "distance", value = 1) %>%
+    Calc_Spring_Youngs_Modulus(., "PowerFlow", "Link.Limit", minimum_value = 100, stretch_range = 1000) %>%
+    set.edge.attribute(., "Area", value = 1) %>%
+  Normalize_load(., EdgeName = Link, VertexName = name, Net_Generation = BalencedPower, capacity = Link.Limit,
+                         Generation = Generation, Demand = Demand)#%>%
+#set.edge.attribute(., "flow", value = get.edge.attribute(., "PowerFlow"))
+  
+  List_of_BiConComps <- Create_balanced_blocks(current_graph, force = "BalencedPower")
+
+  #Finds which of the components is the giant component so it can be used as the baseline
+      giant_componant <-List_of_BiConComps %>% map_dbl(~vcount(.x)) %>% which.max()
+      
+      #use the largest block to set the simulation parameters k and m.
+      #k needs to be sufficiently stretch to allow enough topology variation. otherwise all that happens is a surface angled in the direct of net power flow. Which is interesting but not that interesting
+      OriginBlock_complete <- Find_network_balance(g = List_of_BiConComps[[giant_componant]], 
+                                                   force ="BalencedPower",
+                                                   flow = "PowerFlow",
+                                                   distance = "distance",
+                                                   capacity = "Link.Limit",
+                                                   tstep = 0.05, 
+                                                   tol = 1e-10, 
+                                                   maxIter = 20000, 
+                                                   mass = 1)
+      
+      final_z <- Create_stabilised_blocks(g = current_graph, 
+                                          OriginBlock = OriginBlock_complete,
+                                          OriginBlock_number = giant_componant, 
+                                          force ="BalencedPower",
+                                          flow = "PowerFlow",
+                                          distance = "distance",
+                                          capacity = "Link.Limit",
+                                          tstep = 0.01, 
+                                          tol = 1e-10, 
+                                          maxIter = 20000, 
+                                          mass = 1)
+  
+  write_rds(final_z, filename)
+  
+  }#end if statement
+  
+})
+
+```
+
+
+Shoe that there is low corellation betweeen line strain and alpha
+###Base Load
+```{r}
+
+#create a sub graph that includes all the bicomponent of a node except the one that includes the active bi-comp
+
+filename <- file.path(PLwd, "UK_strains", "UK_power_grid_base.rds")
+
+if(file.exists(filename)){
+  final_z <- read_rds(filename)
+} else{
+  
+ current_graph  <- g %>%
+    set.edge.attribute(. , "distance", value = 1) %>%
+    Calc_Spring_Youngs_Modulus(., "PowerFlow", "Link.Limit", minimum_value = 100, stretch_range = 1000) %>%
+    set.edge.attribute(., "Area", value = 1) %>%
+  Normalize_load(., EdgeName = Link, VertexName = name, Net_Generation = BalencedPower, capacity = Link.Limit,
+                         Generation = Generation, Demand = Demand)#%>%
+#set.edge.attribute(., "flow", value = get.edge.attribute(., "PowerFlow"))
+  
+  List_of_BiConComps <- Create_balanced_blocks(current_graph, force = "BalencedPower")
+
+  #Finds which of the components is the giant component so it can be used as the baseline
+      giant_componant <-List_of_BiConComps %>% map_dbl(~vcount(.x)) %>% which.max()
+      
+      #use the largest block to set the simulation parameters k and m.
+      #k needs to be sufficiently stretch to allow enough topology variation. otherwise all that happens is a surface angled in the direct of net power flow. Which is interesting but not that interesting
+      OriginBlock_complete <- Find_network_balance(g = List_of_BiConComps[[giant_componant]], 
+                                                   force ="BalencedPower",
+                                                   flow = "PowerFlow",
+                                                   distance = "distance",
+                                                   capacity = "Link.Limit",
+                                                   tstep = 0.05, 
+                                                   tol = 1e-10, 
+                                                   maxIter = 20000, 
+                                                   mass = 1)
+      
+      final_z <- Create_stabilised_blocks(g = current_graph, 
+                                          OriginBlock = OriginBlock_complete,
+                                          OriginBlock_number = giant_componant, 
+                                          force ="BalencedPower",
+                                          flow = "PowerFlow",
+                                          distance = "distance",
+                                          capacity = "Link.Limit",
+                                          tstep = 0.01, 
+                                          tol = 1e-10, 
+                                          maxIter = 20000, 
+                                          mass = 1)
+  
+  write_rds(final_z, filename)
+  
+}
+
+
+
+
+```
+
+##Fiddle with strain
+```{r}
+
+#Is the strain power law distributed?
+line_strain <-set.edge.attribute(g, "distance", value = 1) %>%
+  Calc_line_strain(., final_z, distance= "distance", "Link.Limit", flow = "PowerFlow")
+
+
+mean(line_strain$strain)
+
+cor(line_strain$dz, line_strain$strain)
+cor(line_strain$line_load, line_strain$strain)
+
+z_network_map <-MakeMapDF(g, read_csv(file.path(basewd, "point.csv")))  %>%
+  left_join(line_strain, by = c("Link"))%>%
+   left_join(., final_z %>% select(node, z), by = c("Node"= "node")) 
+
+
+z_network_map <-MakeMapDF(g, read_csv(file.path(basewd, "point.csv")))  %>%
+  left_join(line_strain, by = c("Link"))%>%
+   left_join(., final_z %>% select(node, z), by = c("Node"= "node")) %>%
+  mutate(percentile_load = percent_rank(line_load))
+
+z_network_map %>%
+  select(Longitude, Latitude, percentile_load, percentile_strain,PositionType, Link) %>%
+  gather(key = edge_method, value = value, percentile_load:percentile_strain) %>%
+    ggplot(aes(x = Longitude, y = Latitude)) + 
+  geom_line(aes(group = Link, colour = value), size = 0.8) + 
+   facet_grid(edge_method~PositionType) + 
+ # geom_point( aes(x = Latitude, y = Longitude, colour = percent_rank(z))) + 
+  scale_color_viridis_c()+
+  ggtitle("Strain map")
+
+
+test <- node_height_edge_strain(set.edge.attribute(g, "distance", value = 1), 
+                  final_z, 
+                  MakeMapDF(g, read_csv(file.path(basewd, "point.csv")))  %>%
+                    filter(PositionType=="Geo Space"), distance)
+
+test2 <- test$edge_strain
+
+
+node_z <-z_network_map %>% as_tibble %>%
+  filter(PositionType=="Geo Space") %>%
+  select(Node, Longitude, Latitude, z) %>%
+  distinct(.keep_all = T) #%>%
+ # left_join(Generator_details)
+
+#only used for edge voronoi
+# edge_z <-z_network_map %>% as_tibble %>%
+#   filter(PositionType=="Geo Space") %>%
+#   select(Longitude, Latitude, z, Link) %>%
+#   group_by(Link) %>%
+#   summarise_all(mean)
+
+#Thifs is the strain of the network on each edge. It allows us to see the slope of the network
+edge_strain <- z_network_map %>% as_tibble %>%
+  filter(PositionType=="Geo Space") %>%
+  select(Longitude, Latitude, z = strain, Link) %>%
+  group_by(Link) %>%
+  summarise_all(mean)
+
+node_z2 <- node_z %>%
+  left_join(VertexMetaData %>% rename(Node = Name)) %>%
+  #all of this is to find the mid point
+  arrange(Latitude) %>%
+  mutate(lat_cumsum = cumsum(ifelse(BalencedPower>0, BalencedPower, 0)),
+         lat_rev_cumsum = rev(lat_cumsum),
+         lat_diff = lat_cumsum - lat_rev_cumsum,
+         lat_abs_diff = abs(lat_diff)) %>%
+    arrange(Longitude) %>%
+  mutate(lon_cumsum = cumsum(ifelse(BalencedPower>0, BalencedPower, 0)),
+         lon_rev_cumsum = rev(lon_cumsum),
+         lon_diff = lon_cumsum - lon_rev_cumsum,
+         lon_abs_diff = abs(lon_diff))  %>%
+  arrange(Latitude) %>% 
+  mutate(mass = 1) %>%
+  mutate(mass_lat_cumsum = cumsum(mass),
+         mass_lat_rev_cumsum = rev(mass_lat_cumsum),
+         mass_lat_diff = mass_lat_cumsum - mass_lat_rev_cumsum,
+         mass_lat_abs_diff = abs(mass_lat_diff)) %>%
+    arrange(Longitude) %>%
+  mutate(mass_lon_cumsum = cumsum(mass),
+         mass_lon_rev_cumsum = rev(mass_lon_cumsum),
+         mass_lon_diff = mass_lon_cumsum - mass_lon_rev_cumsum,
+         mass_lon_abs_diff = abs(mass_lon_diff))
+```
+
+
+##UK network plot
+```{r}
+shapefile <- file.path("/home/jonno/Dropbox/Jonathan_Bourne_Phd_Folder/ShapeFiles UK",
+                       "Countries_December_2017_Ultra_Generalised_Clipped_Boundaries_in_UK_WGS84.shp")
+
+GB <- st_read(shapefile) %>%
+  filter(ctry17cd !="N92000002") %>%
+  st_union()
+
+#plots the uk network with the midpoint
+ggplot(GB) +
+  geom_sf() +
+ # scale_fill_viridis("Area") +
+  ggtitle("Node locations in the UK") +
+ # theme_bw() +
+  geom_line(data = z_network_map %>%
+              filter(PositionType=="Geo Space"),  aes(x = Longitude, y = Latitude, group = Link)) +
+   geom_point(data =node_z, aes(x = Longitude, y = Latitude, colour = z), alpha  = 0.7) +
+  coord_sf(ylim = c(50,58.9))+
+  scale_color_viridis_c() +
+  geom_point(data = node_z2 %>% filter(lat_abs_diff== min(lat_abs_diff)),
+             aes(x = Longitude, y = Latitude), 
+             colour = "red") +
+    geom_point(data = node_z2 %>% filter(lon_abs_diff== min(lon_abs_diff), Generation>0),
+             aes(x = Longitude, y = Latitude), 
+             colour = "cyan")
+
+
+ggplot(GB) +
+  geom_sf() +
+  ggtitle("Node locations in the UK") +
+  geom_line(data = z_network_map %>%
+  select(Longitude, Latitude, percentile_load, percentile_strain,PositionType, Link) %>%
+  gather(key = edge_method, value = value, percentile_load:percentile_strain) %>%
+  filter(PositionType=="Geo Space"),  
+  aes(x = Longitude, y = Latitude, group = Link, colour = value), size = 1) +
+ #  geom_point(data =node_z, aes(x = Longitude, y = Latitude), alpha  = 0.2) +
+  facet_grid(~edge_method) +
+  coord_sf(ylim = c(50,58.9))+
+  scale_color_viridis_c()
+
+```
+
+##UK Voronoi
+```{r}
+
+#aggregates the edge data of the edges into summary statistics for the each node
+UK_node_values <- z_network_map %>%
+  filter(PositionType =="Geo Space") %>%
+  select(Node, line_load, strain) %>%
+  group_by(Node) %>%
+  summarise_all(list(~mean(.), ~max(.),~min(.), ~median(.)))  %>% 
+  select(Node, `Line Load` = line_load_mean, Strain = strain_mean) %>%
+  left_join(node_z) %>%
+  rename(Height = z)
+
+
+#Create the VOronoi tesselation. there are several warnings however these should not have a substatntial impact as data relatively small and not near poles
+UK_voronoi <- Create_Voronoi(UK_node_values, GB)
+
+#voronoi of the nodes is pretty good
+UK_voronoi  %>%
+  mutate(type = factor(type, levels = c("Height", "Strain", "Line Load")))%>%
+ggplot() + geom_sf(aes(fill = value, colour = value)) +
+   scale_fill_viridis_c()+
+    scale_colour_viridis_c() +
+  facet_grid(~type) +
+  coord_sf(ylim = c(50,58.9))+ #Clip the figure to remove the shetland isles
+  theme(axis.title = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        legend.position = "bottom") +
+  guides(color=FALSE) + #remove tone of the legends as they display the same data
+  labs(title = "Height and Strain of the UK high-voltage power grid under base load generation", 
+       fill = "Percentile")
+  ggsave(file.path(FiguresFolder, "BritainVoronoiTopology.pdf"))
+  
+
+  
+##Create network from voronoi tessalation
+UK_voronoi_edge <- UK_voronoi %>% filter(type =="Height") %>%
+Create_Voronoi_edge_df(., Node_name = Node)
+
+UK_voronoi_g <- UK_voronoi_edge %>%
+  graph_from_data_frame( directed = FALSE, vertices = UK_node_values)
+
+#It might be better to make a network where edges are the nodes and all edges that interact with a common node have an edge between them.
+
+#assortivity of z voronoi
+c("Height", "Strain", "Line Load") %>%
+  map_df(~{
+    tibble(metric = .x, value = assortativity(UK_voronoi_g, get.vertex.attribute(UK_voronoi_g, .x), directed = FALSE))
+    }) %>% 
+  mutate(type = "UK Voronoi")
+
+#assortivity of x powergrid
+UK_z_g <- as_data_frame(g) %>%
+  graph_from_data_frame(., directed = FALSE, vertices = UK_node_values) 
+
+c("Height", "Strain", "Line Load") %>%
+  map_df(~{
+    tibble(metric = .x, value = assortativity(UK_z_g, get.vertex.attribute(UK_z_g, .x), directed = FALSE))
+    }) %>%
+  mutate(type = "UK Network")
+
+#Visualise voronoi plot
+ test3 <- test2  %>%
+   gather(key = Node_type, value = Node, -Link) %>%
+  left_join(node_z)
+
+ggplot(GB) +
+  geom_sf() +
+  ggtitle("Node locations in the UK") +
+  geom_line(data = test3, 
+  aes(x = Longitude, y = Latitude, group = Link))+
+   geom_point(data =node_z, aes(x = Longitude, y = Latitude, colour = z), alpha  = 0.7) +
+  coord_sf(ylim = c(50,58.9))+
+  scale_color_viridis_c()
+
+
+```
+
+
+##Kriging
+```{r}
+
+spdf <- as(GB, "Spatial") %>% st_as_sf %>%
+  st_crop(c(xmin = -7.5, ymin = 50, xmax = 2, ymax = 59)) %>%
+  as_Spatial()
+
+kriged_height_strain_data <- krige_height_strain_maps(g = set.edge.attribute(g, "distance", value = 1), 
+                                                      height_df = final_z, 
+                                                      coords = MakeMapDF(g, read_csv(file.path(basewd, "point.csv")))  %>%
+                                                        filter(PositionType=="Geo Space"), 
+                                                      distance = "distance", 
+                                                      capacity = "Link.Limit",
+                                                      flow = "PowerFlow",
+                                                      spatial_df = spdf)
+
+kriged_height_strain_data %>%
+  mutate(type = fct_relevel(type, "Line Load", after = Inf)) %>%
+  ggplot(aes(x=Longitude, y=Latitude)) + 
+  geom_tile(aes(fill=value_perc)) + coord_equal() +
+  facet_grid(~type) +
+  scale_fill_viridis_c() +
+scale_colour_viridis_c(option = "plasma") +
+  labs(title = "Height and Strain of the UK high-voltage power grid under base load generation", 
+       fill = "Percentile") +
+  theme(axis.title = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        legend.position = "right",
+        plot.margin=unit(c(-60,0,-60,0),"mm")) #the legend position may want changing back to the more convential side.
+  ggsave(file.path("/home/jonno/Dropbox/Apps/ShareLaTeX/Spring Systems extended abstract", "BritainKrigedTopology2.eps"), dpi = 600)
+
+
+```
+
+#Generating profiles
+
+look at grid strain using different generating profiles.
+
+the carbon intensity data comes from 
+https://www.ipcc.ch/report/renewable-energy-sources-and-climate-change-mitigation/
+```{r}
+
+Generator_details <-GenerationData %>% 
+  select(Node = Site, Station, Generator.Type, Max_power = "Max.Contracted.TEC.at.Peak..Transport.Model.TEC.",
+         Base_power = "Generation.Base....Tariff.Model.TEC.",
+         Carbon_type = "Carbon...Low.Carbon") %>%
+  filter(!is.na(Node), Max_power>0)  %>% #get rid of nodes without generation
+  mutate(G_type2 = case_when(
+    Generator.Type %in% c("Biomass", "Hydro", "Pump Storage", "Tidal", "Wind Offshore", "Wind Onshore") ~"Renewable",
+    Generator.Type %in% c("CCGT", "CHP", "OCGT") ~"Gas",
+    TRUE~Generator.Type
+  ),
+  power_diff = Max_power-Base_power) 
+  
+test %>%
+  group_by(Carbon_type) %>%
+  summarise(Max_power = sum(Max_power),
+            Base_power = sum(Base_power))
+
+#uses 50th percentile data
+Carbon_intensity <-tibble(Generator.Type = c("Biomass", "CCGT", "Coal", "CHP", "Hydro", "Interconnectors", "Nuclear", "OCGT", "Pump Storage", "Tidal", "Wind Offshore", "Wind Onshore"),
+      Carbon_intensity = c(18, 496, 1001, 469, 4, 68, 16, 469, 4, 8, 12, 12),
+       value_type = c("IPCC", "IPPC", "IPPC", "Gas IPPC", "IPPC", "electrictymap.org france average", "IPCC", "IPCC", "Hydro level as it uses spare capcity for max efficiency", "IPCC","IPCC", "IPCC"))
+
+Generator_details %>%
+  group_by(Generator.Type) %>%
+  summarise(Max_power = sum(Max_power),
+            Base_power = sum(Base_power),
+            Carbon_type = first(Carbon_type)) %>%
+  left_join(., Carbon_intensity) %>%
+  arrange(Max_power)  %>%
+  mutate(Per_tot = Max_power/sum(Max_power)*100,
+          Per_Dem = Max_power/sum(trans1$Demand)*100,
+         cum_sum = cumsum(Max_power))
+  
+```
+
+##profile function
+```{r}
+create_profile_g <- function(simulation_power, VertexMetaData, g){
+  
+  Profile_VertexMetaData<- VertexMetaData %>%
+  left_join(., simulation_power, by = c("Name"= "Node")) %>%
+  mutate(Generation = ifelse(is.na(Sim_power), Generation, Sim_power)) %>%
+  select(-Sim_power)
+
+Profile_graph <- g %>%
+  as_data_frame(., what = "edges") %>%
+  graph_from_data_frame(., directed = FALSE, vertices = Profile_VertexMetaData)
+
+#Ensure there is powerflow
+Profile_graph<- BalencedGenDem(Profile_graph, "Demand", "Generation")
+Profile_graph_list <- Cascade(list(Profile_graph)) #ensure grid is stable
+Profile_graph <- Profile_graph_list[[length(Profile_graph_list)]] #take the final graph
+Profile_graph <- RemoveDeadEnds(Profile_graph) #the removal of power stations can create dead zones in the network, these need to be remvoed
+Profile_graph<- BalencedGenDem(Profile_graph, "Demand", "Generation")
+SlackRef <- SlackRefFunc(Profile_graph) #find the most appropriate node to be the slack bus
+Profile_graph <- PowerFlow(Profile_graph, SlackRef$name) #calculate power flow
+
+return(Profile_graph)
+  
+}
+
+```
+
+
+##Create profile networks
+```{r}
+#there are many more renewable sources than any other, as they are so much smaller
+table(Generator_details$G_type2)
+
+energy_types <- c("Coal", "Gas", "Renewable", "Nuclear")
+sim_names <- paste0("No_", energy_types)
+
+
+#Max power is used as otherwise edges are lost on No_coal and No_Nuclear.
+#No gas is causes overloads in both cases and there is a substantial power deficit
+energy_types  %>%
+  walk(~{
+    print(.x)
+    simulation_power <- Generator_details %>%
+      mutate(
+        Active_power = ifelse(G_type2== .x ,0, Max_power)) %>% #change specified type of power to 0 
+      group_by(Node) %>%
+      summarise(Sim_power = sum(Active_power))
+    
+    g2 <- create_profile_g(simulation_power, VertexMetaData, g)
+    
+    assign(x = paste0("No_",.x), value = g2 , envir = .GlobalEnv ) #assign to global environment with identifiable name
+    
+  })
+
+sim_names %>%
+  map_df(~{ 
+    g <-get(.x)
+    
+    g_df <- g %>% as_data_frame() %>%
+      mutate(alpha = Link.Limit/abs(PowerFlow),
+             line_load = 1/alpha)
+    
+    tibble(
+      type = .x,
+      
+      edges = ecount(g), 
+           nodes = vcount(g),
+           GW_Gen = get.vertex.attribute(g, "BalencedPower") %>% ifelse(.>0,.,0) %>%sum(.)/1000,
+            GW_Dem = get.vertex.attribute(g, "Demand") %>% ifelse(.>0,.,0) %>%sum(.)/1000,
+      line_load = mean(g_df$line_load))
+    })
+
+```
+
+##simulation strains
+```{r}
+
+sim_names %>%
+  walk(~{
+    
+    strain_file_path <- file.path(PLwd,"Generation_types" , paste0(.x,".rds"))
+    
+    #only generate if file not there
+    if(!file.exists(strain_file_path)){
+      
+      g2 <- get(.x)
+      
+      current_graph  <- g2 %>%
+        set.edge.attribute(. , "distance", value = 1) %>%
+        Calc_Spring_Youngs_Modulus(., "PowerFlow", "Link.Limit", minimum_value = 100, stretch_range = 1000) %>%
+        set.edge.attribute(., "Area", value = 1) %>%
+        Normalize_load(., EdgeName = Link, VertexName = name, Net_Generation = BalencedPower, capacity = Link.Limit,
+                       Generation = Generation, Demand = Demand)#%>%
+      #set.edge.attribute(., "flow", value = get.edge.attribute(., "PowerFlow"))
+      
+      List_of_BiConComps <- Create_balanced_blocks(current_graph, force = "BalencedPower")
+      
+      #Finds which of the components is the giant component so it can be used as the baseline
+      giant_componant <-List_of_BiConComps %>% map_dbl(~vcount(.x)) %>% which.max()
+      
+      #use the largest block to set the simulation parameters k and m.
+      #k needs to be sufficiently stretch to allow enough topology variation. otherwise all that happens is a surface angled in the direct of net power flow. Which is interesting but not that interesting
+      OriginBlock_complete <- Find_network_balance(g = List_of_BiConComps[[giant_componant]], 
+                                                   force ="BalencedPower",
+                                                   flow = "PowerFlow",
+                                                   distance = "distance",
+                                                   capacity = "Link.Limit",
+                                                   tstep = 0.05, 
+                                                   tol = 1e-10, 
+                                                   maxIter = 20000, 
+                                                   mass = 1)
+      
+      final_z <- Create_stabilised_blocks(g = current_graph, 
+                                          OriginBlock = OriginBlock_complete,
+                                          OriginBlock_number = giant_componant, 
+                                          force ="BalencedPower",
+                                          flow = "PowerFlow",
+                                          distance = "distance",
+                                          capacity = "Link.Limit",
+                                          tstep = 0.01, 
+                                          tol = 1e-10, 
+                                          maxIter = 20000, 
+                                          mass = 1)
+      
+      write_rds(final_z, strain_file_path)
+      
+    }
+    
+  })
+
+
+height_profile_type <- sim_names %>%
+  map_df(~{
+    
+    strain_file_path <- file.path(PLwd,"Generation_types" , paste0(.x,".rds"))
+    
+    read_rds(strain_file_path) %>%
+      mutate(sim = .x)
+    
+  })
+
+
+height_profile_type %>%
+  select(node, z, sim) %>%
+  spread(key = sim, value = z) %>%
+  select(-node) %>% cor
+
+
+strain_profile_type <- sim_names %>%
+  map_df(~{
+    print(.x)
+      strain_file_path <- file.path(PLwd,"Generation_types" , paste0(.x,".rds"))
+    
+    read_rds(strain_file_path) %>%
+      Calc_line_strain(set.edge.attribute(get(.x), "distance", value = 1), ., "distance", "Link.Limit") %>%
+      mutate(sim = .x,
+             edges = ecount(get(.x)))
+    
+  }) %>%
+  bind_rows( final_z %>%
+               Calc_line_strain(set.edge.attribute(g, "distance", value = 1), ., "distance", "Link.Limit") %>%
+               mutate(sim = "base_load",
+             edges = ecount(g)))
+
+#mean and median strain
+mean_strain <- strain_profile_type %>%
+ # filter(sim != "No_Gas") %>%
+  group_by(sim) %>%
+  summarise(mean_strain = mean(strain, na.rm = T),
+            median_strain = median(strain, na.rm = T),
+            mean_LL = mean(line_load),
+            median_LL = median(line_load),
+         edges = first(edges)) %>%
+  mutate(rank_strain = rank(mean_strain),
+         rank_LL = rank(mean_LL))
+print(mean_strain)
+
+
+ggplot(strain_profile_type, aes( x = sim, y = (strain), colour = sim)) +
+  geom_boxplot()
+
+
+kriged_sim <- sim_names[-2] %>%
+  map_df(~{
+    print(.x)
+    strain_file_path <- file.path(PLwd,"Generation_types" , paste0(.x,".rds"))
+    
+    Out2 <- kriged_height_strain_data <- krige_height_strain_maps(g = set.edge.attribute(get(.x), "distance", value = 1), 
+                                                                  height_df = read_rds(strain_file_path), 
+                                                                  coords = MakeMapDF(get(.x), 
+                                                                                     read_csv(file.path(basewd, "point.csv")))  %>%
+                                                                    filter(PositionType=="Geo Space"),
+                                                                  distance = "distance",
+                                                                  capacity = "Link.Limit",
+                                                                  flow = "PowerFlow",
+                                                                  spatial_df = spdf) %>%
+      mutate(simulation = .x)
+
+    
+  })
+
+
+kriged_sim %>%
+  filter(simulation !="No_Gas") %>%
+  mutate(type = fct_relevel(type, "Line Load", after = Inf)) %>%
+  group_by(type) %>%
+  mutate(simulation = gsub("_", " ", simulation),
+         value_perc = percent_rank(value)) %>%
+  ggplot(aes(x=Longitude, y=Latitude)) + 
+  geom_tile(aes(fill=value_perc)) + coord_equal() +
+  facet_grid(type~simulation) +
+  scale_fill_viridis_c() +
+  labs(title = "Height and Strain of the UK high-voltage power grid in three different simulations", fill = "Percentile") +
+  theme(axis.title = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        legend.position = "right") #the legend position may want changing back to the more convential side.
+  ggsave(file.path(FiguresFolder, "BritainKrigedTopology_simulations.pdf"))
+```
+
+
+#Attack profiles
+```{r}
+
+{
+  AttackRounds <- 1000
+set.seed(1589)
+DeleteOrders <- MultiAttackOrder(g, Target = "Edges", Sims =  100)  }
+```
+
+
+##baseload
+```{r}
+
+folder <- file.path(base_attack_folder, "base_load")
+ 
+ if(!file.exists(folder)){
+    dir.create(folder)
+  }
+SaveMultiAttacks(g, DeleteOrders, folder, TotalAttackRounds = AttackRounds, CascadeMode = T, Target = "Edges")   
+
+```
+
+
+
+##Pl
+```{r}
+
+mean_alpha <- as_data_frame(g) %>%
+  mutate(alpha = abs(PowerFlow/Link.Limit) ) %>%
+  pull(alpha) %>% mean(.) %>%
+  {1/.} %>% signif(.,3)
+
+#The two PL models
+c(1, mean_alpha) %>% walk(~{
+  
+  gProp <- Proportional_Load(g, alpha = .x)
+  
+  folder <-  file.path(base_attack_folder, paste0("alpha_value_",  .x*100))
+  #create folder if it doesn't already exist
+  if(!file.exists(folder)){
+    dir.create(folder)
+  }
+
+SaveMultiAttacks(gProp, DeleteOrders, folder, TotalAttackRounds = AttackRounds, CascadeMode = T, Target = "Edges")    
+})
+
+#Topological
+
+  folder <-  file.path(base_attack_folder, "Topological")
+  #create folder if it doesn't already exist
+  if(!file.exists(folder)){
+    dir.create(folder)
+  }
+
+SaveMultiAttacks(g, DeleteOrders, folder, TotalAttackRounds = AttackRounds, CascadeMode = F, Target = "Edges")   
+
+```
+
+
+##generation type
+Attack each generation profile until complete collapse, and summarise the data.
+```{r}
+setwd("/media/jonno/Seagate Expansion Drive/System_Dynamics/Profile_attacks") #clean this up
+
+sim_names %>%
+  walk(~{
+    
+folder <- .x
+
+  if(!file.exists(folder)){
+    dir.create(folder)
+  }
+
+SaveMultiAttacks(get(.x), DeleteOrders, folder, TotalAttackRounds = AttackRounds, CascadeMode = T, Target = "Edges")    
+    
+  })
+
+
+
+
+####
+#### Extract the attacks into Summary data
+####
+ExtractAttackStats(file.path(PLwd,"Profile_attacks"), file.path(PLwd, "SummaryData"))
+
+#Load the saved files
+AttackRoundData <- list.files(path = file.path(PLwd,"SummaryData"), 
+                              pattern = ".rds", 
+                              full.names = TRUE)  %>%
+   map_df(~read_rds(.x))   %>%
+  arrange(-TotalNodes) %>%
+  mutate(has_gc = mean_degree_sqrd > 2*mean_degree) %>%
+  filter(!has_gc) %>%
+  group_by(simulationID, alpha) %>%
+  summarise_all(first) %>%
+  mutate(alpha = ifelse(alpha=="Real_Limits", "base_load", alpha))
+
+AttackRoundData %>%
+  group_by(alpha) %>%
+  summarise_all(mean)
+
+AttackRoundData %>%
+  left_join(mean_strain, by = c("alpha"="sim")) %>% 
+  mutate(perc_edges = NodesAttacked/edges) %>%
+  ggplot(aes(x = alpha, y = perc_edges, fill = alpha)) + geom_boxplot()
+
+AttackRoundData %>%
+  rename(sim = alpha) %>%
+  group_by(sim) %>%
+  summarise(mean_edges = mean(NodesAttacked)) %>%
+  left_join(mean_strain) %>% 
+  mutate(perc_edges = mean_edges/edges) %>%
+  filter(sim != "No_Gas") %>%
+  filter(complete.cases(.)) %>%
+  ggplot(aes(x = perc_edges, y = mean_strain, colour = sim)) + geom_point()
+
+
+AttackRoundData %>%
+  rename(sim = alpha) %>%
+  group_by(sim) %>%
+  summarise(mean_edges = mean(NodesAttacked)) %>%
+  left_join(mean_strain) %>% 
+  mutate(perc_edges = mean_edges/edges) %>%
+  filter(sim != "No_Gas") %>%
+  filter(complete.cases(.)) %>%
+  mutate(sim = sim %>% gsub("_", " ", .) %>% gsub("(^|[[:space:]])([[:alpha:]])", "\\1\\U\\2", ., perl=TRUE)
+) %>%
+  select(`Generation profile` = sim, `Edge fraction attacked` = perc_edges, `Strain` = mean_strain) %>%
+xtable(.,  
+       caption = "Relationship between strain and number of edges attacked before giant component collapse on UK power-grid", 
+       label = "tab:UK_power") %>%
+   print(type = "latex", file = file.path(FiguresFolder, "UK_power_strain.txt"))
+
+```
+
+
+```{r}
+node_z_Generator <-z_network_map %>% as_tibble %>%
+  filter(PositionType=="Geo Space") %>%
+  select(Node, Longitude, Latitude, z) %>%
+  distinct(.keep_all = T) %>%
+  left_join(Generator_details) %>%
+  mutate(G_type2 = case_when(
+    Generator.Type %in% c("Biomass", "Hydro", "Pump Storage", "Tidal", "Wind Offshore", "Wind Onshore") ~"Renewable",
+    Generator.Type %in% c("CCGT", "CHP", "OCGT") ~"Gas",
+    TRUE~Generator.Type
+  ))
+
+test <- node_z_Generator %>%
+  filter(Latitude<52, Longitude>0, !is.na(Generator.Type))
+  
+
+
+ggplot(GB) +
+  geom_sf() +
+  ggtitle("Generator locations in the UK") +
+  geom_line(data = z_network_map %>%
+              filter(PositionType=="Geo Space"),  aes(x = Longitude, y = Latitude, group = Link)) +
+   geom_point(data =node_z_Generator %>%
+                filter(!is.na(Generator.Type)) %>%
+                filter(Generator.Type=="Interconnectors"), aes(x = Longitude, y = Latitude, colour = G_type2), alpha  = 0.7)+
+  coord_sf(ylim = c(50,58.9)) 
+
+```
+
+#Airline network
+
+the database is from "Database Name: Air Carrier Statistics (Form 41 Traffic)- All Carriers" a T-100 form data
+main website, under the traffic section
+https://www.bts.dot.gov/topics/airlines-and-airports-0
+
+accessed 23-08-19
+
+
+Airport codes and coords from
+https://datahub.io/core/airport-codes#r
+
+
+I had jqr package installation problems. jqr is a package buried deep in the dependencies of the GIS packages. THe librarires necessary for it can be installed on ubuntu like this
+
+
+```{r}
+us_airline_raw <- read_csv(file.path(PLwd, "US-AirlineData", "934510551_T_T100_SEGMENT_ALL_CARRIER.csv"))
+airport_codes.raw <- read_csv(file.path(PLwd, "US-AirlineData", "airport-codes_csv.csv"))
+
+#get the map of the US and filter out non continental parts
+if(file.exists(file.path( PLwd, "US-AirlineData", "us_map.rds"))){
+
+  us_map <- readRDS( file.path( PLwd, "US-AirlineData", "us_map.rds"))
+
+}else{
+us_map_raw <- states(cb = TRUE, class = "sf")
+
+
+#test <- tibble(NAME =  us_map_raw %>%pull(NAME), STUSPS = us_map_raw %>% pull(STUSPS))
+
+exclude <- c("AK","AS","MP","GU", "HI", "PR", "VI")
+
+test <- us_map_raw %>%
+  filter(!(STUSPS %in% exclude)) 
+
+us_map <- test %>% st_union()
+
+saveRDS(us_map, file.path( PLwd, "US-AirlineData", "us_map.rds"))
+rm(us_map_raw);rm(test)
+}
+
+#helper graph
+#the graph is used to remove all nodes that are not in the giant component. isolated sub component are not relevent to the overall analysis
+pre_g <-us_airline_raw   %>%
+  filter(SEATS>0, PASSENGERS>0, SEATS> PASSENGERS, #remove all lines with no passengers and the 1 line where there are more passengers than seats
+         ) %>%
+  select(ORIGIN, DEST, everything()) %>%
+  graph_from_data_frame(., directed = FALSE)
+
+#All nodes in component 1. This is the component with the vast majority of nodes. Only component 1 will be analysed
+membership_df <- tibble(names = names(components(pre_g)$membership), membership= components(pre_g)$membership) %>%
+  filter(membership==1)
+
+us_airline_edge <- pre_g %>%
+  as_data_frame() %>%
+  group_by(from, to) %>%
+  summarise(SEATS = sum(SEATS),
+            PASSENGERS = sum(PASSENGERS)) %>%
+  ungroup %>%
+  arrange(SEATS) %>%
+  mutate(alpha = SEATS/PASSENGERS,
+         cumsum = cumsum(SEATS)/sum(SEATS),
+         perc_count = (1:n())/n(),
+         Link = paste(from, to, sep = "-")) %>% 
+    filter(to != from,
+           from %in% membership_df$names,
+           to %in% membership_df$names,
+           cumsum>0.05)  %>%
+   filter(from !="PPG", from != "FGI") %>%
+   filter(to !="PPG", to != "FGI")#remove american samoa due to some data issues#there are about 40 self loops these are also removed
+
+#remove the helper data.
+rm(pre_g); rm(membership_df)
+
+us_airline_node <- us_airline_edge %>% 
+  {bind_rows(select(., name = from, PASSENGERS), 
+             select(., name = to, PASSENGERS))} %>%
+  group_by(name) %>%
+  summarise_all(sum) %>%
+  mutate(passen_center = PASSENGERS - mean(PASSENGERS),
+         Generation = ifelse(passen_center>0, passen_center, 0),
+         Demand = ifelse(passen_center<0, passen_center, 0),
+         #Normalising the load and gen. 
+         norm_factor = sum(Generation), #
+         Generation = Generation/norm_factor,
+         Demand = Demand/norm_factor,
+         passen_center  = Generation + Demand)  %>%
+   filter(name !="PPG", name != "FGI") #remove american samoa due to some data issues
+
+mean(us_airline_node$PASSENGERS)
+
+us_airline_g <- graph_from_data_frame(us_airline_edge %>%
+                                        mutate(passen_norm = PASSENGERS/ us_airline_node$norm_factor[1],
+                                               seats_norm = SEATS/us_airline_node$norm_factor[1]), directed = FALSE, 
+                                      vertices = us_airline_node) %>%
+    set.edge.attribute(. , "distance", value = 1) 
+
+
+if(file.exists(file.path(PLwd, "US-AirlineData", "airline_final_z.rds"))){
+airline_final_z <- readRDS(file.path(PLwd, "US-AirlineData", "airline_final_z.rds"))
+}else{
+
+#By making this code run as a block I ensure that the network is only a single component
+{  
+  current_graph  <- us_airline_g %>%
+    Calc_Spring_Youngs_Modulus(., "seats_norm", "passen_norm", minimum_value = 100, stretch_range = 1000) %>%
+    set.edge.attribute(., "Area", value = 1) 
+
+  comps_vect <- components(current_graph)$membership
+  
+  current_graph <- delete_vertices(current_graph, names(comps_vect)[comps_vect==2])
+  }
+  
+    List_of_BiConComps <- Create_balanced_blocks(current_graph, force = "passen_center", flow = "passen_norm")
+
+  #Finds which of the components is the giant component so it can be used as the baseline
+      giant_componant <-List_of_BiConComps %>% map_dbl(~vcount(.x)) %>% which.max()
+      
+      #use the largest block to set the simulation parameters k and m.
+      #k needs to be sufficiently stretch to allow enough topology variation. otherwise all that happens is a surface angled in the direct of net power flow. Which is interesting but not that interesting
+      OriginBlock_complete <- Find_network_balance(g = List_of_BiConComps[[giant_componant]], 
+                                                   force ="passen_center",
+                                                   flow = "passen_norm",
+                                                   distance = "distance",
+                                                   capacity = "seats_norm",
+                                                   tstep = 0.05, 
+                                                   tol = 1e-14, 
+                                                   maxIter = 20000, 
+                                                   mass = 1)
+      
+      airline_final_z <- Create_stabilised_blocks(g = current_graph, 
+                                          OriginBlock = OriginBlock_complete,
+                                          OriginBlock_number = giant_componant, 
+                                          force ="passen_center",
+                                          flow = "passen_norm",
+                                          distance = "distance",
+                                          capacity = "seats_norm",
+                                          tstep = 0.05, 
+                                          tol = 1e-10, 
+                                          maxIter = 20000, 
+                                          mass = 1)
+  
+  write_rds(airline_final_z, file.path(PLwd, "US-AirlineData", "airline_final_z.rds"))
+  
+}
+
+airline_strain  <-Calc_line_strain(us_airline_g, airline_final_z, "distance", "seats_norm", flow = "passen_norm")
+  
+
+
+      mean(airline_strain$strain)/mean(line_strain$strain)
+    (1/(mean(1/airline_strain$alpha)))/(1/(mean(1/line_strain$alpha)))
+      
+      tibble(strain = c(mean(airline_strain$strain),mean(line_strain$strain)), 
+             load = c(mean(1/airline_strain$alpha),mean(1/line_strain$alpha)),
+             type = c("Airline", "power")) %>%
+        ggplot(aes(y = strain, x = load, colour = type)) + geom_point()
+        
+      
+  
+airport_codes <-  airport_codes.raw %>%
+  filter(iata_code %in% unique(airline_final_z$node),
+         type !="closed") %>%
+   separate(coordinates, into = c("Longitude", "Latitude"), sep = ",", convert = TRUE) %>%
+        rename(node = iata_code,
+               airport_type = type) 
+ 
+airport_codes %>%
+   left_join(airline_final_z, .) %>%
+   filter(iso_country %in% c("US", "AS"),
+          iso_region != "US-AK",
+          iso_region != "US-HI")  %>%
+   ggplot(aes(x = Longitude, y = Latitude, colour = percent_rank(z))) + 
+   geom_point() +
+   scale_color_viridis_c()
+
+ airline_coords <-  as_data_frame(us_airline_g) %>%
+   select(Link, from, to) %>%
+   gather(key = type, value = node, -Link) %>%
+   left_join(., airport_codes) %>%
+  select(Link, type, Node = node, Longitude, Latitude) %>%
+   filter(Node !="PPG", Node != "FGI")
+
+
+
+```
+
+#Airline voronoi
+```{r}
+
+airport_route_aggregates <- airline_coords %>%
+  left_join(airline_strain) %>%
+  select(Node, line_load, strain) %>%
+  group_by(Node) %>%
+  summarise_all(list(~mean(.), ~max(.),~min(.), ~median(.)))
+
+us_airport_data <- airline_coords %>% 
+  select(-Link) %>% #remove the link as this is irrelevant for knowing the airport coords
+  group_by(Node) %>% 
+  summarise_all(first) %>% #take only the first coordinates as all the others are the same #I should prob have an eaiser veriosn of this
+  select(-type) %>%
+  left_join(select(airline_final_z, Node = node, Height = z))
+
+US_node_values <- left_join(us_airport_data,
+                                        airport_route_aggregates %>% 
+                                          select(Node, 
+                                                 `Line Load` = line_load_mean, 
+                                                 Strain = strain_mean))
+
+US_voronoi <- Create_Voronoi(US_node_values, us_map)
+
+#voronoi of the nodes is pretty good
+US_voronoi %>%
+mutate(type = factor(type, levels = c("Height", "Strain", "Line Load")))%>%
+ggplot() + geom_sf(aes(fill = value, colour = value)) +
+   scale_fill_viridis_c()+
+    scale_colour_viridis_c() +
+  facet_grid(type~.)+
+  theme(axis.title = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        legend.position = "right") +
+  guides(color=FALSE) + #remove tone of the legends as they display the same data
+  labs(title = "Node Height, Edge strain and Edge Load of US airline network",
+       fill = "Percentile")
+  ggsave(file.path(FiguresFolder, "USVoronoiTopology.pdf"))
+
+
+
+  tibble(Node = pull(US_voronoi , Node), type = pull(US_voronoi, type), value = pull(US_voronoi , value)) %>%
+  spread(key = type, value = value) %>%
+  select(-Node) %>%
+  cor
+
+#basically no corellation between alpha and strain
+airline_strain %>%
+  select(alpha, strain) %>%
+  cor
+
+##Create network from voronoi tessalation
+US_voronoi_edge <- US_voronoi %>% filter(type =="Height") %>%
+Create_Voronoi_edge_df(., Node_name = Node)
+  
+
+US_voronoi_g <- US_voronoi_edge %>%
+  graph_from_data_frame( directed = FALSE, vertices = US_node_values)
+
+#assortivity of z voronoi
+c("Height", "Strain", "Line Load") %>%
+  map_df(~{
+    tibble(metric = .x, value = assortativity(US_voronoi_g , get.vertex.attribute(US_voronoi_g, .x), directed = FALSE))
+    })
+
+#assortivity of x powergrid
+US_z_g <- as_data_frame(us_airline_g) %>%
+  graph_from_data_frame(., directed = FALSE, vertices = US_node_values) 
+
+c("Height", "Strain", "Line Load") %>%
+  map_df(~{
+    tibble(metric = .x, value = assortativity(US_z_g, get.vertex.attribute(US_z_g, .x), directed = FALSE))
+    })
+
+#Visualise voronoi plot
+ US_voronoi_edge_df <- US_voronoi_edge  %>%
+   gather(key = Node_type, value = Node, -Link) %>%
+  left_join(US_node_values)
+
+ggplot(us_map) +
+  geom_sf() +
+  ggtitle("Node locations in the UK") +
+  geom_line(data = US_voronoi_edge_df, 
+  aes(x = Longitude, y = Latitude, group = Link))+
+   geom_point(data =US_node_values  %>%
+   left_join(airport_codes %>% select(Node = node, iso_region, iso_country)) %>%
+   filter(iso_country %in% c("US", "AS"),
+          iso_region != "US-AK",
+          iso_region != "US-HI"), aes(x = Longitude, y = Latitude, colour = Height), alpha  = 0.7, size =3) +
+  scale_color_viridis_c()
+
+```
+
+##US kriged
+
+This section now works, the issue was that the airline coords contained excluded routes sparking and error on the Strain/alpha kriging. That problem has been resolved. However, as the network is not spatially constrained or spatially corellated the kriging is horrible and can't really resolve. Hence the Voronoi is a better way of presenting the result even if 
+```{r}
+# 
+# targets <-US_voronoi %>%
+#   pull(Node) %>% unique() %>% sort
+# 
+# airport_temp_routes <-as_data_frame(us_airline_g) %>%
+#   filter(from %in% targets & to %in% targets)
+# 
+# airports_temp <- as_data_frame(us_airline_g, what = "vertices") %>%
+#   filter(name %in% targets) %>%
+#   filter(name !="SWF") #this airport apparently only flies to edinburgh or dublin
+# 
+# airline_final_z_2 <- airline_final_z %>%
+#   filter(node %in% targets)
+#  
+# us_krig_g <- graph_from_data_frame(airport_temp_routes, directed = FALSE, vertices = airports_temp) %>%
+#   set.edge.attribute(., "distance", value = 1)
+# 
+# airline_coords_2 <- airline_coords %>%
+#   mutate(temp = Link) %>%
+#   separate(col = temp, into = c("from", "to"), sep = "-") %>%
+#   filter(from %in% targets & to %in% targets)
+# 
+# #poly_map <-  as(us_map, 'Spatial') #This doesn't do what I expected
+# poly_map <- as_Spatial(us_map) #us the sf package ers
+# 
+# airline_kriged_height_strain_data <- krige_height_strain_maps(g = us_krig_g,
+#                                                               height_df = airline_final_z_2,
+#                                                               coords = airline_coords_2,
+#                                                               distance = "distance",
+#                                                               capacity = "seats_norm",
+#                                                               flow = "passen_norm",
+#                                                               spatial_df =poly_map)
+# 
+# kriged_df_Line %>%
+#    mutate(value_perc = percent_rank(value)) %>%
+#  #airline_kriged_height_strain_data  %>%
+#   mutate(type = fct_relevel(type, "Line Load", after = Inf)) %>%
+#   ggplot(aes(x=Longitude, y=Latitude)) +
+#   geom_tile(aes(fill=value_perc)) + coord_equal() +
+#   facet_grid(type~.) +
+#   scale_fill_viridis_c() +
+# scale_colour_viridis_c(option = "plasma") +
+#   labs(title = "Height and Strain of the UK high-voltage power grid under base load generation",
+#        fill = "Percentile") +
+#   theme(axis.title = element_blank(),
+#         axis.text = element_blank(),
+#         axis.ticks = element_blank(),
+#         legend.position = "right") #the legend position may want changing back to the more convential side.
+```
+
+
+#Peels quintet
+
+This section re-creates the networks used in Peel et al
+
+```{r}
+
+sub_classes_vect <-c("d_1", "d_2", "c_1", "c_2")
+
+
+class_data_df <- expand.grid(class = c("A", "B"), sub = 1:2) %>%
+  as_tibble() %>%
+  mutate(sub_class = paste(class, sub, sep = "_"),
+         size = 10 #replace with a vector if group sizes uneevn
+         ) #finds the start position along the axis of the matrix
+
+
+#this sub chunk creates a df of the sub class combinations from the upper triangular block of the adjacency matrix
+{
+  network_classes <- matrix(FALSE, ncol = nrow(class_data_df), nrow = nrow(class_data_df)) 
+  network_classes[upper.tri(network_classes, diag = TRUE)] <-TRUE
+  network_classes <- network_classes %>% as_tibble %>%
+    set_names(pull(class_data_df, sub_class)) %>%
+    mutate(sub_class_1 = pull(class_data_df, sub_class)) %>%
+    {.} %>%
+    gather(key = sub_class_2, value = keep, -sub_class_1) %>%
+    filter(keep) %>%
+    select(-keep) %>%
+    left_join(class_data_df %>% select(sub_class_1 = sub_class, class_1 = class))%>%
+    left_join(class_data_df %>% select(sub_class_2 = sub_class, class_2 = class))
+}
+
+```
+
+
+```{r}
+create_assortivity_graph_from_subgroups <- function(class_data, sub_class_edge_data , sub_class_size){
+  #This functions creates a network that is defined by the relationship edge between groups and sub groups of nodes
+  #It is based on the paper by Peel et al 2019
+  
+#currently only works for sub-classes of constant size. upgrade shouldn't be very hard though
+#to do the replace ment need to double check the rows and columns section
+  
+class_data <- class_data %>%
+  mutate(position = 1+lag(cumsum(size), default = 0)) #create the position that each subclass and class will start at
+  
+#add position onto the sub class data frame
+ sub_class_edge_data <- sub_class_edge_data%>%
+    left_join(class_data %>% select(sub_class_1 = sub_class, position.x = position), by =  "sub_class_1") %>%
+    left_join(class_data %>% select(sub_class_2 = sub_class, position.y = position), by ="sub_class_2")
+
+
+full_matrix <- matrix(NA, ncol = sum(class_data$size), nrow = sum(class_data$size) )
+submatrix_size <- sub_class_size^2 
+numeric_submatrix  <- matrix(1:submatrix_size, nrow = sub_class_size)  
+
+for(n in 1:nrow(sub_class_edge_data)){
+#in the loop
+print(n)
+df <- sub_class_edge_data %>% slice(n)
+
+logic_matrix  <- matrix(FALSE, nrow = sub_class_size, ncol = sub_class_size)
+
+#if a subclass is being sampled only the upper triangle can be used to prevent double links and self links
+if(df$sub_class_1 == df$sub_class_2){
+  sample_vect <-  numeric_submatrix[upper.tri(numeric_submatrix)]
+} else{
+  
+  sample_vect <- 1:submatrix_size
+  
+}
+
+#Convert the sampled matrix elements to TRUE, this will be used for the edges
+logic_matrix[sample(sample_vect, df$edges , replace = FALSE)] <- TRUE
+
+x.start <- pull(df, position.x)
+y.start <- pull(df, position.y)
+
+full_matrix[x.start:(x.start+ncol(logic_matrix)-1), y.start:(y.start+nrow(logic_matrix)-1)] <- logic_matrix
+
+#END LOOP
+}
+
+full_matrix[lower.tri(full_matrix, diag = TRUE)] <- NA
+
+#classs
+colnames(full_matrix) <- rep(class_data$class, class_data$size)
+#subclass
+rownames(full_matrix) <- rep(class_data$sub_class, class_data$size)
+
+spec_g <-graph_from_adjacency_matrix(full_matrix, mode = "undirected", diag = FALSE, add.colnames ="class", add.rownames = "sub_class")
+
+return(spec_g)
+}
+```
+
+
+
+```{r}
+
+#The quintet
+
+quintet <-  network_classes %>%
+  mutate(
+   A = case_when(
+   sub_class_1 == sub_class_2 ~ 10,
+   TRUE ~20
+  ),
+  
+  B = case_when(
+    class_1 != class_2 ~20,
+    (sub_class_1 == "A_1" & sub_class_2 == "A_1")| (sub_class_1 == "B_2" & sub_class_2 == "B_2") ~ 38,
+    (sub_class_1 == "A_1" & sub_class_2 == "A_2")| (sub_class_1 == "B_1" & sub_class_2 == "B_2") ~ 2,
+    TRUE ~0
+  ),
+  
+  C = case_when(
+    (sub_class_1 == "A_1" & sub_class_2 == "A_1")~38,
+    (sub_class_1 == "A_1" & sub_class_2 == "A_2")~2,
+    (sub_class_1 == "A_2" & sub_class_2 == "B_2") ~80,
+    (sub_class_1 == "B_1" & sub_class_2 == "B_2")~20,
+    (class_1 == "B" & class_2 == "B")~10,
+    TRUE ~0
+  ),
+  
+  D = case_when(
+     sub_class_1 == sub_class_2 ~ 10,
+     (sub_class_1 == "A_1" & sub_class_2 == "A_2")| (sub_class_1 == "B_1" & sub_class_2 == "B_2") ~ 20,
+        (sub_class_1 == "A_2" & sub_class_2 == "B_2") ~80,
+     TRUE ~0
+  ),
+  
+    
+    E = case_when(
+   (sub_class_1 == "A_1" & sub_class_2 == "A_1")| (sub_class_1 == "B_2" & sub_class_2 == "B_2") ~ 38,
+   (sub_class_1 == "A_1" & sub_class_2 == "A_2")| (sub_class_1 == "B_1" & sub_class_2 == "B_2") ~ 2,
+   (sub_class_1 == "B_1" & sub_class_2 == "A_2") ~ 80,
+   TRUE ~0
+  )) 
+
+quintet 
+
+
+
+#create a quintet data frame where each network is a sub-component
+quintet_2 <- quintet %>%
+  gather(key = component, value = edges, A:E) %>%
+  mutate_at(1:4, ~paste(component, ., sep = "_"))
+
+#edit the class_data_df so that it can produce multiple subcomponents
+class_data_df_2 <- LETTERS[1:5] %>% 
+  map_df(~{
+  class_data_df %>% mutate(val = .x) %>%
+  mutate_at(c(1,3), ~paste(val, ., sep = "_"))
+})
+
+
+#set.seed so graphs are repeatable
+set.seed(1235)
+quintet_g_list <- LETTERS[1:5] %>%
+map(~create_assortivity_graph_from_subgroups(class_data_df, quintet %>% rename(edges = .x), 10) %>%
+      set.edge.attribute(., "type", value = .x) %>%
+      set.graph.attribute(., "type", value = .x)
+
+    )
+
+quintet_g_list %>%
+  map_dbl(~components(.x)$no)
+
+#Checks the assortativity. They are all zero
+quintet_g_list %>%
+  map_dbl(~assortativity_nominal(quintet_g_list[[4]], 
+                      types = as.factor(get.vertex.attribute(quintet_g_list[[4]], "class")), 
+                      directed = FALSE))
+
+ggraph(quintet_g_list[[5]]) +
+  geom_edge_fan()+
+  geom_node_point(aes(colour = class), size = 3) +
+  guides(color = "none")
+
+#plotting these graphs requires cowplot
+library(cowplot)
+
+#create a list of the graph plots
+plot_list <- 1:5 %>%
+  map(~{ggraph(quintet_g_list[[.x]]) +
+  geom_edge_fan()+
+  geom_node_point(aes(colour = class), size = 3) +
+  guides(color = "none") })
+
+ plot_grid(plot_list[[1]],
+          plot_list[[2]],
+          plot_list[[3]],
+          plot_list[[4]],
+          plot_list[[5]],
+          # labels = c('Fig B','Fig C'),
+           # label_x = 0.2,
+          ncol = 3,
+          nrow = 2) +   
+   draw_label(
+    "Peels Quintet", vjust = 1, y = 1
+  )
+ ggsave2(file.path(Figures_path,  "Peels_quintet.pdf"))
+```
+
+
+```{r}
+peels_spring_prep <- function(g){
+  
+  edge_change <- as_data_frame(g) %>%
+  mutate(distance = 1,
+         flow = 0,
+         Link.Limit = Inf,
+         Link = paste(from, to, sep ="-"))
+
+#the edges all have the same force so can be normalised on force creation easily.
+#The Links all have effectively infinite capacity so that can't be normalised and just takes the least stretcy value.
+node_change <- as_data_frame(g, what = "vertices") %>%
+  mutate(name = 1:n(),
+    Generation = ifelse(class=="A", 1/20, 0 ),
+    Demand = ifelse(class=="B", 1/20,0),
+    Net_Generation = Generation-Demand) %>%
+  select(name, everything())
+
+ current_graph  <- graph_from_data_frame(edge_change, directed = FALSE, vertices = node_change)%>%
+        set.edge.attribute(. , "distance", value = 1) %>%
+        set.edge.attribute(., "Area", value = 1) %>%
+        calc_spring_youngs_modulus(., "flow", "Link.Limit", minimum_value = 100, stretch_range = 1000) %>%
+        calc_spring_constant(., E ="E", A = "Area", distance = "distance") 
+  
+ return(current_graph)
+}
+
+```
+
+
+##Peel's Strain
+
+```{r}
+
+#set.seed so graphs are repeatable
+
+multi_quintet <-c(1:200) %>%map(~{
+set.seed(.x)
+quintet_g_list <- LETTERS[1:5] %>%
+map(~create_assortivity_graph_from_subgroups(class_data_df, quintet %>% rename(edges = .x), 10) %>%
+      set.edge.attribute(., "type", value = .x) %>%
+      set.graph.attribute(., "type", value = .x)
+
+    )
+
+return(quintet_g_list)
+}) %>% transpose()  %>%
+  map(~{
+    
+    tot_comps <-.x %>% map_dbl(~components(.x)$no)
+
+single_comp_networks <- .x[tot_comps==1]
+
+return(single_comp_networks[1:100])    
+
+  }) %>% flatten()
+
+
+multi_quintet %>%
+  map_dbl(~components(.x)$no)
+
+
+
+```
+
+calculate all the strains
+```{r}
+#This can take a couple of days!
+
+1:length(multi_quintet) %>% walk(~{
+print(.x)
+  
+  g <- multi_quintet[[.x]]
+  filename <- file.path(PLwd, "Peels Quintet", paste0("Network_", get.graph.attribute(g, "type"), "_", .x, ".rds") )
+  
+current_graph <- peels_spring_prep(g)
+
+ #The networks are small so can be done in 1 go, they also are pretty much a single block anyway
+      solved_height_network <- Find_network_balance(g = current_graph , 
+                                                   force ="Net_Generation",
+                                                   flow = "flow",
+                                                   distance = "distance",
+                                                   capacity = "Link.Limit",
+                                                   tstep = 0.005, 
+                                                   tol = 1e-10, 
+                                                   maxIter = 20000, 
+                                                   mass = 1)
+  
+  write_rds(solved_height_network,  path = filename)
+  
+})
+
+```
+
+
+Load saved files and calculate strain for each
+```{r}
+
+files <- list.files(file.path(PLwd, "Peels Quintet" ), full.names = TRUE)
+
+
+strain_solution_peel <-1:length(files) %>% map_df(~{
+  NodeList <- read_rds(files[.x])$NodeList
+  
+  peels_spring_prep(multi_quintet[[.x]]) %>%
+  calc_tension_strain(., NodeList, "distance", "Link.Limit", "flow", edge_name = "Link") %>%
+    mutate(Network = str_split(basename(files[.x]), pattern = "_")[[1]][2],
+           graph = str_split(basename(files[.x]), pattern = "_")[[1]][3] %>% gsub(".rds", "", .))
+  
+})
+
+height_solution_peel <-1:length(files) %>% map_df(~{
+  NodeList <- read_rds(files[.x])$NodeList %>%
+    left_join(multi_quintet[[.x]] %>% 
+  as_data_frame(what = "vertices") %>%
+    mutate(node = 1:n() %>% as.character), by = "node")  %>%
+    mutate(Network = str_split(basename(files[.x]), pattern = "_")[[1]][2],
+           graph = str_split(basename(files[.x]), pattern = "_")[[1]][3] %>% gsub(".rds", "", .))
+    
+  
+})
+
+
+test <- strain_solution_peel %>%
+  mutate(tension = (H-1)*1100)
+
+ current_graph  <- g %>%
+    set.edge.attribute(. , "distance", value = 1) %>%
+    calc_spring_youngs_modulus(., "PowerFlow", "Link.Limit", minimum_value = 100, stretch_range = 1000) %>%
+    set.edge.attribute(., "Area", value = 1) %>%
+  Normalize_load(., EdgeName = Link, VertexName = name, Net_Generation = BalencedPower, capacity = Link.Limit,
+                         Generation = Generation, Demand = Demand)
+
+ 
+test2 <- as_data_frame(current_graph)
+test3 <- line_strain %>%
+  left_join(test2 %>% select(Link, E)) %>%
+  mutate(tension = (H-1)*E)
+
+cor(test3$strain, test3$tension)
+
+test3 %>%
+  select(Link, strain, tension) %>%
+  gather(key = type, value = value, -Link) %>%
+  ggplot(aes(x = value, colour = type)) + 
+  geom_density() + 
+  facet_grid(~type, scales = "free")
+
+test3 %>%
+  select(Link, strain, tension) %>%
+  #gather(key = type, value = value, -Link) %>%
+  ggplot(aes(x = strain)) + 
+  geom_density() 
+
+#
+#
+#PLotting the mean height of A and B groups shows that the models are seperable apart from types A and B
+#
+height_means_by_group <- height_solution_peel %>%
+  group_by(Network, graph, class) %>%
+  summarise(mean = mean(z))
+
+height_means <- height_solution_peel %>%
+  group_by(Network, graph) %>%
+  summarise(mean = mean(z))
+
+height_means_by_group %>%
+  spread(key = class, value = abs(mean)) %>%
+  ggplot(aes(x = A, y = B, colour = Network)) + geom_point()
+
+height_means_by_group %>%
+  spread(key = class, value = abs(mean)) %>%
+  ggplot(aes(x = Network, y = A, colour = Network)) + geom_boxplot()
+
+
+strain_solution_peel %>%
+  group_by(Network) %>%
+  summarise(mean_strain = mean(strain),
+            median_strain = median(strain),
+            sd_median = sd(strain))
+
+
+peel_strain_sum <- strain_solution_peel %>%
+  group_by(Network, graph) %>%
+  summarise(mean_strain = mean(strain),
+            median_strain = median(strain),
+            sd_strain = sd(strain),
+            mean_tension = mean(tension),
+            median_tension = median(tension),
+            sd_tension = sd(tension)) %>%
+  left_join(height_means_by_group %>%
+              filter(class=="A"))
+  left_join(height_means)
+
+
+peel_strain_sum %>%
+  ggplot(aes(y = mean, x = sd_tension, colour = Network)) +
+  geom_density_2d() 
+##########
+##########
+##
+##
+## 
+##
+##
+##########
+##########
+peel_strain_sum %>%
+  ggplot(aes(x = mean_tension, y = mean, colour = Network)) + geom_point(alpha = 0.8) +
+  labs(title = "Separating Peel's quintet using embedded height and strain",
+       x = "Mean edge strain",
+       y = "Mean node height of class A")
+  ggsave(file.path(FiguresFolder, "Seperating_Peels_quintet.pdf"))
+#This demonstrates that the algorithm is topologically sensitive.
+#Multiclass groups may be seperable using the 1 vs all method common in multiclass logitic regression, then seperating in a dimensional space equivalent to 2*(number of classes -1), that is beyond the scope of the paper.
+
+  #this file path is for casa presentation. delete after
+ggsave(file.path(Figures_path,  "Seperating_Peels_quintet.pdf"))
+
+#using the mean works pretty well, but using the median can't seperate A and B
+
+strain_solution_peel %>%
+  group_by(Network, graph) %>%
+  summarise(mean_strain = mean(strain),
+            median_strain = median(strain)) %>%
+  ggplot(aes(colour = Network, x = mean_strain)) + geom_density()
+
+
+    strain_solution_peel %>%
+  ggplot(aes( x = strain, group = graph)) + geom_density(aes(colour = Network), alpha = 0.1)
+
+
+strain_solution_peel %>%
+  ggplot(aes(x = strain, colour = Network)) + geom_density() 
+
+test <- as_data_frame(quintet_g_list[[5]]) %>%
+  mutate(Link = paste(from, to, sep = "-"))%>%
+  left_join(strain_solution_peel %>% filter(Network == "E"))
+
+graph_from_data_frame(test) %>%
+  ggraph() +
+  geom_edge_fan0(aes(colour = percentile_strain)) +
+  scale_edge_colour_gradient2( low = "blue", mid = "white",
+  high ="red", midpoint = 0.5, space = "Lab",
+  na.value = "grey50", guide = "edge_colourbar")
+
+#
+#
+#This essentially looks at the way that the models converged and tries to find differences
+#
+
+
+results_peel <-1:length(files) %>% map_df(~{
+  NodeList <- read_rds(files[.x])$results %>%
+    mutate(Network = str_split(basename(files[.x]), pattern = "_")[[1]][2],
+           graph = str_split(basename(files[.x]), pattern = "_")[[1]][3] %>% gsub(".rds", "", .))
+  
+})
+
+
+
+test2 <- results_peel %>%
+  filter(Network=="A") 
+
+test3 <- results_peel %>%
+  select(t, strain, graph, Network) %>%
+  spread(key = t, value = strain) %>%
+  select(-graph) %>%
+  group_by(Network) %>%
+  summarise_all(mean) %>%
+  gather(key = t, value = strain, -Network) %>%
+  mutate(t = as.numeric(t))
+
+  
+test3 %>%
+  ggplot(aes(x = t, y = strain, colour = Network)) +
+    geom_line()
+ 
+
+vel_peel <- results_peel %>%
+  select(t, velocity, graph, Network) %>%
+  spread(key = t, value = velocity) %>%
+  select(-graph) %>%
+  group_by(Network) %>%
+  summarise_all(mean) %>%
+  gather(key = t, value = velocity, -Network) %>%
+  mutate(t = as.numeric(t))
+
+vel_peel %>%
+  ggplot(aes(x = t, y = velocity, colour = Network)) +
+    geom_line()
+
+
+acc_peel <- results_peel %>%
+  select(t, acceleration, graph, Network) %>%
+  spread(key = t, value = acceleration) %>%
+  select(-graph) %>%
+  group_by(Network) %>%
+  summarise_all(mean) %>%
+  gather(key = t, value = acceleration, -Network) %>%
+  mutate(t = as.numeric(t))
+
+acc_peel %>%
+  ggplot(aes(x = log10(t), y = log10(acceleration), colour = Network)) +
+    geom_line()
+
+
+```
+
+##Peel knn
+```{r}
+library(rsample)
+library(VGAM)
+library(class)
+library(yardstick)
+#create the dataset to test the nearest neighbours
+test <- peel_strain_sum %>% ungroup %>%
+  select(mean_strain, mean_height = mean, Network) 
+
+#create the formula to use
+mod_form <- as.formula(Network ~ mean_strain + mean_height)
+
+#create the ten sets of repeat folds
+#make a large number of repeats to be able to get distribution
+set.seed(4622)
+rs_obj <- vfold_cv(test, v = 10, repeats = 100)#, strata = Network)
+rs_obj
+
+#the function that will return the accuracy of each fold
+knn_holdout_results <- function(splits, k, ...) {
+  train_df = analysis(splits)
+
+    # Save the 10%
+  holdout <- assessment(splits)
+    # Fit the model to the 90%
+    mod <- class::knn(train = train_df %>% select(-Network), 
+               cl = train_df$Network, 
+                 test = holdout%>% select(-Network), k = k)
+
+  # `augment` will save the predictions with the holdout data set
+  res <- holdout %>% mutate(pred = factor(mod, levels = c("A", "B", "C", "D", "E")),
+                            Network = factor(Network, levels = c("A", "B", "C", "D", "E")))
+
+  #Output the accuracy of the model
+  accuracy(res, Network, pred)
+}
+
+log_holdout_results <- function(splits, ...) {
+  train_df = analysis(splits)
+
+    # Save the 10%
+  holdout <- assessment(splits)
+    # Fit the model to the 90%
+    mod <- vglm(Network ~., family=multinomial, data = train_df)
+
+  # `augment` will save the predictions with the holdout data set
+ res <- predict(mod, holdout, type="response") %>% apply(., 1, which.max)
+ 
+ res <- holdout %>%
+   mutate(pred =  predict(mod, holdout, type="response") %>% 
+            apply(., 1, which.max)%>% LETTERS[.] %>% factor(., levels = c("A", "B", "C", "D", "E")),
+          Network = factor(Network, levels = c("A", "B", "C", "D", "E")))
+
+  #Output the accuracy of the model
+  accuracy(res, Network, pred)
+}
+
+
+splits <- rs_obj$splits[[1]]
+example <- knn_holdout_results(rs_obj$splits[[1]], k = 5,  mod_form)
+
+
+nearest_k_results <-1:10 %>% map_df(~{
+test2 <- map2_df(.x = rs_obj$splits, 
+                 .y = .x, 
+                     .f =  ~knn_holdout_results(.x, .y,  mod_form))
+
+tibble(k = .x, accuracy =mean(test2$.estimate))
+
+})
+
+
+nearest_k_results %>%
+  ggplot(aes(x = k, y = accuracy )) + 
+  geom_line() +
+  labs(title = "The mean accuracy for 100 repeats of 10 fold cross validation for knn classifier", 
+       y = "mean accuracy",
+       x ="nearest neighbours")
+#this file path is for casa presentation. delete after
+ggsave(file.path(Figures_path, "knn_accuracy.pdf"))
+
+
+log_reg_results <-rs_obj$splits %>% map_df(~{
+test2 <- log_holdout_results(.x,  mod_form)
+
+tibble(accuracy =mean(test2$.estimate))
+
+})
+
+#aggregate by the number of repeats
+boot_res <- log_reg_results %>%
+  mutate(v = rep(1:100, each = 10)) %>%
+  group_by(v) %>%
+  summarise(accuracy = mean(accuracy))
+
+#get mean accuracy
+mean(boot_res$accuracy)
+
+#plot distribution of accuracy
+boot_res %>%
+  ggplot(aes(x  = accuracy )) + 
+  geom_density()
+
+```
+
+
+#Test differe load profiles
+
+
+If I can re-construct the load profiles shown here I can use for different analyses
+```{r}
+
+setwd("/home/jonno/Dropbox/Jonathan_Bourne_Phd_Folder/Tariff and Transport")
+
+test <- read_xlsx("Tariff & Transport Model_2018_19 Tariffs_External.xlsm", sheet = "Transport", skip = 11) %>%
+  slice(1:959)
+
+test2 <-test %>% select(40:59) 
+
+test2[is.na(test2)] <-0
+
+test2 %>% summarise_all(sum)
+
+test3 <- test2 %>% select(contains("Demand")) %>%cor()
+
+```
+

@@ -1,25 +1,26 @@
 {
     "collab_server" : "",
     "contents" : "",
-    "created" : 1574930383655.000,
-    "dirty" : false,
+    "created" : 1575019867765.000,
+    "dirty" : true,
     "encoding" : "UTF-8",
     "folds" : "",
     "hash" : "0",
-    "id" : "2FED1094",
-    "lastKnownWriteTime" : 1573665720,
-    "last_content_update" : 1573665720,
-    "path" : "~/ProportionalLoading/Proportional Loading Code.Rmd",
+    "id" : "39B362FD",
+    "lastKnownWriteTime" : 1575024466,
+    "last_content_update" : 1575024721066,
+    "path" : "~/introduction_to_sets/introduction_to_sets.Rmd",
     "project_path" : null,
     "properties" : {
         "chunk_output_type" : "console",
-        "cursorPosition" : "1629,24",
-        "scrollLine" : "1628"
+        "cursorPosition" : "2246,0",
+        "docOutlineVisible" : "1",
+        "scrollLine" : "2220"
     },
     "read_only" : false,
     "read_only_alternatives" : [
     ],
-    "relative_order" : 1,
+    "relative_order" : 2,
     "source_on_save" : false,
     "source_window" : "",
     "type" : "r_markdown"

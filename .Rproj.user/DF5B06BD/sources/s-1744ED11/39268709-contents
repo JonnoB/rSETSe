@@ -1,0 +1,148 @@
+---
+title: "karate"
+author: "Jonathan Bourne"
+date: "28/11/2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+This markdown is an experiment with the zachery karate club
+
+```{r}
+packages <- c("tidyverse", "igraph", "igraphdata", "minpack.lm", "ggraph")
+
+new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+
+select <- dplyr::select
+arrange <- dplyr::arrange
+sapply(packages, library, character.only = TRUE)
+
+library(PowerGridNetworking)
+library(NetworkSpringEmbedding)
+
+Figures_path <- "/home/jonno/Dropbox/Apps/ShareLaTeX/Spring_system_introduction_CASA/Figures"
+```
+
+
+THe weights are all 1 or larger. I will say that the wieght is the tolerance. Thus the flow is always 1.
+
+The spring stiffness is
+
+```{r}
+data("karate", package="igraphdata")
+
+shortest_list <-shortest_paths(karate, from = 1, to = 34, mode = "all" , weights = get.edge.attribute(g, "weight"), output = "both")
+
+flow_df <- subgraph.edges(karate, test$epath[[1]]) %>% as_data_frame() %>% 
+  mutate(routes = 1) %>% #trying to think how this can be generalised
+  group_by(from, to) %>%
+  summarise(routes = sum(routes))
+
+karate_edge_df <- as_data_frame(karate) %>%
+  mutate(temporary_flow = 1) %>%
+  left_join(flow_df) %>%
+  mutate(routes = ifelse(is.na(routes), 0, routes),
+         edge_name = paste(from, to, sep = "_"))
+karate_node_df <- as_data_frame(karate, what = "vertices") %>%
+  select(name, everything()) %>%
+  mutate(force = case_when(
+    name =="Mr Hi" ~1,
+    name == "John A" ~-1,
+    TRUE ~0
+  ))
+
+g <- graph_from_data_frame(karate_edge_df, directed = FALSE, vertices = karate_node_df)  %>%
+        set.edge.attribute(. , "distance", value = 1) %>%
+        set.edge.attribute(., "Area", value = 1) %>%
+        calc_spring_youngs_modulus(., "temporary_flow", "weight", minimum_value = 100, stretch_range = 1000) %>%
+        calc_spring_constant(., E ="E", A = "Area", distance = "distance") 
+
+#Flow can be calculated as the shortest path route between John A and Mr Hi
+
+karate_SETS <- calculate_SET(g, force = "force", 
+              flow = "routes", 
+              distance = "distance", 
+              capacity = "weight",
+              edge_name = "edge_name",
+              k = "k",
+              tstep = 0.02,
+              tol = 10e-14,
+              maxIter = 20000,
+              mass = 1,
+              verbose = FALSE)
+
+
+
+#function that finds what fraction of the full range the metric is
+kappa <- function(value){
+  
+  (value-min(value))/(max(value)-min(value))
+  
+}
+
+
+nodes <- karate_SETS$node_embeddings %>%
+  mutate(z = kappa(z))
+
+edges <- karate_SETS$edge_embeddings %>% 
+  mutate(tension = kappa(tension),
+         strain = kappa(strain))
+
+strain_graph <- as_data_frame(g) %>%
+  left_join(edges %>% select(edge_name, tension, strain)) %>%
+  graph_from_data_frame(., directed = FALSE, 
+                        vertices = karate_node_df %>%
+  left_join(nodes %>% select(name = node, elevation = z))
+                        ) %>%
+        set.vertex.attribute(., "betweenness", value = betweenness(.))
+
+tree_strain <- hclust_graph(strain_graph, weight = "strain", method = "single")
+tree_tension <- hclust_graph(strain_graph, weight = "tension", method = "single")
+
+cutree(test, k = 2) 
+
+check_groups <- tibble(name = names(cutree(tree_strain, k = 2)), 
+                       strain_group = cutree(tree_strain, k = 2) , 
+                       tension_group = cutree(tree_tension, k = 2)) %>%
+  left_join(karate_node_df, .) %>%
+  mutate(color = case_when(
+    strain_group ==  Faction ~ strain_group,
+    TRUE ~ as.integer(3)
+  ))
+
+
+table(check_groups$Faction, check_groups$tension_group)
+
+table(check_groups$Faction, check_groups$strain_group)
+
+```
+
+plot karate club
+```{r}
+
+seed(345)
+ggraph(strain_graph) + 
+    geom_edge_link2(aes(colour = tension), width = 0.7, edge_alpha =1) + 
+      geom_node_point( size = 3.6)+
+    geom_node_point(aes(colour = elevation, size = ifelse(name %in% c("Mr Hi", "John A"), 4, 3))) + 
+  scale_size_continuous(range = c(3, 6))+
+  scale_edge_colour_viridis() +
+   scale_color_viridis_c(option = "B") +
+  labs(title = "Node elevation and edge tension for the Zachery karate club") +
+  guides( size = "none")
+
+ggsave(file.path(Figures_path, "karate_embeddings.pdf"))
+seed(345)
+ggraph(strain_graph) + 
+    geom_edge_link2(aes(colour = tension), width = 0.7, edge_alpha =1) + 
+      geom_node_point( size = 3.6)+
+    geom_node_point(aes(colour = as.factor(Faction), size = ifelse(name %in% c("Mr Hi", "John A"), 4, 3))) + 
+  scale_size_continuous(range = c(3, 6))+
+  scale_edge_colour_viridis() +
+  labs(title = "Node elevation and Edge tension for the Zachery karate club", colour = "Faction") +
+  guides( size = "none")
+ggsave(file.path(Figures_path, "karate_Faction.pdf"))
+```
+

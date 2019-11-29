@@ -1,0 +1,101 @@
+---
+title: "Untitled"
+author: "Jonathan Bourne"
+date: "13/09/2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+This code needs to be run after the SytemDynamics set up chunk
+
+```{r}
+IEEE_data_folder <- file.path(basewd, "IEEE power flow data")
+Project_folder <- "/home/jonno/Dropbox/IEEE_Networks" #/media/jonno/Seagate Expansion Drive/IEEE_Networks"
+IEEE_networks <- file.path(Project_folder, "IEEE_network_files")
+
+```
+
+
+Data in common format from
+http://labs.ece.uw.edu/pstca/
+https://egriddata.org/dataset/ieee-30-bus-power-flow-test-case
+
+
+A useful paper for cyber physical references and stufff to do with power grids. Electrical Engineer friendly
+-Cyber-Physical Models for Power Grid Security Analysis: 8-Substation Case 
+
+#Matpower version
+
+explanation of the matpower case format can be found here
+https://matpower.org/docs/ref/matpower5.0/caseformat.html
+
+```{r}
+
+the_ieee_test_cases <- list.files("/home/jonno/pglib-opf-master", pattern = "ieee.m", full.names = TRUE)
+
+the_ieee_test_cases
+
+
+
+c(14, 30, 57, 118, 300) %>% walk(~{
+  
+  
+  mat_dat <- matpower_loader(the_ieee_test_cases[which.max(grepl(.x, the_ieee_test_cases))], output_graph = F)
+  
+  bus_data <- mat_dat$bus %>%
+    select(bus = bus_i, demand = Pd, generation = Pmax) %>%
+    mutate(net_generation = generation - demand,
+           Name = bus)
+  
+  branch_data <- mat_dat$branch %>% #mutate(b1 = 1/x)
+    select(fbus, tbus, Y = x ) %>%
+    mutate(Y = 1/Y, #simplification for DC power flow assumptions
+           edge_name = paste(fbus, tbus, sep = "-")) %>% #name the links
+    group_by(fbus, tbus, edge_name) %>%
+    #Remove parallel lines summing the susceptances
+    summarise(
+      Y = sum(Y)) %>% ungroup
+  
+  
+  g<- graph_from_data_frame(branch_data, directed = F, vertices = bus_data)
+  
+  g <-  BalencedGenDem(g, 
+                       Demand = "demand",
+                       Generation = "generation",
+                       OutputVar = "net_generation")
+  
+  SlackRef <- SlackRefFunc(g, name = "name", Generation = "generation")
+  
+  g <- PowerFlow(g, SlackRef = SlackRef$name, EdgeName ="edge_name", VertexName = "name", Net_generation = "net_generation", power_flow = "power_flow")
+  
+  saveRDS(g, file = file.path(power_grid_graphs_path , paste0("IEEE_", .x, "_igraph.rds")))
+  
+})
+
+```
+
+
+
+#Plot 118
+
+```{r}
+
+  IEEE_number <- 118
+
+g <- read_rds(file.path(power_grid_graphs_path , paste0("IEEE_", IEEE_number, "_igraph.rds"))) %>%
+  PowerFlow(., SlackRef = "1", EdgeName ="edge_name", VertexName = "name", Net_generation = "net_generation", power_flow = "power_flow")
+
+#uses ggraph!
+set.seed(158)
+ggraph(g, layout = layout_with_fr(g)) +
+   geom_edge_link2(aes(colour = abs(power_flow)), width = 0.7) +
+  scale_edge_colour_viridis() +
+  geom_node_point( aes(shape =  case_when(net_generation ==0 ~"Transmission",
+                                        net_generation > 0 ~"Generation",
+                                        TRUE ~"Demand")),
+                   size = 2.5) +
+  labs(edge_colour = "Power flow", shape = "Node type", "") +
+  ggtitle("IEEE 118 power grid with Fruchtman Reingold projection")
+ggsave(file.path(Figures_path, "IEEE_118_fr_proj.pdf"))
+```
+

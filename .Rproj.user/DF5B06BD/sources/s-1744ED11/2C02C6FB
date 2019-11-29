@@ -1,0 +1,33 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1575023644558.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "2C02C6FB",
+    "lastKnownWriteTime" : 1575023463,
+    "last_content_update" : 1575023644558,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "80B0BD3B",
+        "caption" : "quintet_2",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=quintet_2&cache_key=80B0BD3B",
+        "displayedObservations" : 50,
+        "environment" : "",
+        "expression" : "quintet_2",
+        "object" : "quintet_2",
+        "preview" : 0,
+        "totalObservations" : 50,
+        "variables" : 6
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

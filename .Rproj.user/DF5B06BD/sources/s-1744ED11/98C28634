@@ -1,25 +1,26 @@
 {
     "collab_server" : "",
     "contents" : "",
-    "created" : 1574930383655.000,
+    "created" : 1575023171973.000,
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
     "hash" : "0",
-    "id" : "2FED1094",
-    "lastKnownWriteTime" : 1573665720,
-    "last_content_update" : 1573665720,
-    "path" : "~/ProportionalLoading/Proportional Loading Code.Rmd",
+    "id" : "98C28634",
+    "lastKnownWriteTime" : 1575017734,
+    "last_content_update" : 1575017734,
+    "path" : "~/introduction_to_sets/Karate_club.Rmd",
     "project_path" : null,
     "properties" : {
         "chunk_output_type" : "console",
-        "cursorPosition" : "1629,24",
-        "scrollLine" : "1628"
+        "cursorPosition" : "145,0",
+        "scrollLine" : "119",
+        "tempName" : "Untitled1"
     },
     "read_only" : false,
     "read_only_alternatives" : [
     ],
-    "relative_order" : 1,
+    "relative_order" : 3,
     "source_on_save" : false,
     "source_window" : "",
     "type" : "r_markdown"
