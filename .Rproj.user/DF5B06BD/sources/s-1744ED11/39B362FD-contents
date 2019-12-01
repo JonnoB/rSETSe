@@ -2236,8 +2236,8 @@ plot_list <- 1:5 %>%
           plot_list[[3]],
           plot_list[[4]],
           plot_list[[5]],
-          # labels = c('Fig B','Fig C'),
-           # label_x = 0.2,
+           labels = c('A','B', "C", "D", "E"),
+            label_x = 0.03,
           ncol = 3,
           nrow = 2) +   
    draw_label(

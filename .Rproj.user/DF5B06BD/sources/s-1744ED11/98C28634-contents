@@ -96,16 +96,20 @@ strain_graph <- as_data_frame(g) %>%
                         vertices = karate_node_df %>%
   left_join(nodes %>% select(name = node, elevation = z))
                         ) %>%
-        set.vertex.attribute(., "betweenness", value = betweenness(.))
+        set.vertex.attribute(., "betweenness", value = betweenness(.)) %>%
+  set.edge.attribute(., "inv_weight", value = 1/get.edge.attribute(., "weight"))
 
 tree_strain <- hclust_graph(strain_graph, weight = "strain", method = "single")
 tree_tension <- hclust_graph(strain_graph, weight = "tension", method = "single")
+tree_inv_weight <- hclust_graph(strain_graph, weight = "inv_weight", method = "single")
 
+plot(tree_inv_weight)
 cutree(test, k = 2) 
 
 check_groups <- tibble(name = names(cutree(tree_strain, k = 2)), 
                        strain_group = cutree(tree_strain, k = 2) , 
-                       tension_group = cutree(tree_tension, k = 2)) %>%
+                       tension_group = cutree(tree_tension, k = 2),
+                       inv_weight_group = cutree(tree_inv_weight, k = 2)) %>%
   left_join(karate_node_df, .) %>%
   mutate(color = case_when(
     strain_group ==  Faction ~ strain_group,
@@ -116,6 +120,8 @@ check_groups <- tibble(name = names(cutree(tree_strain, k = 2)),
 table(check_groups$Faction, check_groups$tension_group)
 
 table(check_groups$Faction, check_groups$strain_group)
+
+table(check_groups$Faction, check_groups$inv_weight_group)
 
 ```
 
@@ -143,6 +149,6 @@ ggraph(strain_graph) +
   scale_edge_colour_viridis() +
   labs(title = "Faction Allegiance and Edge tension for the Zachery karate club", colour = "Faction") +
   guides( size = "none")
-ggsave(file.path(Figures_path, "karate_Faction.pdf"))
+  ggsave(file.path(Figures_path, "karate_Faction.pdf"))
 ```
 
