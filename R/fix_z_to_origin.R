@@ -1,24 +1,18 @@
-#' fix z to origin
+#' fix elevation to origin
 #' 
-#' This function makes the elevation of the different blocks all relative to the same fixed point, this allows easy use of bi-connected components
+#' This function makes the elevation of the different blocks all relative to the same fixed point, 
+#' this allows easy use of bi-connected components This is a helper function only.
+#' z is used instead of elevation for legacy issues. This can be changed when I can be bothered
+#' 
 #' 
 #' The function needs to be renamed to make it more SETSe friendly something like fix_elevation_to_origin. But I need to see what it will impact first
 #' 
 #' @param relative_blocks a data frame containing the outputs from the 
 #' @param ArticulationVect The articulation nodes of the network.
-#' @export
 
 fix_z_to_origin <- function(relative_blocks, ArticulationVect){
-  #This function makes the z values of the different blocks al relative to the same fixed point
-  #a single component is chosen, usually the largest and this is given the ID = 0.
-  #All the relative distance from origin is then fixed to that block and propergated through
-  #the rest of the block tree using the articulation points.
-  #relative blocks a data frame containing the outputs from the 
-  #ArticulationVect. The articulation nodes of the network.
-  
-  
-  #This is not correct
-  # the articulation points are not giving the right answer
+
+  #This function needs some further explaining!
   
   target_blocks <- 0
   absolute_blocks <- relative_blocks %>% filter(Reference_ID ==-1)
@@ -27,14 +21,13 @@ fix_z_to_origin <- function(relative_blocks, ArticulationVect){
   
   next_group <- relative_blocks %>% 
     filter(Reference_ID %in% target_blocks) %>%
-    mutate(z = z )
+    mutate(elevation = elevation ) #can this be removed? It doesn't seem to do anything
   
   while(n <= nrow(Articulation_df)){
     
-    print(n)
     #add new absolute references to the dataframe
     absolute_blocks <- next_group %>%
-      bind_rows(absolute_blocks,.)
+      bind_rows(absolute_blocks,.) #this should be pre-allocated
     
     #add new articulation nodes to the dataframe
     Articulation_df <- next_group %>%
@@ -49,7 +42,7 @@ fix_z_to_origin <- function(relative_blocks, ArticulationVect){
     
     Art_n <-Articulation_df$node[n]
     
-    #sumtract art_n relative from all zed scores
+    #subtract art_n relative from all elevation scores
     #ass art_n abs to all values
     
     #This has to be done by block not all blocks together
@@ -63,10 +56,10 @@ fix_z_to_origin <- function(relative_blocks, ArticulationVect){
           filter(Reference_ID %in% .x) 
         
         local_origin <- temp %>%
-          filter(node == Art_n) %>% pull(z) #find the local origin which is the articulation node n
+          filter(node == Art_n) %>% pull(elevation) #find the local origin which is the articulation node n
           
         Block_abs_ref <- temp %>% 
-          mutate(z = z -local_origin + Articulation_df$z[n]) #add the global absolute reference
+          mutate(elevation = elevation -local_origin + Articulation_df$elevation[n]) #add the global absolute reference
         
         return(Block_abs_ref)
           

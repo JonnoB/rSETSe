@@ -23,7 +23,7 @@
 #' 
 #' 
 #' @export
-Create_stabilised_blocks <- function(g, 
+Create_stabilised_blocks_expanded <- function(g, 
                                      OriginBlock, 
                                      OriginBlock_number, 
                                      force ="net_generation", 
@@ -48,7 +48,7 @@ Create_stabilised_blocks <- function(g,
   StabilModels <- BlockNumbers %>% 
     map(~{
 
-      Out <- Find_network_balance(List_of_BiConComps[[.x]],
+      Out <- Find_network_balance_expanded(List_of_BiConComps[[.x]],
                                   force =force, 
                                   flow = flow, 
                                   tstep = tstep, 
@@ -72,43 +72,43 @@ Create_stabilised_blocks <- function(g,
   Block_tree <- biconnected_components(g)
   
   #extract the articulation nodes
-  ArticulationVect <- get.vertex.attribute(g, "name", Block_tree$articulation_points)
+  ArticulationVect <- names(Block_tree$articulation_points)
   
-  #place all nodes relative to the origin
-  relative_blocks1 <- 1:length(StabilModels) %>% 
+ #mark each node with the correct component ID
+  relative_blocks <- 1:length(StabilModels) %>% 
     map_df(~{
-      #print(.x) #It is a bit annoying and pointless now
-      StabilModels[[.x]]$node_status %>%
+           StabilModels[[.x]] %>%
         mutate(Reference_ID = .x)
       
     }) %>%
-    bind_rows(OriginBlock$node_status %>% 
+    bind_rows(OriginBlock %>% 
                 mutate(Reference_ID = 0)) %>%
     mutate(Articulation_node = (node %in% ArticulationVect ))
+
   
-  #get the network_dynamics dataframe for the total calculation
-  network_dynamics <- 1:length(StabilModels) %>% 
-    map_df(~{
-      StabilModels[[.x]]$network_dynamics %>%
-        mutate(component = .x)
-      
-    }) %>%
-    bind_rows(OriginBlock$network_dynamics %>% mutate(component = OriginBlock_number)) 
-  #The aggregation is commented out as there can be issues with machine tolerance which could result in erroneous values
-  #It can also be useful to get the individual component values out.
-  #%>%
-   # group_by(t) %>%
-    #summarise_all(sum)
-  
-  
+  #Change the node height in all blocks to be correct relative to the originblock
+  #place all nodes relative to the origin
   #The height of each node relative to the origin and normalised
-  node_status <-fix_z_to_origin(relative_blocks1, ArticulationVect) %>%
+
+  Out <- unique(round(relative_blocks$t,2)) %>%map_df(~{
+    
+    if((.x %% 1)==0){print(.x)}
+    
+    fix_z_to_origin(relative_blocks %>%
+                                    filter(round(t,3)==.x), 
+                                  ArticulationVect) 
+    
+  })   %>%
+    group_by(node, round(t, 3)) %>%
+    summarise_all(mean) %>% #the articulation nodes appear multiple times this removes them
+    mutate(Articulation_node = Articulation_node==1)    
+  
+  node_status <-fix_z_to_origin(relative_blocks, ArticulationVect) %>%
     group_by(node) %>%
-    summarise_all(mean) %>%
+    summarise_all(mean) %>% #the articulation nodes appear multiple times this removes them
     mutate(Articulation_node = Articulation_node==1)
   
-  #combine the node_status and the network_dynamics into a single list
-  Out <- list(node_status = node_status, network_dynamics = network_dynamics)
+  Out <- node_status
   
   return(Out)
   

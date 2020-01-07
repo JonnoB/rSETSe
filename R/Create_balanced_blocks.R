@@ -22,7 +22,7 @@ create_balanced_blocks <- function(g, force = "net_generation", flow = "power_fl
   
   bigraph <- biconnected_components(g)
   
-  ArticulationPoints <- get.vertex.attribute(g, "name", bigraph$articulation_points)
+  ArticulationPoints <- get.vertex.attribute(g, "name", bigraph$articulation_points) #can also use names(biconnected.components(g)$articulation_points)
   
   
   List_of_BiConComps <-1:length(bigraph$components) %>%

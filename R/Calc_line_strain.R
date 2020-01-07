@@ -1,37 +1,27 @@
 #' Calculate line strain
 #' 
-#' This function calculates the line strain characteristics for a graph
+#' This function calculates the line strain characteristics for a graph. It ia a helper function of 
+#' find_stabil_system and is rarely called by the ser. It is a much faster version of'calc_tension_strain'.
 #' 
-#' @param g An igraph object of the network
-#' @param solved_heigh_df A data frame. This is the results of Create_stabilised_blocks or Find_network_balance
-#' @param distance A character string. The name of the edge attribute that contains the distance between two nodes. The default is "distance"
-#' @param capcity A character string. The name of the edge attribute that contains the flow capacity of the edge between two nodes. 
-#' @param flow A character string. The name of the edge attribute that contains the flow between the two nodes at the end of the edge. The default is "power_flow".
-#' @param edge_name   A character string. The name of the edge attribute that contains the edge name. The default is "edge_name".
-#' @export
+#' @param edge_mat Numeric matrix. 
+#' @param solved_height_mat A numeric matrix. This matrix is the result of the Calc_system_dynamics functions
+#' @param merge_order_mat A numeric matrix. This provides the order that the vectors will be provided in 
+#' 
 
-Calc_line_strain <- function(g, solved_height_df, distance = "distance", capacity, flow = "power_flow", edge_name = "edge_name"){
-
-  #convert the character strings to symbols
-  #afterwords the symbols can be evaluated by curly curly {{}}
-  #Really replacing the sym function with inline .data[[]] would be better but I'll have to leave that for another time
-  distance <- sym(distance)
-  capacity <- sym(capacity)
-  flow <- sym(flow)
-  edge_name <- sym(edge_name)
+Calc_line_strain <- function(edge_mat, solved_height_mat, merge_order_mat){
   
-  Out <- as_data_frame(g) %>% as_tibble %>%
-    left_join(., solved_height_df %>% select(node, z), by = c("from"= "node")) %>%
-    left_join(., solved_height_df %>% select(node, z), by = c("to"= "node")) %>%
-    mutate(dz = abs(z.x-z.y),
-           mean_z = (z.x+z.y)/2,
-           H = sqrt(dz^2 +({{distance}})^2),
-           strain = (H-{{distance}})/{{distance}},
-           alpha = {{capacity}}/abs({{flow}}),
-           line_load = abs({{flow}})/{{capacity}},
-           percentile_strain = percent_rank(strain)) %>%
-    select({{edge_name}}, alpha, line_load, dz, H, strain, percentile_strain, mean_z, {{flow}})
+  ##
+  #This is the matrix version
+  ##
+  edge_mat[,2] <- solved_height_mat[merge_order_mat[,1],2]
+  edge_mat[,3] <- solved_height_mat[merge_order_mat[,2],2]
   
-  return(Out)
+  
+  #base is faster than dplyr, when it comes to lots of iterations it adds up
+  edge_mat[,4] <- abs(edge_mat[,2]-edge_mat[,3])
+  edge_mat[,5] <- sqrt(edge_mat[,4]^2 + edge_mat[,1]^2)
+  edge_mat[,6]<- (edge_mat[,5]-edge_mat[,1])/edge_mat[,1]
+  
+  return(edge_mat)
   
 }

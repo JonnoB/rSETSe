@@ -1,35 +1,47 @@
 #' Calculate system dynamics
 #' 
 #' This is a helper function that calculates the dynamics at time t of all the nodes in the system.
-#' It is seldom called on it's own but is called by other functions.
+#' It is seldom called on it's own but is called by other functions. This function comes in a version for sparse and dense matrices.
 #' 
-#' The output of the function is a dataframe that is the next iteration of the NodeStatus dataframe the function recieves.
+#' The output of the function is a matrix that is the next iteration of the NodeStatus dataframe the function recieves.
 #' 
-#' @param NodeStatus A data frame The current dynamics and forces experienced by the node a data frame.
-#' @param EdgeNode 
+#' @param NodeStatus A numeric matrix frame The current dynamics and forces experienced by the nodes. The node ID is not included
+#' This means the order of the matrix has to be fixed.
+#' @param ten_mat A numeric matrix. This matrix must be a zero matrix or an adjacency matrix of dimensions nxn where n is the number of nodes
+#' @param damp_mat Identical to the ten_mat. This is supposed to help reduce memory, But I don't think it does
 #' @param kvect A numeric vector of the spring stiffnesses
 #' @param dvect A numeric vector of the initial distances between the nodes
+#' @param mat_size a numeric scaler. The dimensions of the square matrix
 #' @param tstep A numeric value. The time step, measured in seconds, that will be used to calculate the new dynamic state
+#' @param non_empty_matrix A numeric matrix. This contains the node indexes in the adjacency matrix it has 4 columns
+#'  the row, the column, the absolute index the transpose of the absolute index.
 #' @param frctmultiplier A numeric value. Used to set a multiplier on the friction value. Generally leave this alone.
 #'
 #' @export
 
-Calc_System_Dynamics <- function(NodeStatus, EdgeNode, kvect, dvect, tstep = 1, frctmultiplier = 1){
+Calc_System_Dynamics <- function(NodeStatus, ten_mat, damp_mat, kvect, dvect, mat_size, tstep = 1, non_empty_matrix, frctmultiplier = 1){
   
-  Tension_vect <- Create_Tension_matrix(EdgeNode, NodeStatus$z, kvect, dvect) %>% rowSums()
-  Friction_vect <- Calc_Damping_matrix(EdgeNode, NodeStatus$velocity, kvect, NodeStatus$mass) %>% rowMeans()
+  #I am slightly unsure if the damping and tension are being updated in the right place. This isn't the end of the world
+  #If they are slightly behind but It may make the solution slightly more stable which would give faster convergence
   
-  NodeStatus2 <- NodeStatus %>%
-    mutate(z = Distance(z, velocity, acceleration, t0 = t, t1 = t + tstep),
-           velocity = velocity(velocity, acceleration, t, t + tstep),
-           NetTension =  Tension_vect,
-           friction = Friction_vect*frctmultiplier, #velocity*10,
-           NetForce = force + NetTension - friction,
-           acceleration = NetForce/mass,
-           Delta_acceleration = (acceleration-NodeStatus$acceleration)/tstep, #Find change in acceleration, used in early termination
-           t = t + tstep)
+  # #Create the damping matrix #The original function can be deleted
+  damp_mat[non_empty_matrix[,3]]<- 2*sqrt(kvect*NodeStatus[non_empty_matrix[,1],3])*NodeStatus[non_empty_matrix[,1],5]
   
-  paste("acceleration", sum(abs(NodeStatus2$acceleration)), "velocity", sum(abs(NodeStatus2$velocity)))
+  NodeStatus2 <- NodeStatus
+  NodeStatus2[,4] <- .rowSums(Create_Tension_matrix(ten_mat,
+                                                     zvect = NodeStatus[non_empty_matrix[,1],2],
+                                                     zvect_t = NodeStatus[non_empty_matrix[,2],2],
+                                                     dvect, kvect,
+                                                     non_empty_index = non_empty_matrix[,3]),
+                              m = mat_size, n = mat_size) #tension
+  NodeStatus2[,2] <- Distance(NodeStatus[,2], NodeStatus[,5], NodeStatus[,8], t0 = NodeStatus[,10], t1 = NodeStatus[,10] + tstep) #distance
+  NodeStatus2[,5] <- velocity(NodeStatus[,5], NodeStatus[,8], NodeStatus[,10], NodeStatus[,10] + tstep) #velocity
+  
+  NodeStatus2[,6] <- .rowMeans(damp_mat, m = mat_size, n = mat_size)*frctmultiplier #friction
+  NodeStatus2[,7] <- NodeStatus2[,1] + NodeStatus2[,4] - NodeStatus2[,6] #Netforce
+  NodeStatus2[,8] <- NodeStatus2[,7]/NodeStatus2[,3] #acceleration
+  NodeStatus2[,9] <- (NodeStatus2[,8]-NodeStatus[,8])/tstep #delta acceleration...this can be removed
+  NodeStatus2[,10] <- NodeStatus[,10]+tstep #time
   
   return(NodeStatus2)
   

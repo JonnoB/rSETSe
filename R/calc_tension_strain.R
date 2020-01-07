@@ -31,10 +31,10 @@ calc_tension_strain <- function(g, height_embeddings_df, distance = "distance", 
   k <- sym(k)
   
   Out <- as_data_frame(g, what = "edges") %>% as_tibble %>%
-    left_join(., height_embeddings_df %>% select(node, z), by = c("from"= "node")) %>%
-    left_join(., height_embeddings_df %>% select(node, z), by = c("to"= "node")) %>%
-    mutate(de = abs(z.x-z.y), #change in elevation
-           mean_e = (z.x+z.y)/2, #mean elevation for the edge. simply the mean elevation for the nodes at both ends
+    left_join(., height_embeddings_df %>% select(node, elevation), by = c("from"= "node")) %>%
+    left_join(., height_embeddings_df %>% select(node, elevation), by = c("to"= "node")) %>%
+    mutate(de = abs(elevation.x-elevation.y), #change in elevation
+           mean_e = (elevation.x+elevation.y)/2, #mean elevation for the edge. simply the mean elevation for the nodes at both ends
            H = sqrt(de^2 +({{distance}})^2), #The total length of the edge. This is the hypotenuse of the triangle
            tension = {{k}}*(H-{{distance}}), #The tension in the edge following Hooks law
            strain = (H-{{distance}})/{{distance}}, #The mechanical strain of the edge

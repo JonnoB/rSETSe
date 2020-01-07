@@ -29,7 +29,7 @@ normalise_dc_load <- function(g,
   #calculate power flow to make sure flow values are correct
   SlackRef <- SlackRefFunc(g, name = node_name,
                            Generation = net_generation) #find the most appropriate node to be the slack bus
-   print(SlackRef)
+  
   g2 <- PowerFlow(g, SlackRef$name, 
                   EdgeName = edge_name, 
                   VertexName = node_name,
