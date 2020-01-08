@@ -34,7 +34,7 @@ Find_network_balance(g, force = "net_generation", flow = "power_flow",
 
 \item{verbose}{Logical. This value sets whether messages generated during the process are supressed or not.}
 
-\item{two_node_solution}{Logical. The}
+\item{two_node_solution}{Logical. The newton-raphson algo is used to find the correct angle}
 }
 \value{
 A list of two elements. A data frame with the height embeddings of the network as well as the convergence dynamics dataframe for the network

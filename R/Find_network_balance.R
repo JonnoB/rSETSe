@@ -15,7 +15,6 @@
 #' @param coef_drag A numeric. This sets the multiplier of friction. Only use if you want to be annoyed and confused
 #' @param tol A numeric. The tolerance factor for early stopping.
 #' @param sparse Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated
-#' @param verbose Logical. This value sets whether messages generated during the process are supressed or not.
 #' @param two_node_solution Logical. The newton-raphson algo is used to find the correct angle
 #' 
 #' @return A list of two elements. A data frame with the height embeddings of the network as well as the convergence dynamics dataframe for the network
@@ -23,27 +22,26 @@
 #' @export
 
 Find_network_balance <- function(g, 
-                                  force ="net_generation", 
-                                  flow = "power_flow", 
-                                  distance = "distance", 
-                                  edge_name = "edge_name",
-                                  tstep = 0.02, 
-                                  mass = 1, 
-                                  max_iter = 20000, 
-                                  coef_drag = 1, 
-                                  tol = 1e-6,
-                                  sparse = FALSE,
-                                  verbose = TRUE,
-                                  two_node_solution = TRUE){
+                                 force ="net_generation", 
+                                 flow = "power_flow", 
+                                 distance = "distance", 
+                                 edge_name = "edge_name",
+                                 tstep = 0.02, 
+                                 mass = 1, 
+                                 max_iter = 20000, 
+                                 coef_drag = 1, 
+                                 tol = 1e-6,
+                                 sparse = FALSE,
+                                 two_node_solution = TRUE){
   
   #helper function that prepares the data
   Prep <- Prepare_data_for_find_network_balance(g = g, 
-                                                 force = force, 
-                                                 flow = flow, 
-                                                 distance = distance, 
-                                                 mass = mass, 
-                                                 edge_name = edge_name,
-                                                 sparse = sparse)
+                                                force = force, 
+                                                flow = flow, 
+                                                distance = distance, 
+                                                mass = mass, 
+                                                edge_name = edge_name,
+                                                sparse = sparse)
   
   #do special case solution I should change this to a standalone function for ease of reading but it isn't important
   if(nrow(Prep$Link)==1 & two_node_solution){
@@ -89,8 +87,7 @@ Find_network_balance <- function(g,
       max_iter = max_iter, 
       coef_drag = coef_drag,
       tol = tol, 
-      sparse = sparse, 
-      verbose = verbose) 
+      sparse = sparse) 
     
   }
   

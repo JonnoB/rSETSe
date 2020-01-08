@@ -9,7 +9,7 @@ Find_network_balance_expanded(g, force = "net_generation",
   flow = "power_flow", distance = "distance",
   edge_name = "edge_name", tstep = 0.02, mass = 1,
   max_iter = 20000, coef_drag = 1, tol = 1e-06, sparse = FALSE,
-  verbose = TRUE)
+  verbose = TRUE, two_node_solution = TRUE)
 }
 \arguments{
 \item{g}{An igraph object. The network}
@@ -28,6 +28,8 @@ Find_network_balance_expanded(g, force = "net_generation",
 "converged" and the simulation terminates.}
 
 \item{verbose}{Logical value. Whether the function should output messages or run quietly.}
+
+\item{two_node_solution}{Logical. The newton-raphson algo is used to find the correct angle}
 
 \item{maxIter}{An interger. The maximum nuber of iterations before terminating the simulation}
 
