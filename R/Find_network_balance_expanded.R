@@ -73,9 +73,9 @@ Find_network_balance_expanded <- function(g,
              net_force = 0,
              acceleration = 0
       )  %>%
-      slice(rep(1:n(), max_iter)) %>% #repeats the rows max_iter times so that
+      slice(rep(1:n(), max_iter+1)) %>% #repeats the rows max_iter times so that
       group_by(node) %>%
-    mutate(t = (tstep*(1:max_iter))) %>%
+    mutate(t = (tstep*(0:max_iter))) %>%
       ungroup
 
   } else{

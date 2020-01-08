@@ -74,17 +74,20 @@ Create_stabilised_blocks_expanded <- function(g,
   #extract the articulation nodes
   ArticulationVect <- names(Block_tree$articulation_points)
   
+  full_list <- list()
+  full_list[BlockNumbers] <- StabilModels
+  full_list[[OriginBlock_number]] <- OriginBlock
+  
  #mark each node with the correct component ID
-  relative_blocks <- 1:length(StabilModels) %>% 
+  relative_blocks <- 1:length(full_list) %>% 
     map_df(~{
-           StabilModels[[.x]] %>%
-        mutate(Reference_ID = .x)
+      full_list[[.x]] %>%
+        mutate(component = .x)
       
     }) %>%
-    bind_rows(OriginBlock %>% 
-                mutate(Reference_ID = 0)) %>%
-    mutate(Articulation_node = (node %in% ArticulationVect ))
-
+    mutate(Articulation_node = (node %in% ArticulationVect ),
+           Iter = as.integer(t/tstep)) %>%
+    arrange(Iter, node) #arrange to be in the same order as the block diagram
   
   #Change the node height in all blocks to be correct relative to the originblock
   #place all nodes relative to the origin
