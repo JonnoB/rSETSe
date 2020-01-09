@@ -31,7 +31,7 @@ SETS_embedding <- function(g,
                           tol,
                           max_iter = 20000,
                           mass = 1,
-                          verbose = FALSE,
+                          #verbose = FALSE,
                           sparse = FALSE){
   
   #seperate out the network into blocks
@@ -57,7 +57,7 @@ SETS_embedding <- function(g,
                                                max_iter = max_iter,
                                                coef_drag = coef_drag,
                                                mass = mass,
-                                               verbose = verbose,
+                                             #  verbose = verbose,
                                                sparse = sparse)
   
   #print("Origin block complete, beggining remaining blocks")
@@ -75,7 +75,7 @@ SETS_embedding <- function(g,
                                                 tol = tol,
                                                 max_iter = max_iter,
                                                 mass = mass,
-                                                verbose = verbose,
+                                               # verbose = verbose,
                                                 sparse = sparse)
   
   # print("Height embeddings complete")

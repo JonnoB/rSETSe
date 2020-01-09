@@ -89,27 +89,25 @@ Create_stabilised_blocks_expanded <- function(g,
            Iter = as.integer(t/tstep)) %>%
     arrange(Iter, node) #arrange to be in the same order as the block diagram
   
+  print("loser")
+  component_adjust_mat <- adjust_components(g, OriginBlock = OriginBlock, force = force, flow = flow)
+  
+  print((dim(component_adjust_mat$floor)))
+  print(table(relative_blocks$node, relative_blocks$component))
+  
+  node_status <- relative_blocks %>%
+    mutate(elevation2 = elevation + as.vector(component_adjust_mat$ceiling %*% relative_blocks$elevation) + 
+             as.vector(component_adjust_mat$ceiling %*% relative_blocks$elevation))
+
   #Change the node height in all blocks to be correct relative to the originblock
   #place all nodes relative to the origin
-  #The height of each node relative to the origin and normalised
-
-  Out <- unique(round(relative_blocks$t,2)) %>%map_df(~{
-    
-    if((.x %% 1)==0){print(.x)}
-    
-    fix_z_to_origin(relative_blocks %>%
-                                    filter(round(t,3)==.x), 
-                                  ArticulationVect) 
-    
-  })   %>%
-    group_by(node, round(t, 3)) %>%
+  #The height of each node relative to the origin and normalised  
+  message("aggregating across iterations and nodes")
+  node_status <- test %>%
+    group_by(Iter, node) %>%
     summarise_all(mean) %>% #the articulation nodes appear multiple times this removes them
     mutate(Articulation_node = Articulation_node==1)    
   
-  node_status <-fix_z_to_origin(relative_blocks, ArticulationVect) %>%
-    group_by(node) %>%
-    summarise_all(mean) %>% #the articulation nodes appear multiple times this removes them
-    mutate(Articulation_node = Articulation_node==1)
   
   Out <- node_status
   

@@ -31,7 +31,6 @@ SETS_embedding_expanded <- function(g,
                           tol,
                           max_iter = 20000,
                           mass = 1,
-                          verbose = FALSE,
                           sparse = FALSE){
   
   #seperate out the network into blocks
@@ -57,13 +56,13 @@ SETS_embedding_expanded <- function(g,
                                                max_iter = max_iter,
                                                coef_drag = coef_drag,
                                                mass = mass,
-                                               verbose = verbose,
+                                            #   verbose = verbose,
                                                sparse = sparse)
   
   #print("Origin block complete, beggining remaining blocks")
   
   #Calculate the height embeddings using the Orgin block as a base
-  height_embeddings <- Create_stabilised_blocks(g = g,
+  height_embeddings <- Create_stabilised_blocks_expanded(g = g,
                                                 OriginBlock = OriginBlock,
                                                 OriginBlock_number = OriginBlock_number,
                                                 force = force,
@@ -75,7 +74,7 @@ SETS_embedding_expanded <- function(g,
                                                 tol = tol,
                                                 max_iter = max_iter,
                                                 mass = mass,
-                                                verbose = verbose,
+                                            #    verbose = verbose,
                                                 sparse = sparse)
 
   

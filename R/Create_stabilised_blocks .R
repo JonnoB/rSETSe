@@ -35,7 +35,7 @@ Create_stabilised_blocks <- function(g,
                                      distance, 
                                      max_iter, 
                                      mass, 
-                                     verbose = FALSE,
+                                #     verbose = FALSE,
                                      sparse){
   
   #Seperate out the graph into balanced blocks
@@ -58,8 +58,9 @@ Create_stabilised_blocks <- function(g,
                                   edge_name = edge_name,
                                   max_iter =  max_iter, 
                                   mass =  mass, 
-                                  sparse = sparse,
-                                  verbose = verbose)
+                                  sparse = sparse#,
+                                 # verbose = verbose.
+                                  )
 
       #print if the print requirement is on otherwise silent
       #if(!verbose){print(paste("Block" ,.x, "of", max(BlockNumbers) ,"termination", nrow(Out$network_dynamics) )) }
