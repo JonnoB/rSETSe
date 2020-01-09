@@ -1,6 +1,6 @@
 
 
-adjust_components <- function(g, OriginBlock, force, flow){
+adjust_components <- function(g, max_iter, force, flow){
   
   
   #The origin block is the largest connected component
@@ -64,7 +64,7 @@ adjust_components <- function(g, OriginBlock, force, flow){
   
   #This requires another loop. which checks to see if the component is part of the shortest path route for the nodes
   
-  floor_df_2<- ceiling_df_2 <- node_bicomp_relation  %>%
+  floor_df_2 <- ceiling_df_2 <- node_bicomp_relation  %>%
     mutate(path_component = NA,
            path_component2 = NA,
            target_node_name = NA) %>% slice(0)
@@ -72,7 +72,7 @@ adjust_components <- function(g, OriginBlock, force, flow){
   for(i in 1:length(bicomp_shortest_paths$vpath) ){
     target_shortest_path <-i
     
-    component_specific_floor_ceiling_nodes <- bicomp_shortest_paths$vpath[[target_shortest_path]]
+    #component_specific_floor_ceiling_nodes <- bicomp_shortest_paths$vpath[[target_shortest_path]]
     node_path <- bicomp_shortest_paths$vpath[[target_shortest_path]]
     edge_path <- bicomp_shortest_paths$epath[[target_shortest_path]] #this may not be necessary and then output can be "vpath" only
     
@@ -88,8 +88,8 @@ adjust_components <- function(g, OriginBlock, force, flow){
     
     floor_df <- template_nodes_df  %>%
       filter(path_component==1, #the node has to be on the shortest path
-             (path_component2>1 | #And the component the node is in needs to have a floor and ceiling
-                id == target_node_name) & # or be the target node
+             (path_component2 > 1 | #And the component the node is in needs to have a floor and ceiling
+                name == target_node_name) &  # or be the target node
                is_floor)#and all the nodes need to be floors
     
     #This finds the ceilings using the floor dataframe to subset the data
@@ -104,17 +104,21 @@ adjust_components <- function(g, OriginBlock, force, flow){
   }
   
   #these two peieces of code create the data frames that provide the references for all
+  
+  #The filtering logic is a bit tricky here might require various networks to test on
   ceiling_df <- node_bicomp_relation %>%
     left_join(ceiling_df_2 %>% select(ref_node = name, ref_component = component, name = target_node_name) , by = "name") %>%
-    filter(component !=  OriginBlock_number) %>%
+    filter(component !=  OriginBlock_number,
+           component != ref_component) %>% #no ceiling can be in the same component as the target component
     distinct(component, ref_node, ref_component) %>%
-    make_interaction_matrix(.) #calls the interaction function to create the final sparse matrix
+    make_interaction_matrix(., List_of_BiConComps) #calls the interaction function to create the final sparse matrix
   
   floor_df <- node_bicomp_relation %>%
     left_join(floor_df_2 %>% select(ref_node = name, ref_component = component, name = target_node_name) , by = "name") %>%
-    filter(component !=  OriginBlock_number) %>%
+    filter(component !=  OriginBlock_number,
+           is_floor) %>% #A floor has to logically be a floor
     distinct(component, ref_node, ref_component) %>%
-    make_interaction_matrix(.) #calls the interaction function to create the final sparse matrix
+    make_interaction_matrix(., List_of_BiConComps) #calls the interaction function to create the final sparse matrix
   
   
   #expand the sparse matrix to block diagnonal form. This means each time iteration is only multiplied by itself. 

@@ -77,36 +77,46 @@ Create_stabilised_blocks_expanded <- function(g,
   full_list <- list()
   full_list[BlockNumbers] <- StabilModels
   full_list[[OriginBlock_number]] <- OriginBlock
-  
+  message("make relative blocks")
  #mark each node with the correct component ID
   relative_blocks <- 1:length(full_list) %>% 
     map_df(~{
+      
+     # print(nrow(full_list[[.x]])/(max_iter+1))
       full_list[[.x]] %>%
         mutate(component = .x)
       
     }) %>%
+    ungroup %>%
     mutate(Articulation_node = (node %in% ArticulationVect ),
            Iter = as.integer(t/tstep)) %>%
     arrange(Iter, node) #arrange to be in the same order as the block diagram
+
   
-  print("loser")
-  component_adjust_mat <- adjust_components(g, OriginBlock = OriginBlock, force = force, flow = flow)
+  message("creating adjustment matrices")
+  component_adjust_mat <- adjust_components(g, max_iter = max_iter,
+                                            force = force, flow = flow)
   
-  print((dim(component_adjust_mat$floor)))
-  print(table(relative_blocks$node, relative_blocks$component))
-  
+
+  #print(table(relative_blocks$Iter))
+  #print((dim(component_adjust_mat$floor)))
+  #print(table(relative_blocks$node))
+  message("calculate adjusted values")
   node_status <- relative_blocks %>%
-    mutate(elevation2 = elevation + as.vector(component_adjust_mat$ceiling %*% relative_blocks$elevation) + 
-             as.vector(component_adjust_mat$ceiling %*% relative_blocks$elevation))
+    mutate(elevation_diff =  as.vector(component_adjust_mat$ceiling %*% relative_blocks$elevation) - 
+             as.vector(component_adjust_mat$floor %*% relative_blocks$elevation),
+           elevation2 = elevation + elevation_diff)
 
   #Change the node height in all blocks to be correct relative to the originblock
   #place all nodes relative to the origin
   #The height of each node relative to the origin and normalised  
   message("aggregating across iterations and nodes")
-  node_status <- test %>%
-    group_by(Iter, node) %>%
-    summarise_all(mean) %>% #the articulation nodes appear multiple times this removes them
-    mutate(Articulation_node = Articulation_node==1)    
+  node_status <- node_status %>%
+    filter(Iter ==(max_iter-2)) %>% #Delete this once the aggregation is sorted!
+   # group_by(Iter, node) %>%
+    #summarise_all(mean) %>% #the articulation nodes appear multiple times this removes them
+    mutate(Articulation_node = Articulation_node==1)    %>%
+    ungroup
   
   
   Out <- node_status

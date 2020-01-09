@@ -23,7 +23,6 @@ SETS_embedding_expanded <- function(g,
                           force = "force", 
                           flow = "flow", 
                           distance = "distance", 
-                          capacity = "capacity", 
                           edge_name = "edge_name",
                           k = "k",
                           tstep,
@@ -56,7 +55,6 @@ SETS_embedding_expanded <- function(g,
                                                max_iter = max_iter,
                                                coef_drag = coef_drag,
                                                mass = mass,
-                                            #   verbose = verbose,
                                                sparse = sparse)
   
   #print("Origin block complete, beggining remaining blocks")
@@ -74,7 +72,6 @@ SETS_embedding_expanded <- function(g,
                                                 tol = tol,
                                                 max_iter = max_iter,
                                                 mass = mass,
-                                            #    verbose = verbose,
                                                 sparse = sparse)
 
   
