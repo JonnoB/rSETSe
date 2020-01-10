@@ -58,7 +58,8 @@ Prepare_data_for_find_network_balance <-function(g, force, flow, distance, mass,
       static_force = force + net_tension,
       net_force = static_force - friction,
       acceleration = net_force/mass,
-      t = 0) %>%
+      t = 0,
+      Iter = 0) %>%
     arrange(node)
   
   #this just renames and the variables to standard names and then selects the key parts

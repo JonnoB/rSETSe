@@ -101,9 +101,12 @@ Create_stabilised_blocks <- function(g,
    # group_by(t) %>%
     #summarise_all(sum)
   
-  
+#  test <- fix_z_to_origin(relative_blocks1, ArticulationVect) #this is just to see what is added and subtracted
   #The height of each node relative to the origin and normalised
-  node_status <-fix_z_to_origin(relative_blocks1, ArticulationVect) %>%
+  # node_status <- relative_blocks1 %>% mutate(elevation_diff = 1,
+  #   elevation2 = pull(test, elevation),
+  #                                            elevation_diff = elevation - elevation2)
+  node_status <- fix_z_to_origin(relative_blocks1, ArticulationVect) 
     group_by(node) %>%
     summarise_all(mean) %>%
     mutate(Articulation_node = Articulation_node==1)

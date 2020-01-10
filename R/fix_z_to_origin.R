@@ -39,7 +39,7 @@ fix_z_to_origin <- function(relative_blocks, ArticulationVect){
       filter(!(Reference_ID %in% target_blocks))
     
     n <- n+1
-    
+    #get the nth articulation node in the queue
     Art_n <-Articulation_df$node[n]
     
     #subtract art_n relative from all elevation scores

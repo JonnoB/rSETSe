@@ -15,7 +15,6 @@
 #' @param coef_drag A numeric value. Used to set a multiplier on the friction value. Generally leave this alone..s.
 #' @param tol A numeric. The tolerance factor for early stopping.
 #' @param sparse Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated
-#' @param verbose Logical. This value sets whether messages generated during the process are supressed or not.
 #' @export
 #' 
 #' @details The non_empty matrixhe row column position absolute index and transpose index of the edges in the matrix
@@ -28,18 +27,33 @@
 
 FindStabilSystem_expanded <- function(node_status, ten_mat, non_empty_matrix, kvect, dvect, mass,
                              tstep, max_iter = 1000, coef_drag = 1, 
-                             tol = 1e-10, sparse = FALSE, verbose = FALSE){
+                             tol = 1e-10, sparse = FALSE){
   #Runs the physics model to find the convergence of the system.
   
+  #vectors are used throughout instead of a single matrix as it turns out they are faster due to less indexing and use much less RAM.
+  
   #friction_stop fricton is a stopping condition. defualts to FALSE. 
-  NodeList <- NodeList2 <-as.matrix(node_status[,-1])
+  NodeList <- node_status[,-1]
+  force <- NodeList[,1]
+  elevation <-NodeList[,2]
+  net_tension <-NodeList[,3]
+  velocity <- NodeList[,4]
+  friction <- NodeList[,5]
+  static_force <-NodeList[,6]
+  net_force <- NodeList[,7]
+  acceleration <- NodeList[,8]
   
   #gets the dimensions of the matrix for bare bones column sum
-  m <- dim(NodeList)
   
+  non_empty_vect <- non_empty_matrix[,1]
+  non_empty_t_vect <- non_empty_matrix[,2]
+  non_empty_index_vect <- non_empty_matrix[,3]
+  #This dataframe is one of the final outputs of the function, it is premade for memory allocation
   total_nodes <- nrow(NodeList)
   results <- matrix(data = NA, nrow = total_nodes*(max_iter), ncol = ncol(NodeList))
   colnames(results) <- colnames(NodeList)
+  
+  one_vect <- rep(1, nrow(NodeList))
   
   Iter <- 1
   system_stable <- FALSE
@@ -52,54 +66,59 @@ FindStabilSystem_expanded <- function(node_status, ten_mat, non_empty_matrix, kv
     #The code is not put in sub-functions as this creates memory management problems and half the time
     #the program runs can be spent auto calling gc(). This reduces the copying of data...I think
     #It overwirtes the preious values but doesn't create anything else
-    NodeList2 <- NodeList
+    #NodeList2 <- NodeList
+    
     #####
     #create the tension matrix
     #####
     #dz is the change in eleveation
-    dzvect <- NodeList[non_empty_matrix[,2],2] - NodeList[non_empty_matrix[,1],2] #The difference in height between adjacent nodes 
+    dzvect <- elevation[non_empty_t_vect] - elevation[non_empty_vect] #The difference in height between adjacent nodes 
     
     #the hypotenuse of the spring distance triangle
     Hvect <- sqrt(dzvect^2 + dvect^2)
     
     #the tension vector. the dZvect/Hvect is the vertical component of the tension
-    ten_mat[non_empty_matrix[,3]] <- kvect*(Hvect-dvect)*dzvect/Hvect
+    ten_mat[non_empty_index_vect] <- kvect*(Hvect-dvect)*dzvect/Hvect
     
-    ####
-    ## Create the Damping matrix
-    ###
-    #damp_mat[non_empty_matrix[,3]]<- 2*sqrt(kvect*NodeList[non_empty_matrix[,1],3])*NodeList[non_empty_matrix[,1],5]
+    #The remaining dynamics are calculated here
+    
+    elevation <- velocity*tstep +0.5*acceleration*tstep*tstep + elevation #Distance/elevation s1 = ut+0.5at^2+s0
+    velocity <- velocity + acceleration*tstep #velocity v1 = v0 +at
+    static_force <- force + net_tension #static force 
     
     if(sparse){
       #This uses the matrix row aggregation functions which can be used on sparse matrices. This is faster and much more memory
       #efficient for large matrices
-      NodeList2[,3] <- Matrix::rowSums(ten_mat) #tension
+      net_tension <- Matrix::rowSums(ten_mat) #tension
     }else{
       #This uses the standard dense matrices, this is faster for smaller matrices.
-      NodeList2[,3] <- .rowSums(ten_mat, m = m[1], n = m[1]) #tension
+      net_tension <- ten_mat %*% one_vect  #.rowSums(ten_mat, m = m[1], n = m[1]) #tension
     }
-    #The remaining dynamics are calculated here
+    friction <- coef_drag*velocity #friction of an object in a viscous fluid under laminar flow
+    net_force <- static_force - friction #net force
+    acceleration <- net_force/mass #acceleration
+
+    #add in the values into the holding matrix, this will slow down the algo
+    results[((Iter-1)*total_nodes+1):((Iter)*total_nodes),1] <- force
+    results[((Iter-1)*total_nodes+1):((Iter)*total_nodes),2] <- elevation
+    results[((Iter-1)*total_nodes+1):((Iter)*total_nodes),3] <- net_tension
+    results[((Iter-1)*total_nodes+1):((Iter)*total_nodes),4] <- velocity
+    results[((Iter-1)*total_nodes+1):((Iter)*total_nodes),5] <- friction
+    results[((Iter-1)*total_nodes+1):((Iter)*total_nodes),6] <- static_force 
+    results[((Iter-1)*total_nodes+1):((Iter)*total_nodes),7] <- net_force
+    results[((Iter-1)*total_nodes+1):((Iter)*total_nodes),8] <- acceleration
     
-    #If these equations of motion work well then the distance and velocity equations can be removed
-    NodeList2[,2] <- NodeList[,4]*tstep +0.5*NodeList[,8]*tstep^2 + NodeList[,2] #Distance/elevation s1 = ut+0.5at^2+s0
-    NodeList2[,4] <- NodeList[,4] + NodeList[,8]*tstep #velocity v1 = v0 +at
-    NodeList2[,6] <- NodeList[,1] + NodeList[,3] #static force 
-    NodeList2[,5] <- coef_drag*NodeList2[,4] #friction of an object in a viscous fluid under laminar flow
-    NodeList2[,7] <- NodeList2[,6] - NodeList2[,5] #net force
-    NodeList2[,8] <- NodeList2[,7]/mass #acceleration
-    NodeList2[,9] <- NodeList[,9] + tstep #current time #This may not be neccessary but doesn't really hurt
+
     
-    
-    NodeList <- NodeList2
-    
-    results[((Iter-1)*total_nodes+1):((Iter)*total_nodes),] <- NodeList
     
     #check if system is stableising the acceleration and max acceleration
     
-    if(!is.finite(sum(abs(NodeList2[,6])))| !is.finite(sum(abs(0.5*mass*NodeList2[,4]/tstep)))){ #if there are infinte values terminate early
+    if(!is.finite(sum(abs(results[((Iter-1)*total_nodes+1):((Iter)*total_nodes),6])))| 
+       !is.finite(sum(abs(0.5*mass*results[((Iter-1)*total_nodes+1):((Iter)*total_nodes),4]/tstep)))){ #if there are infinte values terminate early
       system_stable <- TRUE
+      message("System has diverged. Process terminating")
     } else{
-      system_stable <- (sum(abs(NodeList2[,6])) < tol)
+      system_stable <- (sum(abs(results[((Iter-1)*total_nodes+1):((Iter)*total_nodes),6])) < tol)
     }
 
     Iter <- Iter + 1 # add next iter
@@ -108,11 +127,19 @@ FindStabilSystem_expanded <- function(node_status, ten_mat, non_empty_matrix, kv
   
   #Early termination causes NA values. These are removed by the below code
   #
+  
+  Iter_vect <- rep(1:(Iter-1), each = total_nodes)# The vector cannot be directly generated in mutate I don't know why.
+  #Iter vect needs the iteration number to be repeated x times then the next iteration repeated x times. This is
+  #different to the node name repetition
   results <- as_tibble(results) %>%
-    mutate(node = node_status[rep(1:total_nodes, times = max_iter),"node"]) %>%
+    mutate(node = node_status[rep(1:total_nodes, times = max_iter),"node"], #the nodename sequence needs to be repeated x times
+           Iter = Iter_vect,
+           t = tstep*Iter) %>%
     filter(complete.cases(.))
   
-  Out <-bind_rows(node_status,results)#list(as_tibble(network_dynamics), )
+
+  Out <-bind_rows(node_status,
+                  results )   #list(as_tibble(network_dynamics), )
   #names(Out) <- c("network_dynamics", "node_status")
   
   return(Out)

@@ -62,7 +62,8 @@ Find_network_balance_expanded <- function(g,
       solution_angle <- nlsLM(Force ~ ForceV_from_angle(target_angle, k = k, d = d), 
                               start = c(target_angle = pi/4), 
                               data = list(Force = abs(Prep$node_status$force[1]), k = Prep$Link$k, d = Prep$Link$distance), 
-                              upper = pi/2) %>% coefficients()      
+                              upper = pi/2,
+                              lower = 0) %>% coefficients()      
       
     }
     
@@ -71,12 +72,18 @@ Find_network_balance_expanded <- function(g,
                                 tan(solution_angle)/2, #height above mid point
                                 -tan(solution_angle)/2 ), #height below mid-point
              net_force = 0,
-             acceleration = 0
+             acceleration = 0,
+             
+             net_tension = ifelse(force>0, 
+                                  -abs(Prep$node_status$force[1]), #height above mid point
+                                  abs(Prep$node_status$force[1]))
       )  %>%
-      slice(rep(1:n(), max_iter+1)) %>% #repeats the rows max_iter times so that
+      slice(rep(1:n(), max_iter)) %>% #repeats the rows max_iter times so that
       group_by(node) %>%
-    mutate(t = (tstep*(0:max_iter))) %>%
-      ungroup
+    mutate(Iter = 1:max_iter,
+      t = (tstep*Iter)) %>%
+      ungroup %>%
+      bind_rows(Prep$node_status, .)
 
   } else{
     #Solves using the iterative method.   
@@ -91,8 +98,7 @@ Find_network_balance_expanded <- function(g,
       max_iter = max_iter, 
       coef_drag = coef_drag,
       tol = tol, 
-      sparse = sparse, 
-      verbose = verbose) 
+      sparse = sparse) 
     
   }
   

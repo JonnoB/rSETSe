@@ -131,7 +131,8 @@ FindStabilSystem <- function(node_status, ten_mat, non_empty_matrix, kvect, dvec
                                                static_force = as.vector(static_force),
                                                net_force = as.vector(net_force),
                                                acceleration = as.vector(acceleration),
-                                               t = tstep*(Iter-1)))) #1 needs to be subtracted from the total as the final thing
+                                               t = tstep*(Iter-1),
+                                               Iter = Iter-1))) #1 needs to be subtracted from the total as the final thing
   #in the loop is to add 1 to the iteration
   
   return(Out)

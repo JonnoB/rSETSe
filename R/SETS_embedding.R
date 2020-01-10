@@ -47,7 +47,7 @@ SETS_embedding <- function(g,
   #use the largest block to set the simulation parameters k and m.
   #k needs to be sufficiently stretched to allow enough topology variation. otherwise all that happens is a 
   #surface angled in the direct of net power flow. Which is interesting but not that interesting
-  OriginBlock_complete <- Find_network_balance(g = List_of_BiConComps[[giant_componant]],
+  OriginBlock <- Find_network_balance(g = List_of_BiConComps[[giant_componant]],
                                                force =force,
                                                flow = flow,
                                                distance = distance,
@@ -64,7 +64,7 @@ SETS_embedding <- function(g,
   
   #Calculate the height embeddings using the Orgin block as a base
   height_embeddings <- Create_stabilised_blocks(g = g,
-                                                OriginBlock = OriginBlock_complete,
+                                                OriginBlock = OriginBlock,
                                                 OriginBlock_number = giant_componant,
                                                 force = force,
                                                 flow = flow,

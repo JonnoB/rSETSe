@@ -4,19 +4,13 @@
 #'that has the interaction between nodes and the floor/ceiling nodes of the articulation nodes on the shortest path
 #'between the origin node in the origin component and all the other nodes in the network.
 #'
+#'The networks created are bipartite
+#'
 #'Using the relative blocks is probably not optimal this can be changed when the process works as expected
 
-make_interaction_matrix <- function(target_df, List_of_BiConComps){
+make_interaction_matrix <- function(target_df, node_component_df){
   #the edges in the meta graph, these are only the articulation nodes
   
-  node_component_df <- 1:length(List_of_BiConComps) %>%
-    map_df(~{
-      
-      as_data_frame(List_of_BiConComps[[.x]], what = "vertices") %>%
-        mutate(component = .x)
-      
-    }) %>%
-    rename(node = name)
   
   active_edges <- node_component_df %>%
     left_join(., target_df, by = "component") %>%

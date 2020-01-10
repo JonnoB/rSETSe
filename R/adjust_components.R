@@ -29,7 +29,8 @@ adjust_components <- function(g, max_iter, force, flow){
   
   #articulation nodes in each component are found here by looping through each 
   #component and seeing which of the articulation nodes are present
-  node_bicomp_relation <- 1:length(biconnected_g_info$components) %>% 
+  #the warnings are suppress as each iteration causes a "Vectorizing 'igraph.vs' elements may not preserve their attributes" message
+suppressWarnings(  node_bicomp_relation <- 1:length(biconnected_g_info$components) %>% 
     map_df(~{
       
       articulation_nodes_df %>%
@@ -41,7 +42,7 @@ adjust_components <- function(g, max_iter, force, flow){
     left_join(., tibble(name = names(distance_from_origin), distance = distance_from_origin), by = "name") %>%#add in distance from origin data
     group_by(component) %>%
     mutate(is_floor = (min(distance)== distance) & OriginBlock_number != component ) %>% #mark the node that is closest to the origin in each component
-    ungroup
+    ungroup)
   
   #Using the shortest path from the origin node to the articulation point find all the floor and ceiling nodes
   #for a given destination point each component has a pair of articulations points
@@ -103,6 +104,17 @@ adjust_components <- function(g, max_iter, force, flow){
     ceiling_df_2 <- bind_rows(ceiling_df_2, ceiling_df)
   }
   
+  #this dataframe is the relationship between all the nodes and the components
+  node_component_df <- 1:length(List_of_BiConComps) %>%
+    map_df(~{
+      
+      as_data_frame(List_of_BiConComps[[.x]], what = "vertices") %>%
+        mutate(component = .x)
+      
+    }) %>%
+    rename(node = name) %>%
+    mutate(node_component  = paste(node, component, sep ="-"))
+  
   #these two peieces of code create the data frames that provide the references for all
   
   #The filtering logic is a bit tricky here might require various networks to test on
@@ -111,20 +123,38 @@ adjust_components <- function(g, max_iter, force, flow){
     filter(component !=  OriginBlock_number,
            component != ref_component) %>% #no ceiling can be in the same component as the target component
     distinct(component, ref_node, ref_component) %>%
-    make_interaction_matrix(., List_of_BiConComps) #calls the interaction function to create the final sparse matrix
+    make_interaction_matrix(., node_component_df) #calls the interaction function to create the final sparse matrix
   
   floor_df <- node_bicomp_relation %>%
     left_join(floor_df_2 %>% select(ref_node = name, ref_component = component, name = target_node_name) , by = "name") %>%
     filter(component !=  OriginBlock_number,
            is_floor) %>% #A floor has to logically be a floor
     distinct(component, ref_node, ref_component) %>%
-    make_interaction_matrix(., List_of_BiConComps) #calls the interaction function to create the final sparse matrix
+    make_interaction_matrix(., node_component_df) #calls the interaction function to create the final sparse matrix
+  
+  #This creates the aggregation matrix indicating the node-component to node relationship. It is a bi-partite graph
+  #matrix rows are the number of edge-component pairs. The columns are the number of nodes
+  #Mulitplying this matrix by a diagonal square matrix of the adjusted height allows much faster aggregation
+  aggregation_matrix <- node_component_df %>%
+    arrange(node) %>% #ensures that the nodes are in alpha numeric order which is the smae as the floor and ceiling dfs
+    mutate(node_component  = paste(node, component, sep ="-")) %>%
+    select(node_component, node) %>%
+    graph_from_data_frame(., #The edges in the meta-graph
+                                              directed = T) %>%
+    as_adjacency_matrix() %>% .[1:length(unique(node_component_df$node_component)), 
+                                -c(1:length(unique(node_component_df$node_component)))] 
+  
   
   
   #expand the sparse matrix to block diagnonal form. This means each time iteration is only multiplied by itself. 
   block_diag_floor <- bdiag(lapply(1:(max_iter+1), function(n){floor_df}))
   block_diag_ceiling <- bdiag(lapply(1:(max_iter+1), function(n){ceiling_df}))
+  block_diag_aggregation <- bdiag(lapply(1:(max_iter+1), function(n){aggregation_matrix}))
   
-  return(list(floor = block_diag_floor, ceiling = block_diag_ceiling))
+  return(list(floor = block_diag_floor, 
+              ceiling = block_diag_ceiling, 
+              aggregation_matrix = block_diag_aggregation,
+              node_order = colnames(as.matrix(aggregation_matrix)) #The node order may not be neccessary butleave it for now
+              ))
   
 }
