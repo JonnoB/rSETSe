@@ -16,7 +16,9 @@
 #' @param tol A numeric. The tolerance factor for early stopping.
 #' @param sparse Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated
 #' @param two_node_solution Logical. The newton-raphson algo is used to find the correct angle
-#' 
+#' @param sample Integer. The dynamics will be stored only if the iteration number is a multiple of the sample. 
+#'  This can greatly reduce the size of the results file for large numbers of iterations. Must be a multiple of the max_iter
+#'  
 #' @return A list of two elements. A data frame with the height embeddings of the network as well as the convergence dynamics dataframe for the network
 #' @seealso \code{\link{Create_stabilised_blocks}} \code{\link{create_balanced_blocks}}
 #' @export
@@ -32,7 +34,8 @@ Find_network_balance <- function(g,
                                  coef_drag = 1, 
                                  tol = 1e-6,
                                  sparse = FALSE,
-                                 two_node_solution = TRUE){
+                                 two_node_solution = TRUE,
+                                 sample = 1){
   
   #helper function that prepares the data
   Prep <- Prepare_data_for_find_network_balance(g = g, 
@@ -45,8 +48,9 @@ Find_network_balance <- function(g,
   
   #do special case solution I should change this to a standalone function for ease of reading but it isn't important
   if(nrow(Prep$Link)==1 & two_node_solution){
-    
-    if(Prep$node_status$force[1]==0 &Prep$node_status$force[2]==0){
+    #If the the force of the two nodes is effectively identical then the solution angle is zero.
+    #This also covers the case of the forces being close to 0
+    if(isTRUE(all.equal(Prep$node_status$force[1], Prep$node_status$force[2]))){
       
       solution_angle <-0
       
@@ -64,7 +68,11 @@ Find_network_balance <- function(g,
                                 tan(solution_angle)/2, #height above mid point
                                 -tan(solution_angle)/2 ), #height below mid-point
              net_force = 0,
-             acceleration = 0
+             acceleration = 0,
+                      #         k      * the extension of the edge due to stretching      * 
+             net_tension = ifelse(force>0, 
+                                  -abs(Prep$node_status$force[1]), 
+                                  abs(Prep$node_status$force[1]) )
       ) 
     
     Out <- list(network_dynamics = tibble(t = 0, 
@@ -87,7 +95,8 @@ Find_network_balance <- function(g,
       max_iter = max_iter, 
       coef_drag = coef_drag,
       tol = tol, 
-      sparse = sparse) 
+      sparse = sparse,
+      sample = sample) 
     
   }
   

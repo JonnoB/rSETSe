@@ -31,8 +31,8 @@ SETS_embedding <- function(g,
                           tol,
                           max_iter = 20000,
                           mass = 1,
-                          #verbose = FALSE,
-                          sparse = FALSE){
+                          sparse = FALSE,
+                          sample = 1){
   
   #seperate out the network into blocks
   List_of_BiConComps <- create_balanced_blocks(g, 
@@ -40,32 +40,35 @@ SETS_embedding <- function(g,
                                                flow = flow)
   
   #find the largest component and use that as the origin block
-  giant_componant <-List_of_BiConComps %>% map_dbl(~vcount(.x)) %>% which.max()
+  OriginBlock_number <-List_of_BiConComps %>% map_dbl(~vcount(.x)) %>% which.max()
   
   #print("Giant component found")
+  
+  #total in network
+  total_force <- sum(abs(get.vertex.attribute(g, force)))
   
   #use the largest block to set the simulation parameters k and m.
   #k needs to be sufficiently stretched to allow enough topology variation. otherwise all that happens is a 
   #surface angled in the direct of net power flow. Which is interesting but not that interesting
-  OriginBlock <- Find_network_balance(g = List_of_BiConComps[[giant_componant]],
-                                               force =force,
-                                               flow = flow,
-                                               distance = distance,
-                                               edge_name = edge_name,
-                                               tstep = tstep,
-                                               tol = tol,
-                                               max_iter = max_iter,
-                                               coef_drag = coef_drag,
-                                               mass = mass,
-                                             #  verbose = verbose,
-                                               sparse = sparse)
+  OriginBlock <- Find_network_balance(g = List_of_BiConComps[[OriginBlock_number]],
+                                      force =force,
+                                      flow = flow,
+                                      distance = distance,
+                                      edge_name = edge_name,
+                                      tstep = tstep,
+                                      tol = tol*sum(abs(get.vertex.attribute(List_of_BiConComps[[OriginBlock_number]], force)))/total_force, #the force has to be scaled to the component 
+                                      max_iter = max_iter,
+                                      coef_drag = coef_drag,
+                                      mass = mass,
+                                      sparse = sparse,
+                                      sample = sample)
   
   #print("Origin block complete, beggining remaining blocks")
   
   #Calculate the height embeddings using the Orgin block as a base
   height_embeddings <- Create_stabilised_blocks(g = g,
                                                 OriginBlock = OriginBlock,
-                                                OriginBlock_number = giant_componant,
+                                                OriginBlock_number = OriginBlock_number,
                                                 force = force,
                                                 flow = flow,
                                                 distance = distance,
@@ -75,8 +78,8 @@ SETS_embedding <- function(g,
                                                 tol = tol,
                                                 max_iter = max_iter,
                                                 mass = mass,
-                                               # verbose = verbose,
-                                                sparse = sparse)
+                                                sparse = sparse,
+                                                sample = sample)
   
   # print("Height embeddings complete")
   

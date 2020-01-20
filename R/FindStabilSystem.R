@@ -12,6 +12,8 @@
 #' @param coef_drag A numeric value. Used to set a multiplier on the friction value. Generally leave this alone..s.
 #' @param tol A numeric. The tolerance factor for early stopping.
 #' @param sparse Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated
+#' @param sample Integer. The dynamics will be stored only if the iteration number is a multiple of the sample. 
+#'  This can greatly reduce the size of the results file for large numbers of iterations. Must be a multiple of the max_iter
 #' @export
 #' 
 #' @details The non_empty matrix contains the row, column position and absolute index and transpose index of the edges in the matrix
@@ -22,7 +24,8 @@
 
 FindStabilSystem <- function(node_status, ten_mat, non_empty_matrix, kvect, dvect, mass,
                                   tstep, max_iter = 1000, coef_drag = 1, 
-                                  tol = 1e-10, sparse = FALSE){
+                                  tol = 1e-10, sparse = FALSE,
+                             sample = 1){
   #Runs the physics model to find the convergence of the system.
   
   #vectors are used throughout instead of a single matrix as it turns out they are faster due to less indexing and use much less RAM.
@@ -38,13 +41,17 @@ FindStabilSystem <- function(node_status, ten_mat, non_empty_matrix, kvect, dvec
   net_force <- NodeList[,7]
   acceleration <- NodeList[,8]
   
+  #The static limit is 10 times the static force
+  #Sometimes numbers can explode then converge, but whatever I don't care about them
+  static_limit <- sum(abs(force))*10
+  
   #gets the dimensions of the matrix for bare bones column sum
   
   non_empty_vect <- non_empty_matrix[,1]
   non_empty_t_vect <- non_empty_matrix[,2]
   non_empty_index_vect <- non_empty_matrix[,3]
   #This dataframe is one of the final outputs of the function, it is premade for memory allocation
-  network_dynamics <- matrix(data = NA, nrow = max_iter, ncol = 6) %>%
+  network_dynamics <- matrix(data = NA, nrow = max_iter/sample, ncol = 6) %>%
     as_tibble() %>%
     set_names(c("Iter","t", "static_force", "kinetic_force", "potential_energy", "kinetic_energy")) %>%
     as.matrix()
@@ -95,21 +102,25 @@ FindStabilSystem <- function(node_status, ten_mat, non_empty_matrix, kvect, dvec
     acceleration <- net_force/mass #acceleration
     # NodeList[,9] <- NodeList[,9] + tstep #current time #This may not be neccessary but doesn't really hurt
     
+    if((Iter %% sample)==0){
+      network_dynamics[Iter/sample,]<-  c(Iter, #Iteration
+                                          Iter*tstep, #time in seconds
+                                          sum(abs(static_force)),  #static force. The force exerted on the node
+                                          sum(abs(0.5*mass*velocity/tstep)), #kinetic_force 
+                                          sum( 0.5*kvect*(Hvect-dvect)^2),     #spring potential_energy
+                                          sum(0.5*mass*velocity^2)    #kinetic_energy
+      ) 
+      
     
-    network_dynamics[Iter,]<-  c(Iter, #Iteration
-                                 Iter*tstep, #time in seconds
-                                 sum(abs(static_force)),  #static force. The force exerted on the node
-                                 sum(abs(0.5*mass*velocity/tstep)), #kinetic_force 
-                                 sum( 0.5*kvect*(Hvect-dvect)^2),     #spring potential_energy
-                                 sum(0.5*mass*velocity^2)    #kinetic_energy
-    ) 
-    
-    #check if system is stable using the acceleration and max acceleration
-    
-    if(!is.finite(network_dynamics[Iter,3])| !is.finite(network_dynamics[Iter,4])){ #if there are infinte values terminate early
-      system_stable <- TRUE
-    } else{
-      system_stable <- (network_dynamics[Iter,3] < tol)
+      #check if system is stable using static force
+      #If static force is not finite or exceeds the static limit then the process terminates early
+      if(!is.finite(network_dynamics[Iter/sample,3])| network_dynamics[Iter/sample,3]>static_limit){ #if there are infinte values terminate early
+        system_stable <- TRUE
+       # print(network_dynamics[Iter/sample,3])
+      } else{
+        system_stable <- (network_dynamics[Iter/sample,3] < tol)
+      }
+      
     }
     
     Iter <- Iter + 1 # add next iter
