@@ -7,7 +7,7 @@
 Create_stabilised_blocks(g, OriginBlock, OriginBlock_number,
   force = "net_generation", flow = "power_flow",
   edge_name = "edge_name", tstep = 0.1, coef_drag = coef_drag,
-  tol = 1e-10, distance, max_iter, mass, verbose = FALSE, sparse)
+  tol = 1e-10, distance, max_iter, mass, sparse, sample = 1)
 }
 \arguments{
 \item{g}{An igraph object}
@@ -33,9 +33,9 @@ create_stable_blocks function. Usually this will be the largest block.}
 
 \item{mass}{A numeric. This is the mass constant of the nodes in normalised networks this is set to 1.}
 
-\item{verbose}{Logical. This value sets whether messages generated during the process are supressed or not.}
-
 \item{Origin}{block}
+
+\item{verbose}{Logical. This value sets whether messages generated during the process are supressed or not.}
 }
 \value{
 A dataframe with the height embeddings of the network

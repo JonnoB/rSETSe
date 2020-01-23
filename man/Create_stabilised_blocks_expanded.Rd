@@ -7,7 +7,7 @@
 Create_stabilised_blocks_expanded(g, OriginBlock, OriginBlock_number,
   force = "net_generation", flow = "power_flow",
   edge_name = "edge_name", tstep = 0.1, coef_drag = coef_drag,
-  tol = 1e-10, distance, max_iter, mass, verbose = FALSE, sparse)
+  tol = 0, distance, max_iter, mass, verbose = FALSE, sparse)
 }
 \arguments{
 \item{g}{An igraph object}

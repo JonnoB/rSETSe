@@ -6,7 +6,7 @@
 \usage{
 FindStabilSystem_expanded(node_status, ten_mat, non_empty_matrix, kvect,
   dvect, mass, tstep, max_iter = 1000, coef_drag = 1, tol = 1e-10,
-  sparse = FALSE, verbose = FALSE)
+  sparse = FALSE)
 }
 \arguments{
 \item{node_status}{A data frame The current dynamics and forces experienced by the node a data frame.}
@@ -30,8 +30,6 @@ FindStabilSystem_expanded(node_status, ten_mat, non_empty_matrix, kvect,
 \item{tol}{A numeric. The tolerance factor for early stopping.}
 
 \item{sparse}{Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated}
-
-\item{verbose}{Logical. This value sets whether messages generated during the process are supressed or not.}
 }
 \description{
 This function uses the SETS embedding to find the equilibrium position of a network or a bi-connected component.

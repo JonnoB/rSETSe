@@ -6,7 +6,7 @@
 \usage{
 FindStabilSystem(node_status, ten_mat, non_empty_matrix, kvect, dvect,
   mass, tstep, max_iter = 1000, coef_drag = 1, tol = 1e-10,
-  sparse = FALSE, verbose = FALSE)
+  sparse = FALSE, sample = 1)
 }
 \arguments{
 \item{node_status}{A data frame The current dynamics and forces experienced by the node a data frame.}
@@ -31,13 +31,14 @@ FindStabilSystem(node_status, ten_mat, non_empty_matrix, kvect, dvect,
 
 \item{sparse}{Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated}
 
-\item{verbose}{Logical. This value sets whether messages generated during the process are supressed or not.}
+\item{sample}{Integer. The dynamics will be stored only if the iteration number is a multiple of the sample. 
+This can greatly reduce the size of the results file for large numbers of iterations. Must be a multiple of the max_iter}
 }
 \description{
-This function uses the SETS embedding to find the equilibrium position of a network or a bi-connected component
+Runs the SETSe model to find the convergence of the system.
 }
 \details{
-The non_empty matrixhe row column position absolute index and transpose index of the edges in the matrix
-This means vectors can be used for most operation greatly reducing the amount of memory required and 
-providing a modest speed increase. The non_empty_matrix is propduced by the 'Prepare_data_for_find_network_balance' function.
+The non_empty matrix contains the row, column position and absolute index and transpose index of the edges in the matrix
+This means vectors can be used for most operations greatly reducing the amount of memory required and 
+providing a modest speed increase. The non_empty_matrix is produced by the 'Prepare_data_for_find_network_balance' function.
 }

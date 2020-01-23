@@ -5,9 +5,8 @@
 \title{calculate SETS embedding}
 \usage{
 SETS_embedding_expanded(g, force = "force", flow = "flow",
-  distance = "distance", capacity = "capacity",
-  edge_name = "edge_name", k = "k", tstep, coef_drag = 1, tol,
-  max_iter = 20000, mass = 1, verbose = FALSE, sparse = FALSE)
+  distance = "distance", edge_name = "edge_name", k = "k", tstep,
+  coef_drag = 1, tol, max_iter = 20000, mass = 1, sparse = FALSE)
 }
 \arguments{
 \item{g}{An igraph object}
@@ -17,8 +16,6 @@ SETS_embedding_expanded(g, force = "force", flow = "flow",
 \item{flow}{A character string. This is the edge attribute that is the power flow on the edges.}
 
 \item{distance}{A character string. The edge attribute that contains the original/horizontal distance between nodes.}
-
-\item{capacity}{A character string. This is the edge attribute that is the flow limit of the edges.}
 
 \item{edge_name}{A character string. This is the edge attribute that contains the edge_name of the edges.}
 
@@ -34,9 +31,11 @@ SETS_embedding_expanded(g, force = "force", flow = "flow",
 
 \item{mass}{A numeric. This is the mass constant of the nodes in normalised networks this is set to 1.}
 
-\item{verbose}{Logical. This value sets whether messages generated during the process are supressed or not.}
-
 \item{sparse}{Logical. Whether sparse matrices will be used. This becomes valubale for larger networks}
+
+\item{capacity}{A character string. This is the edge attribute that is the flow limit of the edges.}
+
+\item{verbose}{Logical. This value sets whether messages generated during the process are supressed or not.}
 }
 \value{
 A list containing 3 dataframes, the dataframe of the node embeddings, edge embeddings, and network dynamics

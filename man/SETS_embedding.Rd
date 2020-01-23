@@ -7,7 +7,7 @@
 SETS_embedding(g, force = "force", flow = "flow",
   distance = "distance", capacity = "capacity",
   edge_name = "edge_name", k = "k", tstep, coef_drag = 1, tol,
-  max_iter = 20000, mass = 1, verbose = FALSE, sparse = FALSE)
+  max_iter = 20000, mass = 1, sparse = FALSE, sample = 1)
 }
 \arguments{
 \item{g}{An igraph object}
@@ -34,9 +34,9 @@ SETS_embedding(g, force = "force", flow = "flow",
 
 \item{mass}{A numeric. This is the mass constant of the nodes in normalised networks this is set to 1.}
 
-\item{verbose}{Logical. This value sets whether messages generated during the process are supressed or not.}
-
 \item{sparse}{Logical. Whether sparse matrices will be used. This becomes valubale for larger networks}
+
+\item{verbose}{Logical. This value sets whether messages generated during the process are supressed or not.}
 }
 \value{
 A list containing 3 dataframes, the dataframe of the node embeddings, edge embeddings, and network dynamics

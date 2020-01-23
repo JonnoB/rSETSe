@@ -7,7 +7,7 @@
 Find_network_balance(g, force = "net_generation", flow = "power_flow",
   distance = "distance", edge_name = "edge_name", tstep = 0.02,
   mass = 1, max_iter = 20000, coef_drag = 1, tol = 1e-06,
-  sparse = FALSE, verbose = TRUE, two_node_solution = TRUE)
+  sparse = FALSE, two_node_solution = TRUE, sample = 1)
 }
 \arguments{
 \item{g}{An igraph object}
@@ -32,9 +32,10 @@ Find_network_balance(g, force = "net_generation", flow = "power_flow",
 
 \item{sparse}{Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated}
 
-\item{verbose}{Logical. This value sets whether messages generated during the process are supressed or not.}
-
 \item{two_node_solution}{Logical. The newton-raphson algo is used to find the correct angle}
+
+\item{sample}{Integer. The dynamics will be stored only if the iteration number is a multiple of the sample. 
+This can greatly reduce the size of the results file for large numbers of iterations. Must be a multiple of the max_iter}
 }
 \value{
 A list of two elements. A data frame with the height embeddings of the network as well as the convergence dynamics dataframe for the network
