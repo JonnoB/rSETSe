@@ -9,6 +9,7 @@
 #' @param flow A character string. This is the edge attribute that is the power flow on the edges.
 #' @param distance A character string. The edge attribute that contains the original/horizontal distance between nodes.
 #' @param edge_name A character string. This is the edge attribute that contains the edge_name of the edges.
+#' @param k A character string. This is k for the moment don't change it.
 #' @param tstep A numeric. The time interval used to iterate through the network dynamics.
 #' @param mass A numeric. This is the mass constant of the nodes in normalised networks this is set to 1.
 #' @param max_iter An integer. The maximum number of iterations before stopping. Larger networks usually need more iterations.
@@ -16,6 +17,8 @@
 #' @param tol A numeric. The tolerance factor for early stopping.
 #' @param sparse Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated
 #' @param two_node_solution Logical. The newton-raphson algo is used to find the correct angle
+#' @param include_edges Logical. Whether the function will return the edge strain and tension data or just elevation and dynamics. 
+#' Currently default is set to FALSE.
 #' @param sample Integer. The dynamics will be stored only if the iteration number is a multiple of the sample. 
 #'  This can greatly reduce the size of the results file for large numbers of iterations. Must be a multiple of the max_iter
 #'  
@@ -28,6 +31,7 @@ Find_network_balance <- function(g,
                                  flow = "power_flow", 
                                  distance = "distance", 
                                  edge_name = "edge_name",
+                                 k ="k",
                                  tstep = 0.02, 
                                  mass = 1, 
                                  max_iter = 20000, 
@@ -35,6 +39,7 @@ Find_network_balance <- function(g,
                                  tol = 1e-6,
                                  sparse = FALSE,
                                  two_node_solution = TRUE,
+                                 include_edges = FALSE,
                                  sample = 1){
   
   #helper function that prepares the data
@@ -69,7 +74,7 @@ Find_network_balance <- function(g,
                                 -tan(solution_angle)/2 ), #height below mid-point
              net_force = 0,
              acceleration = 0,
-                      #         k      * the extension of the edge due to stretching      * 
+             #         k      * the extension of the edge due to stretching      * 
              net_tension = ifelse(force>0, 
                                   -abs(Prep$node_status$force[1]), 
                                   abs(Prep$node_status$force[1]) )
@@ -84,6 +89,7 @@ Find_network_balance <- function(g,
     #Solves using the iterative method.
   } else{
     
+    #The core algorithm
     Out <- FindStabilSystem(
       node_status = Prep$node_status, 
       ten_mat = Prep$ten_mat, 
@@ -97,6 +103,19 @@ Find_network_balance <- function(g,
       tol = tol, 
       sparse = sparse,
       sample = sample) 
+    
+  }
+  
+  if(include_edges){
+    
+    #Extract edge tension and strain from the network
+    Out$edge_embeddings <- calc_tension_strain(g = g,
+                                               height_embeddings$node_status,
+                                               distance = distance, 
+                                               capacity = capacity, 
+                                               flow = flow, 
+                                               edge_name = edge_name, 
+                                               k = k)
     
   }
   
