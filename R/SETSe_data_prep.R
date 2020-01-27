@@ -1,7 +1,6 @@
-#'Preapre data for the `find network balance` function
+#'Preapre data for the `SETSe_core` function
 #'
-#'This is a helpfer function that makes `find_network_balance` code easier to read. It prepares the data into three datasets.
-#'Whether stuff is a character string or not needs to be double checked!
+#'This is a helpfer function that makes the `SETSe` function code easier to read.
 #'
 #'The file outputs a named list containing 
 #'
@@ -14,7 +13,7 @@
 #' @param sparse Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated
 #' @export
 
-Prepare_data_for_find_network_balance <-function(g, force, flow, distance, mass, edge_name = edge_name, sparse = FALSE){
+SETSe_data_prep <-function(g, force, flow, distance, mass, edge_name = edge_name, sparse = FALSE){
   #this is a helper function that goes inside the the find network balance function to help make the code easier to read
   
   #just calls distance distance for simplicities sake
@@ -48,7 +47,7 @@ Prepare_data_for_find_network_balance <-function(g, force, flow, distance, mass,
   diag(Adj) <-0
   
   
-  node_status <- as_data_frame(g, what = "vertices") %>%
+  node_embeddings <- as_data_frame(g, what = "vertices") %>%
     select(node = name, force = force ) %>%
     mutate(
       elevation = 0,
@@ -68,7 +67,7 @@ Prepare_data_for_find_network_balance <-function(g, force, flow, distance, mass,
   Link <- as_data_frame(g)  %>%
     rename(flow = flow) %>%
     mutate(EdgeName = .data[[edge_name]] #The edge name has to be flexible so .data is used
-        ) %>% #This sets a floor and ceiling 
+    ) %>% #This sets a floor and ceiling 
     #to the k values. the more highly loaded a line is the more it should stretch. as LL varies between 0, no loading (stiffness)
     #to 1, overload point, (most elastic). The larger kdiff is the larger the difference in elasticity for highly and lightly loaded lines.
     #Very large kdiff means very little elasticty on lightly loaded lines
@@ -97,8 +96,8 @@ Prepare_data_for_find_network_balance <-function(g, force, flow, distance, mass,
   if(sparse){Adj  <- Matrix(Adj, sparse = T)}
   
   #The outlist of the variables needed for find_stabil_system
-  Out <-        list(node_status, Link,   Adj,       non_empty_matrix,   kvect,   dvect)
-  names(Out) <- c("node_status",  "Link","ten_mat", "non_empty_matrix", "kvect", "dvect")
+  Out <-     list( node_embeddings,   Link,   Adj,       non_empty_matrix,   kvect,   dvect )
+  names(Out) <- c("node_embeddings", "Link", "ten_mat", "non_empty_matrix", "kvect", "dvect")
   
   return(Out)
   

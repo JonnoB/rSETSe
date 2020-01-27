@@ -2,7 +2,7 @@
 % Please edit documentation in R/Create_stabilised_blocks .R
 \name{Create_stabilised_blocks}
 \alias{Create_stabilised_blocks}
-\title{Create stabilosed blocks}
+\title{Create stabilised blocks}
 \usage{
 Create_stabilised_blocks(g, OriginBlock, OriginBlock_number,
   force = "net_generation", flow = "power_flow",
@@ -42,8 +42,9 @@ A dataframe with the height embeddings of the network
 }
 \description{
 decomposes the network into bi-connected components using articulation points. This speeds up the convergence process
-and reduces the chances of the SETS algorithm diverging
+and reduces the chances of the SETS algorithm diverging on certain classes of network. This function is rarely called
+directly and is usually called by SETSe_bicomp
 }
 \seealso{
-\code{\link{Create_stabilised_blocks}} \code{\link{Find_network_balance}}
+\code{\link{SETSe_bicomp}} \code{\link{SETSe}}
 }

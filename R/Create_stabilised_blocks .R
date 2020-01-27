@@ -1,7 +1,8 @@
-#' Create stabilosed blocks
+#' Create stabilised blocks
 #' 
 #' decomposes the network into bi-connected components using articulation points. This speeds up the convergence process
-#' and reduces the chances of the SETS algorithm diverging
+#' and reduces the chances of the SETS algorithm diverging on certain classes of network. This function is rarely called
+#' directly and is usually called by SETSe_bicomp
 #' 
 #' @param g An igraph object
 #' @param Origin block
@@ -18,7 +19,7 @@
 #' @param mass A numeric. This is the mass constant of the nodes in normalised networks this is set to 1.
 #' @param verbose Logical. This value sets whether messages generated during the process are supressed or not.
 #' 
-#' @seealso \code{\link{Create_stabilised_blocks}} \code{\link{Find_network_balance}}
+#' @seealso \code{\link{SETSe_bicomp}} \code{\link{SETSe}}
 #' @return A dataframe with the height embeddings of the network
 #' 
 #' 
@@ -51,7 +52,7 @@ Create_stabilised_blocks <- function(g,
   StabilModels <- BlockNumbers %>% 
     map(~{
 
-      Out <- Find_network_balance(List_of_BiConComps[[.x]],
+      Out <- SETSe(List_of_BiConComps[[.x]],
                                   force =force, 
                                   flow = flow, 
                                   tstep = tstep, 
@@ -82,11 +83,11 @@ Create_stabilised_blocks <- function(g,
   relative_blocks <- 1:length(StabilModels) %>% 
     map_df(~{
       #print(.x) #It is a bit annoying and pointless now
-      StabilModels[[.x]]$node_status %>%
+      StabilModels[[.x]]$node_embeddings %>%
         mutate(Reference_ID = .x)
       
     }) %>%
-    bind_rows(OriginBlock$node_status %>% 
+    bind_rows(OriginBlock$node_embeddings %>% 
                 mutate(Reference_ID = 0)) %>%
     mutate(Articulation_node = (node %in% ArticulationVect ))
   
@@ -106,14 +107,14 @@ Create_stabilised_blocks <- function(g,
   
 #  test <- fix_z_to_origin(relative_blocks, ArticulationVect) #this is just to see what is added and subtracted
   #The height of each node relative to the origin and normalised
-  # node_status <- relative_blocks %>% mutate(elevation_diff = 1,
+  # node_embeddings <- relative_blocks %>% mutate(elevation_diff = 1,
   #   elevation2 = pull(test, elevation),
   #                                            elevation_diff = elevation - elevation2)
   
   # component_adjust_mat <- adjust_components(g, max_iter =max(relative_blocks$Iter),
   #                                           force = force, flow = flow)
   
-  node_status <- fix_z_to_origin(relative_blocks, ArticulationVect) %>%
+  node_embeddings <- fix_z_to_origin(relative_blocks, ArticulationVect) %>%
     group_by(node) %>%
     summarise(Iter = first(Iter),
       force = sum(force),
@@ -129,13 +130,13 @@ Create_stabilised_blocks <- function(g,
       t = 1,
       t = tstep * Iter)
   
-  # node_status <- fix_z_to_origin(relative_blocks, ArticulationVect) %>%
+  # node_embeddings <- fix_z_to_origin(relative_blocks, ArticulationVect) %>%
   #   group_by(node) %>%
   #   summarise_all(mean) %>%
   #   mutate(Articulation_node = Articulation_node==1)
   
-  #combine the node_status and the network_dynamics into a single list
-  Out <- list(node_status = node_status, network_dynamics = network_dynamics)
+  #combine the node_embeddings and the network_dynamics into a single list
+  Out <- list(node_embeddings = node_embeddings, network_dynamics = network_dynamics)
   
   return(Out)
   

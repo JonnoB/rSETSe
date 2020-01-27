@@ -1,4 +1,4 @@
-#' calculate SETS embedding
+#' Bicomponent SETS embedding expanded
 #' 
 #' A wrapper function that takes a prepared graph and outputs a list of the embeddings and the aggregate dynamics throughout the simulations.
 #' 
@@ -19,7 +19,7 @@
 #' 
 #' @return A list containing 3 dataframes, the dataframe of the node embeddings, edge embeddings, and network dynamics
 #'@export
-SETS_embedding <- function(g, 
+SETSe_bicomp_expanded <- function(g, 
                           force = "force", 
                           flow = "flow", 
                           distance = "distance", 
@@ -31,8 +31,7 @@ SETS_embedding <- function(g,
                           tol,
                           max_iter = 20000,
                           mass = 1,
-                          sparse = FALSE,
-                          sample = 1){
+                          sparse = FALSE){
   
   #seperate out the network into blocks
   List_of_BiConComps <- create_balanced_blocks(g, 
@@ -44,29 +43,25 @@ SETS_embedding <- function(g,
   
   #print("Giant component found")
   
-  #total in network
-  total_force <- sum(abs(get.vertex.attribute(g, force)))
-  
   #use the largest block to set the simulation parameters k and m.
   #k needs to be sufficiently stretched to allow enough topology variation. otherwise all that happens is a 
   #surface angled in the direct of net power flow. Which is interesting but not that interesting
-  OriginBlock <- Find_network_balance(g = List_of_BiConComps[[OriginBlock_number]],
-                                      force =force,
-                                      flow = flow,
-                                      distance = distance,
-                                      edge_name = edge_name,
-                                      tstep = tstep,
-                                      tol = tol*sum(abs(get.vertex.attribute(List_of_BiConComps[[OriginBlock_number]], force)))/total_force, #the force has to be scaled to the component 
-                                      max_iter = max_iter,
-                                      coef_drag = coef_drag,
-                                      mass = mass,
-                                      sparse = sparse,
-                                      sample = sample)
+  OriginBlock <- SETSe_expanded(g = List_of_BiConComps[[OriginBlock_number]],
+                                               force =force,
+                                               flow = flow,
+                                               distance = distance,
+                                               edge_name = edge_name,
+                                               tstep = tstep,
+                                               tol = tol,
+                                               max_iter = max_iter,
+                                               coef_drag = coef_drag,
+                                               mass = mass,
+                                               sparse = sparse)
   
   #print("Origin block complete, beggining remaining blocks")
   
   #Calculate the height embeddings using the Orgin block as a base
-  height_embeddings <- Create_stabilised_blocks(g = g,
+  height_embeddings <- Create_stabilised_blocks_expanded(g = g,
                                                 OriginBlock = OriginBlock,
                                                 OriginBlock_number = OriginBlock_number,
                                                 force = force,
@@ -78,24 +73,8 @@ SETS_embedding <- function(g,
                                                 tol = tol,
                                                 max_iter = max_iter,
                                                 mass = mass,
-                                                sparse = sparse,
-                                                sample = sample)
+                                                sparse = sparse)
+
   
-  # print("Height embeddings complete")
-  
-  #Extract edge tension and strain from the network
-  tension_strain_embeddings <- calc_tension_strain(g = g,
-                                                   height_embeddings$node_status,
-                                                   distance = distance, 
-                                                   capacity = capacity, 
-                                                   flow = flow, 
-                                                   edge_name = edge_name, 
-                                                   k = k)
-  
- # print("Strain and Tension embeddings complete")
-  embeddings_data <- list(node_embeddings = height_embeddings$node_status, 
-                          edge_embeddings = tension_strain_embeddings,
-                          network_dynamics = height_embeddings$network_dynamics)
-  
-  return(embeddings_data)
+  return(height_embeddings)
 }

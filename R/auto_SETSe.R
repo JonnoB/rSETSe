@@ -1,24 +1,49 @@
-#' Function that finds the convergence parameters of a simulation
+#' Auto SETSe
+#'
+#' Uses a grid search and a binary search to find appropriate convergence conditions.
 #' 
+#' This function is pretty useful, it takes advantage of the linear relationship between the timestep and the coefficient of drag
+#' to search along the log linear line formed by tstep/coef_drag to find the convergence conditions.
+#' 
+#' @param g An igraph object
+#' @param force A character string. This is the node attribute that contains the force the nodes exert on the network.
+#' @param flow A character string. This is the edge attribute that is the power flow on the edges.
+#' @param distance A character string. The edge attribute that contains the original/horizontal distance between nodes.
+#' @param capacity A character string. This is the edge attribute that is the flow limit of the edges.
+#' @param edge_name A character string. This is the edge attribute that contains the edge_name of the edges.
+#' @param k A character string. This is k for the moment don't change it.
+#' @param tstep A numeric. The time interval used to iterate through the network dynamics.
+#' @param mass A numeric. This is the mass constant of the nodes in normalised networks this is set to 1.
+#' @param max_iter An integer. The maximum number of iterations before stopping. Larger networks usually need more iterations.
+#' @param tol A numeric. The tolerance factor for early stopping.
+#' @param sparse Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated
+#' @param hyper_iters integer. The hyper parameter that determines the number of iterations allowed to find an acceptable convergence value.
+#' @param step_size numeric. The hyper parameter that determines the log ratio search step size for auto convergence
+#' @param sample Integer. The dynamics will be stored only if the iteration number is a multiple of the sample. 
+#'  This can greatly reduce the size of the results file for large numbers of iterations. Must be a multiple of the max_iter
+#'  
+#' @return A list of four elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings, 
+#' the convergence dynamics dataframe for the network as well as the search history for convergence criteria of the network
 #' @export
 
-auto_SETS <- function(g, 
+auto_SETSe <- function(g, 
                        force ="net_generation", 
                        flow = "power_flow", 
                        distance = "distance", 
+                       capacity = "capacity", 
                        edge_name = "edge_name",
+                       k = "k",
                        tstep = 0.02, 
                        mass = 1, 
                        max_iter = 20000, 
                        tol = 2e-3,
                        sparse = FALSE,
-                       two_node_solution = TRUE,
-                       restarts = 100,
+                       hyper_iters = 100,
                        step_size = 0.1,
                        sample = 1){
   
   
-  memory_df<-tibble(iteration = 1:(2+restarts),
+  memory_df<-tibble(iteration = 1:(2+hyper_iters),
                     error = NA,
                     log_ratio = NA,
                     common_drag_iter = NA,
@@ -50,20 +75,20 @@ auto_SETS <- function(g,
   
   
   #Prep the data before going into the converger
-  Prep <- Prepare_data_for_find_network_balance(g = g, 
-                                                force = force, 
-                                                flow = flow, 
-                                                distance = distance, 
-                                                mass = mass, 
-                                                edge_name = edge_name,
-                                                sparse = sparse)
+  Prep <- SETSe_data_prep(g = g, 
+                          force = force, 
+                          flow = flow, 
+                          distance = distance, 
+                          mass = mass, 
+                          edge_name = edge_name,
+                          sparse = sparse)
   
-  while((drag_iter <= restarts) & (memory_df$res_stat[drag_iter]>tol)){
+  while((drag_iter <= hyper_iters) & (memory_df$res_stat[drag_iter]>tol)){
     
     drag_iter <- drag_iter+1      
     # print( memory_df$common_drag_iter[drag_iter])
-    embeddings_data <- FindStabilSystem(
-      node_status = Prep$node_status, 
+    embeddings_data <- SETSe_core(
+      node_embeddings = Prep$node_embeddings, 
       ten_mat = Prep$ten_mat, 
       non_empty_matrix = Prep$non_empty_matrix, 
       kvect = Prep$kvect, 
@@ -76,7 +101,7 @@ auto_SETS <- function(g,
       sparse = sparse,
       sample = sample) 
     
-    node_embeds <- embeddings_data$node_status
+    node_embeds <- embeddings_data$node_embeddings
     
     memory_df$res_stat[drag_iter] <- sum(abs(node_embeds$static_force))
     
@@ -86,8 +111,8 @@ auto_SETS <- function(g,
     #Is the algo in the convex area?
     memory_df$target_area[drag_iter] <- memory_df$res_stat[drag_iter] < 2
     
-    #Log error is negative when small
-    memory_df$error[drag_iter] <- log10(memory_df$res_stat[drag_iter] - tol) 
+    #Log error is negative when small, absolute difference is used to prevent NaNs if the true error is smaller than the tolerance
+    memory_df$error[drag_iter] <- log10(abs(memory_df$res_stat[drag_iter] - tol)) 
     
     #setting the limits
     if(min(memory_df$res_stat, na.rm = TRUE)<2){
@@ -152,8 +177,17 @@ auto_SETS <- function(g,
   
   
   memory_df <- memory_df %>%
-    filter(complete.cases(.))
+    filter(!is.na(res_stat))
   
+  #Put in edge embeddings
+  embeddings_data$edge_embeddings <- calc_tension_strain(g = g,
+                                                         embeddings_data$node_embeddings,
+                                                         distance = distance, 
+                                                         capacity = capacity, 
+                                                         flow = flow, 
+                                                         edge_name = edge_name, 
+                                                         k = k)
+  #Add the search record
   embeddings_data$memory_df <- memory_df
   
   return(embeddings_data)

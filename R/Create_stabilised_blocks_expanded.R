@@ -48,7 +48,7 @@ Create_stabilised_blocks_expanded <- function(g,
   StabilModels <- BlockNumbers %>% 
     map(~{
 
-      Out <- Find_network_balance_expanded(List_of_BiConComps[[.x]],
+      Out <- SETSe_expanded(List_of_BiConComps[[.x]],
                                   force =force, 
                                   flow = flow, 
                                   tstep = tstep, 
@@ -61,9 +61,6 @@ Create_stabilised_blocks_expanded <- function(g,
                                   sparse = sparse,
                                   verbose = verbose)
 
-      #print if the print requirement is on otherwise silent
-      #if(!verbose){print(paste("Block" ,.x, "of", max(BlockNumbers) ,"termination", nrow(Out$network_dynamics) )) }
-      
       return(Out)
       
     })
@@ -103,12 +100,12 @@ Create_stabilised_blocks_expanded <- function(g,
   #print((dim(component_adjust_mat$floor)))
   #print(table(relative_blocks$node))
   message("calculate adjusted values and aggregate")
-  # node_status <- relative_blocks %>%
+  # node_emebeddings <- relative_blocks %>%
   #   mutate(elevation = elevation +  as.vector(component_adjust_mat$ceiling %*% relative_blocks$elevation) - 
   #            as.vector(component_adjust_mat$floor %*% relative_blocks$elevation))
   
   #This aggregates the key components of the matrix. by the appropriate metric. all other metrics can just be created from these
-  # node_status <- tibble(
+  # node_emebeddings <- tibble(
   #   node = rep(component_adjust_mat$node_order, times = max(relative_blocks$Iter+1)),
   #   force = harmonise_and_aggregate(relative_blocks$force, component_adjust_mat, harmonise_vector = FALSE, colsum = TRUE),
   #   elevation = harmonise_and_aggregate(relative_blocks$elevation, component_adjust_mat, harmonise_vector = TRUE, colsum = FALSE),
@@ -128,7 +125,7 @@ Create_stabilised_blocks_expanded <- function(g,
   #place all nodes relative to the origin
   #The height of each node relative to the origin and normalised  
 #  message("aggregating across iterations and nodes")
-  node_status <- relative_blocks %>%
+  node_emebeddings <- relative_blocks %>%
    # filter(node=="A") %>%
   # filter(Iter ==(max_iter)) %>% #Delete this once the aggregation is sorted!
     mutate(elevation = harmonise_and_aggregate(relative_blocks$elevation, component_adjust_mat, harmonise_vector = TRUE, colsum = NULL),
@@ -150,6 +147,6 @@ Create_stabilised_blocks_expanded <- function(g,
         t = tstep*Iter)
   
   
-  return(node_status)
+  return(node_emebeddings)
   
 }

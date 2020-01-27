@@ -1,7 +1,10 @@
-#' Find stabil system
+#' SETSe core expanded
 #' 
-#' Runs the SETSe model to find the convergence of the system.
-#' @param node_status A data frame The current dynamics and forces experienced by the node a data frame.
+#' This function uses the SETS embedding to find the equilibrium position of a network or a bi-connected component.
+#' It produces the node embeddings for every iteration of the process. useful for analysis and finding good starting parameters
+#' However uses a lot more memory.
+#' 
+#' @param node_embeddings A data frame The current dynamics and forces experienced by the node a data frame.
 #' @param ten_mat A data frame The current dynamics and forces experienced by the node a data frame.
 #' @param non_empty_matrix A numeric matrix. contains the index of the non-empty cells in the adjacency matrix. see details.
 #' @param kvect A numeric vector of the spring stiffnesses
@@ -12,26 +15,25 @@
 #' @param coef_drag A numeric value. Used to set a multiplier on the friction value. Generally leave this alone..s.
 #' @param tol A numeric. The tolerance factor for early stopping.
 #' @param sparse Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated
-#' @param sample Integer. The dynamics will be stored only if the iteration number is a multiple of the sample. 
-#'  This can greatly reduce the size of the results file for large numbers of iterations. Must be a multiple of the max_iter
 #' @export
 #' 
-#' @details The non_empty matrix contains the row, column position and absolute index and transpose index of the edges in the matrix
-#' This means vectors can be used for most operations greatly reducing the amount of memory required and 
-#' providing a modest speed increase. The non_empty_matrix is produced by the 'Prepare_data_for_find_network_balance' function.
+#' @details The non_empty matrixhe row column position absolute index and transpose index of the edges in the matrix
+#' This means vectors can be used for most operation greatly reducing the amount of memory required and 
+#' providing a modest speed increase. The non_empty_matrix is propduced by the 'Prepare_data_for_find_network_balance' function.
 #'
 # Strips out all pre processing to make it as efficient and simple as possible
 
-FindStabilSystem <- function(node_status, ten_mat, non_empty_matrix, kvect, dvect, mass,
-                                  tstep, max_iter = 1000, coef_drag = 1, 
-                                  tol = 1e-10, sparse = FALSE,
-                             sample = 1){
+#caoacity, edge_name and flow are no longer used. If the preprocessing is all done in prep then distance can also be removed
+
+SETSe_core_expanded <- function(node_embeddings, ten_mat, non_empty_matrix, kvect, dvect, mass,
+                             tstep, max_iter = 1000, coef_drag = 1, 
+                             tol = 1e-10, sparse = FALSE){
   #Runs the physics model to find the convergence of the system.
   
   #vectors are used throughout instead of a single matrix as it turns out they are faster due to less indexing and use much less RAM.
   
   #friction_stop fricton is a stopping condition. defualts to FALSE. 
-  NodeList <- node_status[,-1]
+  NodeList <- node_embeddings[,-1]
   force <- NodeList[,1]
   elevation <-NodeList[,2]
   net_tension <-NodeList[,3]
@@ -41,20 +43,15 @@ FindStabilSystem <- function(node_status, ten_mat, non_empty_matrix, kvect, dvec
   net_force <- NodeList[,7]
   acceleration <- NodeList[,8]
   
-  #The static limit is 10 times the static force
-  #Sometimes numbers can explode then converge, but whatever I don't care about them
-  static_limit <- sum(abs(force))*10
-  
   #gets the dimensions of the matrix for bare bones column sum
   
   non_empty_vect <- non_empty_matrix[,1]
   non_empty_t_vect <- non_empty_matrix[,2]
   non_empty_index_vect <- non_empty_matrix[,3]
   #This dataframe is one of the final outputs of the function, it is premade for memory allocation
-  network_dynamics <- matrix(data = NA, nrow = max_iter/sample, ncol = 6) %>%
-    as_tibble() %>%
-    set_names(c("Iter","t", "static_force", "kinetic_force", "potential_energy", "kinetic_energy")) %>%
-    as.matrix()
+  total_nodes <- nrow(NodeList)
+  results <- matrix(data = NA, nrow = total_nodes*(max_iter), ncol = ncol(NodeList))
+  colnames(results) <- colnames(NodeList)
   
   one_vect <- rep(1, nrow(NodeList))
   
@@ -100,51 +97,50 @@ FindStabilSystem <- function(node_status, ten_mat, non_empty_matrix, kvect, dvec
     friction <- coef_drag*velocity #friction of an object in a viscous fluid under laminar flow
     net_force <- static_force - friction #net force
     acceleration <- net_force/mass #acceleration
-    # NodeList[,9] <- NodeList[,9] + tstep #current time #This may not be neccessary but doesn't really hurt
+
+    #add in the values into the holding matrix, this will slow down the algo
+    results[((Iter-1)*total_nodes+1):((Iter)*total_nodes),1] <- force
+    results[((Iter-1)*total_nodes+1):((Iter)*total_nodes),2] <- elevation
+    results[((Iter-1)*total_nodes+1):((Iter)*total_nodes),3] <- net_tension
+    results[((Iter-1)*total_nodes+1):((Iter)*total_nodes),4] <- velocity
+    results[((Iter-1)*total_nodes+1):((Iter)*total_nodes),5] <- friction
+    results[((Iter-1)*total_nodes+1):((Iter)*total_nodes),6] <- static_force 
+    results[((Iter-1)*total_nodes+1):((Iter)*total_nodes),7] <- net_force
+    results[((Iter-1)*total_nodes+1):((Iter)*total_nodes),8] <- acceleration
     
-    if((Iter %% sample)==0){
-      network_dynamics[Iter/sample,]<-  c(Iter, #Iteration
-                                          Iter*tstep, #time in seconds
-                                          sum(abs(static_force)),  #static force. The force exerted on the node
-                                          sum(abs(0.5*mass*velocity/tstep)), #kinetic_force 
-                                          sum( 0.5*kvect*(Hvect-dvect)^2),     #spring potential_energy
-                                          sum(0.5*mass*velocity^2)    #kinetic_energy
-      ) 
-      
+
     
-      #check if system is stable using static force
-      #If static force is not finite or exceeds the static limit then the process terminates early
-      if(!is.finite(network_dynamics[Iter/sample,3])| network_dynamics[Iter/sample,3]>static_limit){ #if there are infinte values terminate early
-        system_stable <- TRUE
-       # print(network_dynamics[Iter/sample,3])
-      } else{
-        system_stable <- (network_dynamics[Iter/sample,3] < tol)
-      }
-      
+    
+    #check if system is stableising the acceleration and max acceleration
+    
+    if(!is.finite(sum(abs(results[((Iter-1)*total_nodes+1):((Iter)*total_nodes),6])))| 
+       !is.finite(sum(abs(0.5*mass*results[((Iter-1)*total_nodes+1):((Iter)*total_nodes),4]/tstep)))){ #if there are infinte values terminate early
+      system_stable <- TRUE
+      message("System has diverged. Process terminating")
+    } else{
+      system_stable <- (sum(abs(results[((Iter-1)*total_nodes+1):((Iter)*total_nodes),6])) < tol)
     }
-    
+
     Iter <- Iter + 1 # add next iter
     
   }
   
   #Early termination causes NA values. These are removed by the below code
   #
-  network_dynamics <- as_tibble(network_dynamics) %>%
+  #rep(1:total_nodes, times = (Iter-1))
+  Iter_vect <- rep(1:max_iter, each = total_nodes)# The vector cannot be directly generated in mutate I don't know why.
+  #Iter vect needs the iteration number to be repeated x times then the next iteration repeated x times. This is
+  #different to the node name repetition
+  results <- as_tibble(results) %>%
+    mutate(node = node_embeddings[rep(1:total_nodes, times = nrow(results)/total_nodes),"node"], #the nodename sequence needs to be repeated x times
+           Iter = Iter_vect,
+           t = tstep*Iter) %>%
     filter(complete.cases(.))
-  #combine all the vectors together again into a tibble
-  Out <- list(network_dynamics = as_tibble(network_dynamics), 
-              node_status = bind_cols(node_status[,"node",drop=FALSE] , 
-                                      tibble(  force = force,
-                                               elevation = as.vector(elevation),
-                                               net_tension = as.vector(net_tension),
-                                               velocity = as.vector(velocity),
-                                               friction = as.vector(friction),
-                                               static_force = as.vector(static_force),
-                                               net_force = as.vector(net_force),
-                                               acceleration = as.vector(acceleration),
-                                               t = tstep*(Iter-1),
-                                               Iter = Iter-1))) #1 needs to be subtracted from the total as the final thing
-  #in the loop is to add 1 to the iteration
+  
+
+  Out <-bind_rows(node_embeddings,
+                  results )   #list(as_tibble(network_dynamics), )
+  #names(Out) <- c("network_dynamics", "node_embeddings")
   
   return(Out)
   
