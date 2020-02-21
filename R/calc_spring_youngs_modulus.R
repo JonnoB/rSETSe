@@ -21,7 +21,8 @@ calc_spring_youngs_modulus <- function(g, flow, capacity, minimum_value, stretch
     rename(flow_2 = !!flow,
            capacity_2 = !!capacity) %>%
     mutate(LL = abs(flow_2)/capacity_2,
-           E = stretch_range*(1-LL) + minimum_value)
+           E = stretch_range*(1-LL) + minimum_value,
+           E = ifelse(is.finite(E), E, minimum_value)) #if capacity is 0 NaNs are produced this prevents that
   
   g2 <- set.edge.attribute(g, "E", value = temp$E)
   return(g2)

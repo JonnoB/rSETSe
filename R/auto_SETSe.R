@@ -19,6 +19,8 @@
 #' @param sparse Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated
 #' @param hyper_iters integer. The hyper parameter that determines the number of iterations allowed to find an acceptable convergence value.
 #' @param step_size numeric. The hyper parameter that determines the log ratio search step size for auto convergence
+#' @param hyper_tol numeric. The convergence tolerance when trying to find the minimum value
+#' @param hyper_max integer. The maximum number of iterations that the setse will go through whilst searching for the minimum.
 #' @param sample Integer. The dynamics will be stored only if the iteration number is a multiple of the sample. 
 #'  This can greatly reduce the size of the results file for large numbers of iterations. Must be a multiple of the max_iter
 #'  
@@ -27,24 +29,28 @@
 #' @export
 
 auto_SETSe <- function(g, 
-                       force ="net_generation", 
-                       flow = "power_flow", 
-                       distance = "distance", 
-                       capacity = "capacity", 
-                       edge_name = "edge_name",
-                       k = "k",
-                       tstep = 0.02, 
-                       mass = 1, 
-                       max_iter = 20000, 
-                       tol = 2e-3,
-                       sparse = FALSE,
-                       hyper_iters = 100,
-                       step_size = 0.1,
-                       sample = 1){
+                        force ="net_generation", 
+                        flow = "power_flow", 
+                        distance = "distance", 
+                        capacity = "capacity", 
+                        edge_name = "edge_name",
+                        k = "k",
+                        tstep = 0.02, 
+                        mass = 1, 
+                        max_iter = 100000, 
+                        tol = 2e-3,
+                        sparse = FALSE,
+                        hyper_iters = 100,
+                        hyper_tol  = 0.01,
+                        hyper_max = 30000,
+                        step_size = 0.1,
+                        sample = 1,
+                        verbose = FALSE){
   
   
   memory_df<-tibble(iteration = 1:(2+hyper_iters),
                     error = NA,
+                    perc_change = NA,
                     log_ratio = NA,
                     common_drag_iter = NA,
                     direction = 1,
@@ -52,7 +58,8 @@ auto_SETSe <- function(g,
                     res_stat = NA,
                     upper = NA,
                     lower = NA,
-                    best_log_ratio =NA)
+                    best_log_ratio =NA,
+                    stable = NA)
   #set initial round data
   memory_df$log_ratio[1] <- 0
   memory_df$common_drag_iter[1] <- 0
@@ -66,13 +73,17 @@ auto_SETSe <- function(g,
   memory_df$lower[1] <- -Inf
   memory_df$upper[2] <- Inf
   memory_df$lower[2] <- -Inf
-  
+  #This calculates the percentage change it is set to 1 by default for all values of res_stat =2
+  memory_df$perc_change[1] <- 1
+  memory_df$perc_change[2] <- 1
+  #This is whether the iteration is stable or not
+  memory_df$stable[1] <- FALSE
+  memory_df$stable[2] <- FALSE
   
   drag_iter<- 1
   
   memory_df$log_ratio[drag_iter+1] <- 1#-memory_df$log_ratio[drag_iter] - (memory_df$error[drag_iter])* 1 *direction_change
   memory_df$common_drag_iter[drag_iter+1] <- 10^( -memory_df$log_ratio[drag_iter+1]) * tstep
-  
   
   #Prep the data before going into the converger
   Prep <- SETSe_data_prep(g = g, 
@@ -82,8 +93,11 @@ auto_SETSe <- function(g,
                           mass = mass, 
                           edge_name = edge_name,
                           sparse = sparse)
-  
-  while((drag_iter <= hyper_iters) & (memory_df$res_stat[drag_iter]>tol)){
+  #The number of iterations has to be smaller than the hyper_iters variable AND the residual static force has to be bigger
+  #than the tolerance AND the last two rounds cannot both be stable
+  while((drag_iter <= hyper_iters) & 
+        ifelse(is.na(memory_df$res_stat[drag_iter]>tol), TRUE, memory_df$res_stat[drag_iter]>tol) & 
+        !all(memory_df$stable[c(drag_iter, drag_iter-1)])){
     
     drag_iter <- drag_iter+1      
     # print( memory_df$common_drag_iter[drag_iter])
@@ -95,9 +109,9 @@ auto_SETSe <- function(g,
       dvect = Prep$dvect, 
       mass = mass,
       tstep = tstep, 
-      max_iter = max_iter, 
+      max_iter = hyper_max, 
       coef_drag = memory_df$common_drag_iter[drag_iter],
-      tol = tol, 
+      tol = tol,
       sparse = sparse,
       sample = sample) 
     
@@ -111,12 +125,14 @@ auto_SETSe <- function(g,
     #Is the algo in the convex area?
     memory_df$target_area[drag_iter] <- memory_df$res_stat[drag_iter] < 2
     
+    #stores a temporary error value
+    temp_error <- memory_df$res_stat[drag_iter] - tol
+    
     #Log error is negative when small, absolute difference is used to prevent NaNs if the true error is smaller than the tolerance
-    memory_df$error[drag_iter] <- log10(abs(memory_df$res_stat[drag_iter] - tol)) 
+    memory_df$error[drag_iter] <- log10(abs(temp_error))
     
     #setting the limits
     if(min(memory_df$res_stat, na.rm = TRUE)<2){
-      
       
       #ARE THESE EQUALITES THE RIGHT WAY ROUND?
       #THere is an issue when there are two unique values and one of them is NA
@@ -136,14 +152,27 @@ auto_SETSe <- function(g,
                                              lower_ratios[rank(lower_ratios, ties.method =  "first")==2])
       
       memory_df$best_log_ratio[drag_iter] <- memory_df$log_ratio[min_error]
+      
+      memory_df$perc_change[drag_iter] <- 1 - temp_error/10^memory_df$error[drag_iter-1]
+      
     } else {
       memory_df$upper[drag_iter+1] <- memory_df$upper[drag_iter] 
       memory_df$lower[drag_iter+1] <-  memory_df$lower[drag_iter]
       memory_df$best_log_ratio[drag_iter] <- memory_df$best_log_ratio[drag_iter-1]
       
+      #The change is twice the hyper tolerance 
+      memory_df$perc_change[drag_iter] <- 2*hyper_tol
+      
     }
+    #complete the stability part of the dataframe. This replaces any infinite values with 2*tol so that an error won't be thrown
     
+    memory_df$stable[drag_iter] <- ifelse(is.finite(memory_df$perc_change[drag_iter]), 
+                                          memory_df$perc_change[drag_iter],
+                                          hyper_tol*2 ) < hyper_tol
+    
+    ###
     #if you are in the target zone updates happpen adaptively if not using a fixed step size
+    ###
     if( is.finite(memory_df$upper[drag_iter]) ){
       # print("upper limit found")
       memory_df$log_ratio[drag_iter+1] <- (memory_df$upper[drag_iter] + memory_df$lower[drag_iter] )/2
@@ -161,23 +190,46 @@ auto_SETSe <- function(g,
       
     }
     
+    #Calculate the common drag iteration for this round
     memory_df$common_drag_iter[drag_iter+1] <- 10^( -memory_df$log_ratio[drag_iter+1]) * tstep
     
     
     
     
+    if(verbose){
+      message_val <- ifelse(memory_df$direction[drag_iter] < 1, "accuracy increasing",  "accuracy decreasing")
+      # print(c((drag_iter <= hyper_iters), (memory_df$res_stat[drag_iter]>tol), !all(memory_df$stable[c(drag_iter, drag_iter-1)])))
+      print(paste("Iteration", drag_iter, message_val,
+                  memory_df$common_drag_iter[drag_iter + 1],
+                  "static force", memory_df$res_stat[drag_iter]))
+    }
+  }
+  
+  #Keep only value that actually have a residual force
+  memory_df <- memory_df %>%
+    filter(!is.na(res_stat))
+  
+  #If the smallest residual force is not less than the tolerance even after the minimum point hase been found
+  #Then run the setse algo again using the best log ratio but for the maximum number of iterations
+  if(min(memory_df$res_stat)>tol){
+    print("Minimum tolerance not exceeded, running SETSe on best parameters")
+    embeddings_data <- SETSe_core(
+      node_embeddings = Prep$node_embeddings, 
+      ten_mat = Prep$ten_mat, 
+      non_empty_matrix = Prep$non_empty_matrix, 
+      kvect = Prep$kvect, 
+      dvect = Prep$dvect, 
+      mass = mass,
+      tstep = tstep, 
+      max_iter = max_iter, 
+      coef_drag = memory_df$common_drag_iter[nrow(memory_df)], #uses the best/last coefficient of drag
+      tol = tol,
+      sparse = sparse,
+      sample = sample) 
     
-    message_val <- ifelse(memory_df$direction[drag_iter] < 1, "accuracy increasing",  "accuracy decreasing")
-    
-    # print(paste("Iteration", drag_iter, message_val,  
-    #             memory_df$common_drag_iter[drag_iter + 1], 
-    #             "static force", memory_df$res_stat[drag_iter]))
     
   }
   
-  
-  memory_df <- memory_df %>%
-    filter(!is.na(res_stat))
   
   #Put in edge embeddings
   embeddings_data$edge_embeddings <- calc_tension_strain(g = g,

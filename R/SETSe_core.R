@@ -29,7 +29,7 @@
 
 SETSe_core <- function(node_embeddings, ten_mat, non_empty_matrix, kvect, dvect, mass,
                                   tstep, max_iter = 1000, coef_drag = 1, 
-                                  tol = 1e-10, sparse = FALSE,
+                                  tol = 2e-3, sparse = FALSE,
                              sample = 1){
   #Runs the physics model to find the convergence of the system.
   

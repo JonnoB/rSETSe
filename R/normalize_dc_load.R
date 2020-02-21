@@ -26,11 +26,14 @@ normalise_dc_load <- function(g,
   #The edge capacities are then normalised so that the alpha values are the same as pre normalisation
   #This process only works for DC power-flow
 
-  #calculate power flow to make sure flow values are correct
-  SlackRef <- SlackRefFunc(g, name = node_name,
-                           Generation = net_generation) #find the most appropriate node to be the slack bus
+  Azero <- CreateTransmission(g, 
+                              EdgeName = edge_name,
+                              VertexName = node_name)
+  LineProperties<- LinePropertiesMatrix(g, Edgename = edge_name, Weight = "Y")
   
-  g2 <- PowerFlow(g, SlackRef$name, 
+  g2 <- PowerFlow(g,
+                  Azero,
+                  LineProperties,
                   EdgeName = edge_name, 
                   VertexName = node_name,
                   Net_generation = net_generation,
@@ -52,7 +55,9 @@ normalise_dc_load <- function(g,
   #given the normalised values re-calculate power flow
   g3 <- g2 %>%
     set.vertex.attribute(., net_generation, value = g_node_df[,net_generation]) %>%
-    PowerFlow(., SlackRef$name, 
+    PowerFlow(.,
+              Azero,
+              LineProperties,
               EdgeName = edge_name, 
               VertexName = node_name,
               Net_generation = net_generation,

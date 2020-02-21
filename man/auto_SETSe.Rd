@@ -7,8 +7,9 @@
 auto_SETSe(g, force = "net_generation", flow = "power_flow",
   distance = "distance", capacity = "capacity",
   edge_name = "edge_name", k = "k", tstep = 0.02, mass = 1,
-  max_iter = 20000, tol = 0.002, sparse = FALSE, hyper_iters = 100,
-  step_size = 0.1, sample = 1)
+  max_iter = 1e+05, tol = 0.002, sparse = FALSE, hyper_iters = 100,
+  hyper_tol = 0.01, hyper_max = 30000, step_size = 0.1, sample = 1,
+  verbose = FALSE)
 }
 \arguments{
 \item{g}{An igraph object}
@@ -36,6 +37,10 @@ auto_SETSe(g, force = "net_generation", flow = "power_flow",
 \item{sparse}{Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated}
 
 \item{hyper_iters}{integer. The hyper parameter that determines the number of iterations allowed to find an acceptable convergence value.}
+
+\item{hyper_tol}{numeric. The convergence tolerance when trying to find the minimum value}
+
+\item{hyper_max}{integer. The maximum number of iterations that the setse will go through whilst searching for the minimum.}
 
 \item{step_size}{numeric. The hyper parameter that determines the log ratio search step size for auto convergence}
 

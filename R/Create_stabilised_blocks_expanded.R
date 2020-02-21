@@ -88,7 +88,8 @@ Create_stabilised_blocks_expanded <- function(g,
     }) %>%
     ungroup %>%
     mutate(Articulation_node = (node %in% ArticulationVect )) %>%
-    arrange(Iter, node) #arrange to be in the same order as the block diagram
+    arrange(Iter, node) #arrange to be in the same order as the block diagram, removing the need for 
+  #this would provide a reasonable speed boost
 
   
   message("creating adjustment matrices")
