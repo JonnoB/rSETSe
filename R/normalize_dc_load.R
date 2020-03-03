@@ -70,7 +70,9 @@ normalise_dc_load <- function(g,
   g_edge_df <- as_data_frame(g2, what = "edges") %>%
     mutate(alpha_temp = abs(.data[[capacity]]/.data[[power_flow]]), #calculate the original line alpha values
            !!power_flow := power_flow_vect, #add in the new power flow
-           !!capacity := abs(.data[[power_flow]]*alpha_temp)) %>%   #re-calculate edge capacity using the original alpha values and new power flow
+           !!capacity := abs(.data[[power_flow]]*alpha_temp),#re-calculate edge capacity using the original alpha values and new power flow
+           !!capacity := ifelse(is.nan(.data[[capacity]]), 0, .data[[capacity]]) #if power flow is 0 NaNs are produced this removes them
+           ) %>%   
     select(-alpha_temp) #remove the alpha values from the data frame
 
 #re-make the network using the normalised data.
