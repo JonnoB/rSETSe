@@ -17,7 +17,7 @@ calc_spring_youngs_modulus <- function(g, flow, capacity, minimum_value, stretch
   #stretch_range a numeric value giving the range of k values above the minimum
   #and the point when loading is 100% of capacity.
   
-  temp <- as_data_frame(g) %>% as.tibble %>%
+  temp <- as_data_frame(g) %>% as_tibble %>%
     rename(flow_2 = !!flow,
            capacity_2 = !!capacity) %>%
     mutate(LL = abs(flow_2)/capacity_2,

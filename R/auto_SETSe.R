@@ -9,7 +9,8 @@
 #' @param force A character string. This is the node attribute that contains the force the nodes exert on the network.
 #' @param flow A character string. This is the edge attribute that is the power flow on the edges.
 #' @param distance A character string. The edge attribute that contains the original/horizontal distance between nodes.
-#' @param capacity A character string. This is the edge attribute that is the flow limit of the edges.
+#' @param capacity A character string. This is the edge attribute that is the flow limit of the edges. 
+#' For unweighted networks edge capacity should be an arbitrary value equal to or larger than power_flow
 #' @param edge_name A character string. This is the edge attribute that contains the edge_name of the edges.
 #' @param k A character string. This is k for the moment don't change it.
 #' @param tstep A numeric. The time interval used to iterate through the network dynamics.
@@ -92,6 +93,7 @@ auto_SETSe <- function(g,
                           distance = distance, 
                           mass = mass, 
                           edge_name = edge_name,
+                          k = k,
                           sparse = sparse)
   #The number of iterations has to be smaller than the hyper_iters variable AND the residual static force has to be bigger
   #than the tolerance AND the last two rounds cannot both be stable

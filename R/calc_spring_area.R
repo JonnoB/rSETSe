@@ -10,7 +10,7 @@
 #' 
 calc_spring_area <- function(g, value, minimum_value, range){
 
-  temp <- as_data_frame(g) %>% as.tibble %>%
+  temp <- as_data_frame(g) %>% as_tibble %>%
     rename(value_2 = !!value) %>%
     mutate(
       value_2 = abs(value_2),

@@ -13,7 +13,7 @@
 #' @param sparse Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated
 #' @export
 
-SETSe_data_prep <-function(g, force, flow, distance, mass, edge_name = edge_name, sparse = FALSE){
+SETSe_data_prep <-function(g, force, flow, distance, mass, edge_name = edge_name, k = "k", sparse = FALSE){
   #this is a helper function that goes inside the the find network balance function to help make the code easier to read
   
   #just calls distance distance for simplicities sake
@@ -71,11 +71,11 @@ SETSe_data_prep <-function(g, force, flow, distance, mass, edge_name = edge_name
     #to the k values. the more highly loaded a line is the more it should stretch. as LL varies between 0, no loading (stiffness)
     #to 1, overload point, (most elastic). The larger kdiff is the larger the difference in elasticity for highly and lightly loaded lines.
     #Very large kdiff means very little elasticty on lightly loaded lines
-    select(EdgeName, distance, k) %>%
+    select(EdgeName, distance, kvect = k) %>%
     arrange(EdgeName)
   
   
-  kmat <- t_edge %*% diag(Link$k, nrow = nrow(Link)) %*% abs_edge
+  kmat <- t_edge %*% diag(Link$kvect, nrow = nrow(Link)) %*% abs_edge
   dmat <- t_edge %*% diag(Link$distance, nrow = nrow(Link)) %*% abs_edge #dvect and kvect are the same
   
   #This creates a matrix with the row column position absolute index and transpose index of the edges in the matrix
