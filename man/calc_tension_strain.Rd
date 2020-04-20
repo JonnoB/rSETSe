@@ -4,8 +4,15 @@
 \alias{calc_tension_strain}
 \title{Calculate line tension and strain}
 \usage{
-calc_tension_strain(g, height_embeddings_df, distance = "distance",
-  capacity, flow = "power_flow", edge_name = "edge_name", k = "k")
+calc_tension_strain(
+  g,
+  height_embeddings_df,
+  distance = "distance",
+  capacity,
+  flow = "power_flow",
+  edge_name = "edge_name",
+  k = "k"
+)
 }
 \arguments{
 \item{g}{An igraph object of the network.}

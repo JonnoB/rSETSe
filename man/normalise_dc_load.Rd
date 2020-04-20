@@ -4,10 +4,16 @@
 \alias{normalise_dc_load}
 \title{Normalise load}
 \usage{
-normalise_dc_load(g, generation = "generation", demand = "demand",
-  net_generation = "net_generation", capacity = "edge_limit",
-  edge_name = "edge_name", node_name = "node_name",
-  power_flow = "power_flow")
+normalise_dc_load(
+  g,
+  generation = "generation",
+  demand = "demand",
+  net_generation = "net_generation",
+  capacity = "edge_limit",
+  edge_name = "edge_name",
+  node_name = "node_name",
+  power_flow = "power_flow"
+)
 }
 \arguments{
 \item{g}{An igraph object. Thr graph representation of the network to be normalised}

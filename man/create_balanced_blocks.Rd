@@ -4,8 +4,7 @@
 \alias{create_balanced_blocks}
 \title{Create balanced blocks}
 \usage{
-create_balanced_blocks(g, force = "net_generation",
-  flow = "power_flow")
+create_balanced_blocks(g, force = "net_generation", flow = "power_flow")
 }
 \arguments{
 \item{g}{An igraph object. The network for which embeddings will be found}

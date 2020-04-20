@@ -4,8 +4,16 @@
 \alias{SETSe_data_prep}
 \title{Preapre data for the `SETSe_core` function}
 \usage{
-SETSe_data_prep(g, force, flow, distance, mass, edge_name = edge_name,
-  sparse = FALSE)
+SETSe_data_prep(
+  g,
+  force,
+  flow,
+  distance,
+  mass,
+  edge_name = edge_name,
+  k = "k",
+  sparse = FALSE
+)
 }
 \arguments{
 \item{g}{An igraph object of the network that is going to be turned into a spring embedding.}

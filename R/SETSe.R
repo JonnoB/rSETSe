@@ -2,6 +2,7 @@
 #' 
 #' This is the basic SETS embeddings algorithm, it outputs all elements of the embeddings as well as convergence dynamics. It is a
 #' wrapper around the core SETS algorithm which requires data preparation and only produces node embeddings and entwork dynamics.
+#' Flow and capacity are only inlcuded for legacy reasons and an arbitray value should be used for both if it is not applicable.
 #' 
 #' This function is often used in conjunction with \code{Create_stabilised_blocks} and \code{create_balanced_blocks}
 #' 
@@ -45,7 +46,7 @@ SETSe <- function(g,
                   two_node_solution = TRUE,
                   include_edges = FALSE,
                   sample = 1){
-  
+
   #helper function that prepares the data
   Prep <- SETSe_data_prep(g = g, 
                           force = force, 
@@ -92,7 +93,7 @@ SETSe <- function(g,
     )
     #Solves using the iterative method.
   } else{
-    
+
     #The core algorithm
     Out <- SETSe_core(
       node_embeddings = Prep$node_embeddings, 

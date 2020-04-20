@@ -1,0 +1,64 @@
+#' Prepare continuous network
+#' 
+#' This function prepares a continuous network for SETSe projection.
+#' 
+#' The network takes in an igraph object and produces an undirected igraph object that can be used with SETSe/auto_SETSe for embedding.
+#'  
+#' @param g an igraph object
+#' @param k The sping constant. This value is either a numeric value giving the spring constant for all edges or NULL. If NULL is used 
+#'  the k value will not be added to the network. This is useful k is made through some other processs.
+#' @param force_var An edge attribute. This is used as the force variable, it must be a numeric or integer value, it cannot have NA's
+#' @param sum_to_one Logical. whether the total positive force sums to 1, if FALSE the total is the sum of the positive cases
+#' @param distance a positive numeric value. The default is 1
+#' 
+#' @details 
+#'  The function subtracts the mean from all the values so that the system is balanced. If sum_to_one is true then everything is divided by
+#'  the absolute sum over two 
+#'  
+#'  The function adds the node attribute 'force' and the edge attribute 'k' unless k=NULL. The purpose of the function is to easily be able to 
+#'  project continuous networks using SETSe. 
+#'  
+#'  The function creates several variables
+#' \itemize{
+#'   \item force: a vertex attribute representing the force produced by each node. The sum of this variable will be 0
+#'   \item k: The spring constant representing the stiffness of the spring. 
+#'   \item edge_name: the name of the edges. it takes the form "from_to" where "from" is the origin node and "to" is the destination node using the 
+#'  \code{\link[igraph]{as_data_frame}} function from igraph
+#' }
+#'  
+#' @seealso \code{\link{SETSe}}, \code{\link{auto_SETSe}}, \code{\link{prepare_SETSe_binary}}
+#' @export
+
+prepare_SETSe_continuous <- function(g, k = NULL, force_var, sum_to_one = TRUE, distance = 1){
+  
+  force_var_sym <- sym(force_var)
+  
+  g_list <-   as_data_frame(g, what = "both")
+  
+  edges_df <- g_list$edges %>%
+    mutate(distance = distance,
+           edge_name = paste(from, to, sep ="-"))
+  
+  if(!is.null(k)){
+    edges_df <- edges_df %>% 
+      mutate( k = k)
+  }
+  
+  vertices_df <- g_list$vertices %>% tibble
+  
+  vertices_df <- vertices_df %>%
+    mutate(force = {{force_var_sym}},
+           force = force - mean(force))
+  
+  if(sum_to_one){
+    
+    vertices_df <- vertices_df %>%
+      mutate(force = force/(sum(abs(force))/2))
+    
+  }
+  
+  g_out  <- graph_from_data_frame(edges_df, directed = FALSE, vertices = vertices_df) 
+  
+  return(g_out)
+  
+}

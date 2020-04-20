@@ -4,10 +4,22 @@
 \alias{Create_stabilised_blocks}
 \title{Create stabilised blocks}
 \usage{
-Create_stabilised_blocks(g, OriginBlock, OriginBlock_number,
-  force = "net_generation", flow = "power_flow",
-  edge_name = "edge_name", tstep = 0.1, coef_drag = coef_drag,
-  tol = 1e-10, distance, max_iter, mass, sparse, sample = 1)
+Create_stabilised_blocks(
+  g,
+  OriginBlock,
+  OriginBlock_number,
+  force = "net_generation",
+  flow = "power_flow",
+  edge_name = "edge_name",
+  tstep = 0.1,
+  coef_drag = coef_drag,
+  tol = 1e-10,
+  distance,
+  max_iter,
+  mass,
+  sparse,
+  sample = 1
+)
 }
 \arguments{
 \item{g}{An igraph object}

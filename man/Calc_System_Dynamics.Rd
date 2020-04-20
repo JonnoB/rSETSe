@@ -4,8 +4,17 @@
 \alias{Calc_System_Dynamics}
 \title{Calculate system dynamics}
 \usage{
-Calc_System_Dynamics(NodeStatus, ten_mat, damp_mat, kvect, dvect, mat_size,
-  tstep = 1, non_empty_matrix, frctmultiplier = 1)
+Calc_System_Dynamics(
+  NodeStatus,
+  ten_mat,
+  damp_mat,
+  kvect,
+  dvect,
+  mat_size,
+  tstep = 1,
+  non_empty_matrix,
+  frctmultiplier = 1
+)
 }
 \arguments{
 \item{NodeStatus}{A numeric matrix frame The current dynamics and forces experienced by the nodes. The node ID is not included

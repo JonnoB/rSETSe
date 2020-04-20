@@ -4,9 +4,20 @@
 \alias{SETSe_core}
 \title{SETSe Core}
 \usage{
-SETSe_core(node_embeddings, ten_mat, non_empty_matrix, kvect, dvect, mass,
-  tstep, max_iter = 1000, coef_drag = 1, tol = 0.002,
-  sparse = FALSE, sample = 1)
+SETSe_core(
+  node_embeddings,
+  ten_mat,
+  non_empty_matrix,
+  kvect,
+  dvect,
+  mass,
+  tstep,
+  max_iter = 1000,
+  coef_drag = 1,
+  tol = 0.002,
+  sparse = FALSE,
+  sample = 1
+)
 }
 \arguments{
 \item{node_embeddings}{A data frame The current dynamics and forces experienced by the node a data frame.}

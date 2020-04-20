@@ -4,11 +4,24 @@
 \alias{SETSe}
 \title{SETSe algorithm}
 \usage{
-SETSe(g, force = "net_generation", flow = "power_flow",
-  distance = "distance", capacity = "capacity",
-  edge_name = "edge_name", k = "k", tstep = 0.02, mass = 1,
-  max_iter = 20000, coef_drag = 1, tol = 1e-06, sparse = FALSE,
-  two_node_solution = TRUE, include_edges = FALSE, sample = 1)
+SETSe(
+  g,
+  force = "net_generation",
+  flow = "power_flow",
+  distance = "distance",
+  capacity = "capacity",
+  edge_name = "edge_name",
+  k = "k",
+  tstep = 0.02,
+  mass = 1,
+  max_iter = 20000,
+  coef_drag = 1,
+  tol = 1e-06,
+  sparse = FALSE,
+  two_node_solution = TRUE,
+  include_edges = FALSE,
+  sample = 1
+)
 }
 \arguments{
 \item{g}{An igraph object}
@@ -52,6 +65,7 @@ as well as the convergence dynamics dataframe for the network.
 \description{
 This is the basic SETS embeddings algorithm, it outputs all elements of the embeddings as well as convergence dynamics. It is a
 wrapper around the core SETS algorithm which requires data preparation and only produces node embeddings and entwork dynamics.
+Flow and capacity are only inlcuded for legacy reasons and an arbitray value should be used for both if it is not applicable.
 }
 \details{
 This function is often used in conjunction with \code{Create_stabilised_blocks} and \code{create_balanced_blocks}

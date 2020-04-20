@@ -4,11 +4,23 @@
 \alias{SETSe_expanded}
 \title{Calculate SETSe expanded version}
 \usage{
-SETSe_expanded(g, force = "net_generation", flow = "power_flow",
-  distance = "distance", capacity = "capacity",
-  edge_name = "edge_name", k = "k", tstep = 0.02, mass = 1,
-  max_iter = 20000, coef_drag = 1, tol = 1e-06, sparse = FALSE,
-  verbose = TRUE, two_node_solution = TRUE)
+SETSe_expanded(
+  g,
+  force = "net_generation",
+  flow = "power_flow",
+  distance = "distance",
+  capacity = "capacity",
+  edge_name = "edge_name",
+  k = "k",
+  tstep = 0.02,
+  mass = 1,
+  max_iter = 20000,
+  coef_drag = 1,
+  tol = 1e-06,
+  sparse = FALSE,
+  verbose = TRUE,
+  two_node_solution = TRUE
+)
 }
 \arguments{
 \item{g}{An igraph object. The network}

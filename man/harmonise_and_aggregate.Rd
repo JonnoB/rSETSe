@@ -4,8 +4,12 @@
 \alias{harmonise_and_aggregate}
 \title{Harmonise and aggregate}
 \usage{
-harmonise_and_aggregate(vect, component_adjust_mat,
-  harmonise_vector = TRUE, colsum = TRUE)
+harmonise_and_aggregate(
+  vect,
+  component_adjust_mat,
+  harmonise_vector = TRUE,
+  colsum = TRUE
+)
 }
 \arguments{
 \item{vect}{a numeric vector, this is the vector that requires harmonising and aggregating}

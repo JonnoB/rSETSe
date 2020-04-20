@@ -4,10 +4,21 @@
 \alias{SETSe_bicomp_expanded}
 \title{Bicomponent SETS embedding expanded}
 \usage{
-SETSe_bicomp_expanded(g, force = "force", flow = "flow",
-  distance = "distance", capacity = "capacity",
-  edge_name = "edge_name", k = "k", tstep, coef_drag = 1, tol,
-  max_iter = 20000, mass = 1, sparse = FALSE)
+SETSe_bicomp_expanded(
+  g,
+  force = "force",
+  flow = "flow",
+  distance = "distance",
+  capacity = "capacity",
+  edge_name = "edge_name",
+  k = "k",
+  tstep,
+  coef_drag = 1,
+  tol,
+  max_iter = 20000,
+  mass = 1,
+  sparse = FALSE
+)
 }
 \arguments{
 \item{g}{An igraph object}

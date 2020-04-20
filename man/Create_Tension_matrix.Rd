@@ -4,8 +4,7 @@
 \alias{Create_Tension_matrix}
 \title{Create tension matrix}
 \usage{
-Create_Tension_matrix(ten_mat, zvect, zvect_t, dvect, kvect,
-  non_empty_index)
+Create_Tension_matrix(ten_mat, zvect, zvect_t, dvect, kvect, non_empty_index)
 }
 \arguments{
 \item{ten_mat}{A dataframe. represents the edge node matrix}

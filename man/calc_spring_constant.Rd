@@ -26,7 +26,7 @@ This function adds the graph characteristic k which is the spring constant. When
 The values A and distance are edge atributes referring to the crossectional area of the edge and the horizontal distance of the edge,
 in other words the distance between the two nodes at each end of the edge. These values can be set to anything the user wishes, they may be
 constant or not. However, consider carefully setting the values to anything else other than 1. There needs to be a clear resoning
-or the results will be meaningless.
+or the results will be meaningless. 
 
 For example setting the distance of an edge that represents an electrical cable to the distance
 of the electrical cable will return very different results when compared to a constant of one. However, the physical distance between two points

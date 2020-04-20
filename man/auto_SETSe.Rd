@@ -4,12 +4,26 @@
 \alias{auto_SETSe}
 \title{Auto SETSe}
 \usage{
-auto_SETSe(g, force = "net_generation", flow = "power_flow",
-  distance = "distance", capacity = "capacity",
-  edge_name = "edge_name", k = "k", tstep = 0.02, mass = 1,
-  max_iter = 1e+05, tol = 0.002, sparse = FALSE, hyper_iters = 100,
-  hyper_tol = 0.01, hyper_max = 30000, step_size = 0.1, sample = 1,
-  verbose = FALSE)
+auto_SETSe(
+  g,
+  force = "net_generation",
+  flow = "power_flow",
+  distance = "distance",
+  capacity = "capacity",
+  edge_name = "edge_name",
+  k = "k",
+  tstep = 0.02,
+  mass = 1,
+  max_iter = 1e+05,
+  tol = 0.002,
+  sparse = FALSE,
+  hyper_iters = 100,
+  hyper_tol = 0.01,
+  hyper_max = 30000,
+  step_size = 0.1,
+  sample = 1,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{g}{An igraph object}
@@ -20,7 +34,8 @@ auto_SETSe(g, force = "net_generation", flow = "power_flow",
 
 \item{distance}{A character string. The edge attribute that contains the original/horizontal distance between nodes.}
 
-\item{capacity}{A character string. This is the edge attribute that is the flow limit of the edges.}
+\item{capacity}{A character string. This is the edge attribute that is the flow limit of the edges. 
+For unweighted networks edge capacity should be an arbitrary value equal to or larger than power_flow}
 
 \item{edge_name}{A character string. This is the edge attribute that contains the edge_name of the edges.}
 
