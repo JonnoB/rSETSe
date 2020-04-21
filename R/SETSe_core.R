@@ -28,9 +28,9 @@
 # Strips out all pre processing to make it as efficient and simple as possible
 
 SETSe_core <- function(node_embeddings, ten_mat, non_empty_matrix, kvect, dvect, mass,
-                                  tstep, max_iter = 1000, coef_drag = 1, 
-                                  tol = 2e-3, sparse = FALSE,
-                             sample = 1){
+                                 tstep, max_iter = 1000, coef_drag = 1, 
+                                 tol = 2e-3, sparse = FALSE,
+                                 sample = 1){
   #Runs the physics model to find the convergence of the system.
   
   #vectors are used throughout instead of a single matrix as it turns out they are faster due to less indexing and use much less RAM.
@@ -46,6 +46,10 @@ SETSe_core <- function(node_embeddings, ten_mat, non_empty_matrix, kvect, dvect,
   net_force <- NodeList[,7]
   acceleration <- NodeList[,8]
   
+  if(sparse){
+    ten_mat <- as(ten_mat, "dgTMatrix")
+  }
+  
   #The static limit is 10 times the static force
   #Sometimes numbers can explode then converge, but whatever I don't care about them
   static_limit <- sum(abs(force))*10
@@ -55,6 +59,7 @@ SETSe_core <- function(node_embeddings, ten_mat, non_empty_matrix, kvect, dvect,
   non_empty_vect <- non_empty_matrix[,1]
   non_empty_t_vect <- non_empty_matrix[,2]
   non_empty_index_vect <- non_empty_matrix[,3]
+  non_empty_t_index_vect <- non_empty_matrix[,4]
   #This dataframe is one of the final outputs of the function, it is premade for memory allocation
   network_dynamics <- matrix(data = NA, nrow = max_iter/sample, ncol = 6) %>%
     as_tibble() %>%
@@ -85,9 +90,6 @@ SETSe_core <- function(node_embeddings, ten_mat, non_empty_matrix, kvect, dvect,
     #the hypotenuse of the spring distance triangle
     Hvect <- sqrt(dzvect^2 + dvect^2)
     
-    #the tension vector. the dZvect/Hvect is the vertical component of the tension
-    ten_mat[non_empty_index_vect] <- kvect*(Hvect-dvect)*dzvect/Hvect
-    
     #The remaining dynamics are calculated here
     
     elevation <- velocity*tstep +0.5*acceleration*tstep*tstep + elevation #Distance/elevation s1 = ut+0.5at^2+s0
@@ -95,11 +97,14 @@ SETSe_core <- function(node_embeddings, ten_mat, non_empty_matrix, kvect, dvect,
     static_force <- force + net_tension #static force 
     
     if(sparse){
-      #This uses the matrix row aggregation functions which can be used on sparse matrices. This is faster and much more memory
-      #efficient for large matrices
-      net_tension <- Matrix::rowSums(ten_mat) #tension
+      #This uses the matrix column aggregation functions which can be used on sparse matrices. This is faster and much more memory
+      #efficient for large matrices. It is also faster to tranpose and use column sum... I don't know why
+      ten_mat@x <-{kvect*(Hvect-dvect)*dzvect/Hvect}
+      net_tension <- Matrix::colSums(Matrix::t(ten_mat)) #tension
     }else{
       #This uses the standard dense matrices, this is faster for smaller matrices.
+      #the tension vector. the dZvect/Hvect is the vertical component of the tension
+      ten_mat[non_empty_index_vect] <- kvect*(Hvect-dvect)*dzvect/Hvect
       net_tension <- ten_mat %*% one_vect  #.rowSums(ten_mat, m = m[1], n = m[1]) #tension
     }
     friction <- coef_drag*velocity #friction of an object in a viscous fluid under laminar flow
@@ -116,12 +121,12 @@ SETSe_core <- function(node_embeddings, ten_mat, non_empty_matrix, kvect, dvect,
                                           sum(0.5*mass*velocity^2)    #kinetic_energy
       ) 
       
-    
+      
       #check if system is stable using static force
       #If static force is not finite or exceeds the static limit then the process terminates early
       if(!is.finite(network_dynamics[Iter/sample,3])| network_dynamics[Iter/sample,3]>static_limit){ #if there are infinte values terminate early
         system_stable <- TRUE
-       # print(network_dynamics[Iter/sample,3])
+        # print(network_dynamics[Iter/sample,3])
       } else{
         system_stable <- (network_dynamics[Iter/sample,3] < tol)
       }
@@ -139,16 +144,16 @@ SETSe_core <- function(node_embeddings, ten_mat, non_empty_matrix, kvect, dvect,
   #combine all the vectors together again into a tibble
   Out <- list(network_dynamics = as_tibble(network_dynamics), 
               node_embeddings = bind_cols(node_embeddings[,"node",drop=FALSE] , 
-                                      tibble(  force = force,
-                                               elevation = as.vector(elevation),
-                                               net_tension = as.vector(net_tension),
-                                               velocity = as.vector(velocity),
-                                               friction = as.vector(friction),
-                                               static_force = as.vector(static_force),
-                                               net_force = as.vector(net_force),
-                                               acceleration = as.vector(acceleration),
-                                               t = tstep*(Iter-1),
-                                               Iter = Iter-1))) #1 needs to be subtracted from the total as the final thing
+                                          tibble(  force = force,
+                                                   elevation = as.vector(elevation),
+                                                   net_tension = as.vector(net_tension),
+                                                   velocity = as.vector(velocity),
+                                                   friction = as.vector(friction),
+                                                   static_force = as.vector(static_force),
+                                                   net_force = as.vector(net_force),
+                                                   acceleration = as.vector(acceleration),
+                                                   t = tstep*(Iter-1),
+                                                   Iter = Iter-1))) #1 needs to be subtracted from the total as the final thing
   #in the loop is to add 1 to the iteration
   
   return(Out)

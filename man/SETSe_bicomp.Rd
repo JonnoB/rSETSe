@@ -7,9 +7,7 @@
 SETSe_bicomp(
   g,
   force = "force",
-  flow = "flow",
   distance = "distance",
-  capacity = "capacity",
   edge_name = "edge_name",
   k = "k",
   tstep,
@@ -26,11 +24,7 @@ SETSe_bicomp(
 
 \item{force}{A character string. This is the node attribute that contains the force the nodes exert on the network.}
 
-\item{flow}{A character string. This is the edge attribute that is the power flow on the edges.}
-
 \item{distance}{A character string. The edge attribute that contains the original/horizontal distance between nodes.}
-
-\item{capacity}{A character string. This is the edge attribute that is the flow limit of the edges.}
 
 \item{edge_name}{A character string. This is the edge attribute that contains the edge_name of the edges.}
 

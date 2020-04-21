@@ -8,7 +8,6 @@
 #' @param OriginBlock_number An integer. this is the origin block chosen from the
 #' create_stable_blocks function. Usually this will be the largest block.
 #' @param force A character string. This is the node attribute that contains the force the nodes exert on the network.
-#' @param flow A character string. This is the edge attribute that is the power flow on the edges.
 #' @param edge_name A character string. This is the edge attribute that contains the edge_name of the edges.
 #' @param tstep A numeric. The time interval used to iterate through the network dynamics.
 #' @param coef_drag A numeric. This sets the multiplier of friction. Only use if you want to be annoyed and confused
@@ -26,8 +25,7 @@
 Create_stabilised_blocks_expanded <- function(g, 
                                      OriginBlock, 
                                      OriginBlock_number, 
-                                     force ="net_generation", 
-                                     flow = "power_flow", 
+                                     force ="force", 
                                      edge_name = "edge_name",  
                                      tstep=0.1, 
                                      coef_drag = coef_drag,
@@ -40,7 +38,7 @@ Create_stabilised_blocks_expanded <- function(g,
   
   #Seperate out the graph into balanced blocks
   #This step will have already been done, but it is fast and simplifies the requirements for the function
-  List_of_BiConComps <- create_balanced_blocks(g, force = force, flow = flow)
+  List_of_BiConComps <- create_balanced_blocks(g, force = force)
   
   #remove the Origin block so it doesn't have to be calculated again
   BlockNumbers <-(1:length(List_of_BiConComps))[-OriginBlock_number]
@@ -49,8 +47,7 @@ Create_stabilised_blocks_expanded <- function(g,
     map(~{
 
       Out <- SETSe_expanded(List_of_BiConComps[[.x]],
-                                  force =force, 
-                                  flow = flow, 
+                                  force =force,
                                   tstep = tstep, 
                                   coef_drag = coef_drag,
                                   tol = tol, 
@@ -94,7 +91,7 @@ Create_stabilised_blocks_expanded <- function(g,
   
   message("creating adjustment matrices")
   component_adjust_mat <- adjust_components(g, max_iter = max_iter,
-                                            force = force, flow = flow)
+                                            force = force)
   
 
   #print(table(relative_blocks$Iter))

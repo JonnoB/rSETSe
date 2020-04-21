@@ -4,14 +4,12 @@
 \alias{create_balanced_blocks}
 \title{Create balanced blocks}
 \usage{
-create_balanced_blocks(g, force = "net_generation", flow = "power_flow")
+create_balanced_blocks(g, force = "force")
 }
 \arguments{
 \item{g}{An igraph object. The network for which embeddings will be found}
 
 \item{force}{A character vector. The name of the node attribute that is the force exerted by the nodes}
-
-\item{flow}{A character vector. The name of the edge attribute that contains the flow over each edge}
 }
 \value{
 A list containing all the bi connected component where each component is balanced to have a net force of 0.

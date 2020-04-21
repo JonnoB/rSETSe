@@ -6,10 +6,8 @@
 \usage{
 auto_SETSe(
   g,
-  force = "net_generation",
-  flow = "power_flow",
+  force = "force",
   distance = "distance",
-  capacity = "capacity",
   edge_name = "edge_name",
   k = "k",
   tstep = 0.02,
@@ -30,12 +28,7 @@ auto_SETSe(
 
 \item{force}{A character string. This is the node attribute that contains the force the nodes exert on the network.}
 
-\item{flow}{A character string. This is the edge attribute that is the power flow on the edges.}
-
 \item{distance}{A character string. The edge attribute that contains the original/horizontal distance between nodes.}
-
-\item{capacity}{A character string. This is the edge attribute that is the flow limit of the edges. 
-For unweighted networks edge capacity should be an arbitrary value equal to or larger than power_flow}
 
 \item{edge_name}{A character string. This is the edge attribute that contains the edge_name of the edges.}
 

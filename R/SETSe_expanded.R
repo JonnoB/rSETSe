@@ -5,10 +5,8 @@
 #' 
 #' @param g An igraph object. The network
 #' @param force A character string
-#' @param flow A character string. the name of the graph attribute that contains the flow information
 #' @param tstep A numeric. The time in seconds that elapses between each iteration
 #' @param distance A character string. The name of the graph attribute that contains the graph distance
-#' @param capacity A character string. This is the edge attribute that is the flow limit of the edges.
 #' @param edge_name A character string. This is the edge attribute that contains the edge_name of the edges.
 #' @param k A character string. This is k for the moment don't change it.
 #' @param mass A numeric. The mass in kg of the nodes, this is arbitrary and commonly 1 is used. 
@@ -23,9 +21,7 @@
 
 SETSe_expanded <- function(g, 
                            force ="net_generation", 
-                           flow = "power_flow", 
                            distance = "distance", 
-                           capacity = "capacity", 
                            edge_name = "edge_name",
                            k = "k",
                            tstep = 0.02, 
@@ -54,7 +50,6 @@ SETSe_expanded <- function(g,
   #helper function that prepares the data
   Prep <- SETSe_data_prep(g = g, 
                           force = force, 
-                          flow = flow, 
                           distance = distance, 
                           mass = mass, 
                           edge_name = edge_name,
@@ -119,8 +114,6 @@ SETSe_expanded <- function(g,
   #   Out$edge_embeddings <- calc_tension_strain(g = g,
   #                                              Out$node_embeddings,
   #                                              distance = distance, 
-  #                                              capacity = capacity, 
-  #                                              flow = flow, 
   #                                              edge_name = edge_name, 
   #                                              k = k)
   #   

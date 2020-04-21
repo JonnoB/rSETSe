@@ -10,12 +10,11 @@
 #' 
 #' @param g An igraph object. The network for which embeddings will be found
 #' @param force A character vector. The name of the node attribute that is the force exerted by the nodes
-#' @param flow A character vector. The name of the edge attribute that contains the flow over each edge
 #' @return A list containing all the bi connected component where each component is balanced to have a net force of 0.
 #' 
 #' @export
 
-create_balanced_blocks <- function(g, force = "net_generation", flow = "power_flow"){
+create_balanced_blocks <- function(g, force = "force"){
   #This function creates a list of biconnected components or blocks.
   #These blocks are balanced such that the connecting vertices contain all the power of the missing part of the network
   #balancing prevents the network reaching a steady state non-zero velocity.
@@ -69,19 +68,7 @@ create_balanced_blocks <- function(g, force = "net_generation", flow = "power_fl
         left_join(biconnected_component, ., by = "name") %>%
         mutate(temp = ifelse(is.na(AuxPower), !!sym(force), AuxPower)) #
       
-      # This has been commented out as it is unclear what benefits it provides and causes errors when flow
-      # is only a nominal value not a real part of the network
-      # #makes the nodes of the two node 1 edge block have the same power as that which flows between them.
-      # #this forces a balance
-      # #The nodes are by default in alphabetical order so the polarity of the power flow will always be correct
-      # if(nrow(edge_df)==1){
-      #   balanced_component_df <- balanced_component_df %>%
-      #     mutate(temp = edge_df %>%
-      #              pull(., !!sym(flow)) %>% c(., -.) %>% 
-      #              #should this rounding be kept? maybe tiny value aren't a problem? the thing is solved seperately anyway
-      #              round(., 10)) #rounding stops tiny values
-      # }
-      
+
       Component_j <- {!(get.vertex.attribute(g, "name") %in% balanced_component_df$name)} %>%
         (1:vcount(g))[.] %>%
         delete.vertices(g,.) 

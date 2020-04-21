@@ -7,9 +7,7 @@
 SETSe_expanded(
   g,
   force = "net_generation",
-  flow = "power_flow",
   distance = "distance",
-  capacity = "capacity",
   edge_name = "edge_name",
   k = "k",
   tstep = 0.02,
@@ -27,11 +25,7 @@ SETSe_expanded(
 
 \item{force}{A character string}
 
-\item{flow}{A character string. the name of the graph attribute that contains the flow information}
-
 \item{distance}{A character string. The name of the graph attribute that contains the graph distance}
-
-\item{capacity}{A character string. This is the edge attribute that is the flow limit of the edges.}
 
 \item{edge_name}{A character string. This is the edge attribute that contains the edge_name of the edges.}
 

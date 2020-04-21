@@ -4,9 +4,7 @@
 #' 
 #' @param g An igraph object
 #' @param force A character string. This is the node attribute that contains the force the nodes exert on the network.
-#' @param flow A character string. This is the edge attribute that is the power flow on the edges.
 #' @param distance A character string. The edge attribute that contains the original/horizontal distance between nodes.
-#' @param capacity A character string. This is the edge attribute that is the flow limit of the edges.
 #' @param edge_name A character string. This is the edge attribute that contains the edge_name of the edges.
 #' @param k A character string. This is k for the moment don't change it.
 #' @param tstep A numeric. The time interval used to iterate through the network dynamics.
@@ -21,7 +19,6 @@
 #'@export
 SETSe_bicomp_expanded <- function(g, 
                           force = "force", 
-                          flow = "flow", 
                           distance = "distance", 
                           capacity = "capacity", 
                           edge_name = "edge_name",
@@ -35,8 +32,7 @@ SETSe_bicomp_expanded <- function(g,
   
   #seperate out the network into blocks
   List_of_BiConComps <- create_balanced_blocks(g, 
-                                               force = force, 
-                                               flow = flow)
+                                               force = force)
   
   #find the largest component and use that as the origin block
   OriginBlock_number <-List_of_BiConComps %>% map_dbl(~vcount(.x)) %>% which.max()
@@ -48,7 +44,6 @@ SETSe_bicomp_expanded <- function(g,
   #surface angled in the direct of net power flow. Which is interesting but not that interesting
   OriginBlock <- SETSe_expanded(g = List_of_BiConComps[[OriginBlock_number]],
                                                force =force,
-                                               flow = flow,
                                                distance = distance,
                                                edge_name = edge_name,
                                                tstep = tstep,
@@ -65,7 +60,6 @@ SETSe_bicomp_expanded <- function(g,
                                                 OriginBlock = OriginBlock,
                                                 OriginBlock_number = OriginBlock_number,
                                                 force = force,
-                                                flow = flow,
                                                 distance = distance,
                                                 edge_name = edge_name,
                                                 tstep = tstep,

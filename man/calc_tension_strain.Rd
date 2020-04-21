@@ -8,8 +8,6 @@ calc_tension_strain(
   g,
   height_embeddings_df,
   distance = "distance",
-  capacity,
-  flow = "power_flow",
   edge_name = "edge_name",
   k = "k"
 )
@@ -21,24 +19,20 @@ calc_tension_strain(
 
 \item{distance}{A character string. The name of the edge attribute that contains the distance between two nodes. The default is "distance"}
 
-\item{flow}{A character string. The name of the edge attribute that contains the flow between the two nodes at the end of the edge. The default is "power_flow".}
-
 \item{edge_name}{A character string. The name of the edge attribute that contains the edge name. The default is "edge_name".}
 
 \item{k}{A character string. The name of the edge attribute that contains the sping coefficient}
-
-\item{capcity}{A character string. The name of the edge attribute that contains the flow capacity of the edge between two nodes.}
 }
 \value{
-The function returns a data frame of 11 columns. These columns are the edge name, the alpha level, the line load (aka the inverse of alpha), 
+The function returns a data frame of 7 columns. These columns are the edge name,
 the change in elevation, The final distance between the two nodes (the hypotenuse of the orignal distance and the vertical distance), 
-the spring constant k, the edge tension, the edge strain, the percentile edge strain, the mean elevation and the total flow.
+the spring constant k, the edge tension, the edge strain, and the mean elevation.
 }
 \description{
 This function calculates the line  tension and strain characteristics for the edges in a graph
 }
 \details{
-Whilst the height_embeddings_df contains the elevation of the SETS alogirthm this function produces a data frame that contains the Tension
+Whilst the nodet_embeddings dataframe contains the elevation of the SETSe alogirthm this function produces a data frame that contains the Tension
 and Strain. The dataframe that is returned contains a substantial amount of line information so reducing the number of variables may be
 necessary if the data frame will be merged with previously generated data as there could be multiple columns of the same value.
 }

@@ -8,8 +8,7 @@ Create_stabilised_blocks_expanded(
   g,
   OriginBlock,
   OriginBlock_number,
-  force = "net_generation",
-  flow = "power_flow",
+  force = "force",
   edge_name = "edge_name",
   tstep = 0.1,
   coef_drag = coef_drag,
@@ -28,8 +27,6 @@ Create_stabilised_blocks_expanded(
 create_stable_blocks function. Usually this will be the largest block.}
 
 \item{force}{A character string. This is the node attribute that contains the force the nodes exert on the network.}
-
-\item{flow}{A character string. This is the edge attribute that is the power flow on the edges.}
 
 \item{edge_name}{A character string. This is the edge attribute that contains the edge_name of the edges.}
 

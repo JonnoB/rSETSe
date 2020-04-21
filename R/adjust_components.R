@@ -1,13 +1,12 @@
+#'this is a fiendish internal function that I wish I had described in greater detail
 
-
-adjust_components <- function(g, max_iter, force, flow){
+adjust_components <- function(g, max_iter, force){
   
   
   #The origin block is the largest connected component
   
   List_of_BiConComps <- create_balanced_blocks(g, 
-                                               force = force, 
-                                               flow = flow)
+                                               force = force)
   
   #find the largest component and use that as the origin block
   OriginBlock_number <-List_of_BiConComps %>% map_dbl(~vcount(.x)) %>% which.max()

@@ -25,8 +25,15 @@ the k value will not be added to the network. This is useful k is made through s
 
 \item{sum_to_one}{Logical. whether the total positive force sums to 1, if FALSE the total is the sum of the positive cases}
 
-\item{distance}{a positive numeric value. The default is 1
- 
+\item{distance}{a positive numeric value. The default is 1}
+}
+\description{
+This function prepares a binary network for SETSe projection.
+}
+\details{
+The network takes in an igraph object and produces an undirected igraph object that can be used with SETSe/auto_SETSe for embedding.
+
+
  The function adds the node attribute 'force' and the edge attribute 'k' unless k=NULL. The purpose of the function is to easily be able to 
  project binary networks using SETSe. 
  
@@ -36,14 +43,8 @@ the k value will not be added to the network. This is useful k is made through s
   \item k: The spring constant representing the stiffness of the spring. 
   \item edge_name: the name of the edges. it takes the form "from_to" where "from" is the origin node and "to" is the destination node using the 
  \code{\link[igraph]{as_data_frame}} function from igraph
-}}
 }
-\description{
-This function prepares a binary network for SETSe projection.
-}
-\details{
-The network takes in an igraph object and produces an undirected igraph object that can be used with SETSe/auto_SETSe for embedding.
 }
 \seealso{
-\code{\link{SETSe}}, \code{\link{auto_SETSe}}
+\code{\link{SETSe}}, \code{\link{auto_SETSe}}, \code{\link{prepare_SETSe_continuous}}
 }

@@ -7,10 +7,7 @@
 #' 
 #' @param g An igraph object
 #' @param force A character string. This is the node attribute that contains the force the nodes exert on the network.
-#' @param flow A character string. This is the edge attribute that is the power flow on the edges.
 #' @param distance A character string. The edge attribute that contains the original/horizontal distance between nodes.
-#' @param capacity A character string. This is the edge attribute that is the flow limit of the edges. 
-#' For unweighted networks edge capacity should be an arbitrary value equal to or larger than power_flow
 #' @param edge_name A character string. This is the edge attribute that contains the edge_name of the edges.
 #' @param k A character string. This is k for the moment don't change it.
 #' @param tstep A numeric. The time interval used to iterate through the network dynamics.
@@ -30,10 +27,8 @@
 #' @export
 
 auto_SETSe <- function(g, 
-                        force ="net_generation", 
-                        flow = "power_flow", 
+                        force ="force", 
                         distance = "distance", 
-                        capacity = "capacity", 
                         edge_name = "edge_name",
                         k = "k",
                         tstep = 0.02, 
@@ -86,15 +81,18 @@ auto_SETSe <- function(g,
   memory_df$log_ratio[drag_iter+1] <- 1#-memory_df$log_ratio[drag_iter] - (memory_df$error[drag_iter])* 1 *direction_change
   memory_df$common_drag_iter[drag_iter+1] <- 10^( -memory_df$log_ratio[drag_iter+1]) * tstep
   
+  
+  if(verbose){print("prepping dataset")}
   #Prep the data before going into the converger
   Prep <- SETSe_data_prep(g = g, 
-                          force = force, 
-                          flow = flow, 
-                          distance = distance, 
-                          mass = mass, 
-                          edge_name = edge_name,
-                          k = k,
-                          sparse = sparse)
+                           force = force, 
+                           distance = distance, 
+                           mass = mass, 
+                           edge_name = edge_name,
+                           k = k,
+                           sparse = sparse)
+  
+  if(verbose){print("beggining emeddings search")}
   #The number of iterations has to be smaller than the hyper_iters variable AND the residual static force has to be bigger
   #than the tolerance AND the last two rounds cannot both be stable
   while((drag_iter <= hyper_iters) & 
@@ -235,12 +233,10 @@ auto_SETSe <- function(g,
   
   #Put in edge embeddings
   embeddings_data$edge_embeddings <- calc_tension_strain(g = g,
-                                                         embeddings_data$node_embeddings,
-                                                         distance = distance, 
-                                                         capacity = capacity, 
-                                                         flow = flow, 
-                                                         edge_name = edge_name, 
-                                                         k = k)
+                                                          embeddings_data$node_embeddings,
+                                                          distance = distance, 
+                                                          edge_name = edge_name, 
+                                                          k = k)
   #Add the search record
   embeddings_data$memory_df <- memory_df
   
