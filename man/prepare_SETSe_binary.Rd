@@ -6,6 +6,7 @@
 \usage{
 prepare_SETSe_binary(
   g,
+  node_names,
   k = NULL,
   force_var,
   positive_value,
@@ -16,10 +17,12 @@ prepare_SETSe_binary(
 \arguments{
 \item{g}{an igraph object}
 
+\item{node_names}{a character string. A vertex attribute which contains the node names.}
+
 \item{k}{The sping constant. This value is either a numeric value giving the spring constant for all edges or NULL. If NULL is used 
 the k value will not be added to the network. This is useful k is made through some other processs.}
 
-\item{force_var}{An edge attribute. This is used as the force variable, it must be a character of factor}
+\item{force_var}{A node attribute. This is used as the force variable, it must be a character of factor}
 
 \item{positive_value}{The value in force var that will be counted as the positive value}
 

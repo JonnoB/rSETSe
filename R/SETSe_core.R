@@ -14,23 +14,43 @@
 #' @param mass A numeric. This is the mass constant of the nodes in normalised networks this is set to 1.
 #' @param tstep A numeric value. The time step, measured in seconds, that will be used to calculate the new dynamic state
 #' @param max_iter An integer. The maximum number of iterations before stopping. Larger networks usually need more iterations.
-#' @param coef_drag A numeric value. Used to set a multiplier on the friction value. Generally leave this alone..s.
+#' @param coef_drag A numeric value. Used to set a multiplier on the friction value. This is usualy determined by auto_SETSe
 #' @param tol A numeric. The tolerance factor for early stopping.
 #' @param sparse Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated
 #' @param sample Integer. The dynamics will be stored only if the iteration number is a multiple of the sample. 
 #'  This can greatly reduce the size of the results file for large numbers of iterations. Must be a multiple of the max_iter
-#' @export
+#' @param static_limit Numeric. The maximum value the static force can reach before the algorithm terminates early. This
+#' prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
+#' If left blank the static limit is the system absolute mean force.
 #' 
 #' @details The non_empty matrix contains the row, column position and absolute index and transpose index of the edges in the matrix
 #' This means vectors can be used for most operations greatly reducing the amount of memory required and 
 #' providing a modest speed increase. The non_empty_matrix is produced by the 'Prepare_data_for_find_network_balance' function.
-#'
+#' @return A list of three dataframes
+#' \enumerate{
+#'   \item The network dynamics describing several key figures of the network during the convergence process, this includes the static_force
+#'   \item The node embeddings. Includes all data on the nodes the forces exerted on them position and dynamics at simulation termination
+#'   \item A data frame giving the time taken for the simulation as well as the number of nodes and edges. Node and edge data is given
+#'   as this may differ from the total number of nodes and edges in the network depending on the method used for convergnence.
+#'   For example if SETSe_bicomp is used then some simulations may contain as little as two nodes and 1 edge
+#' }
+#' 
+#' @export
 # Strips out all pre processing to make it as efficient and simple as possible
 
-SETSe_core <- function(node_embeddings, ten_mat, non_empty_matrix, kvect, dvect, mass,
-                                 tstep, max_iter = 1000, coef_drag = 1, 
-                                 tol = 2e-3, sparse = FALSE,
-                                 sample = 1){
+SETSe_core <- function(node_embeddings, 
+                       ten_mat, 
+                       non_empty_matrix, 
+                       kvect, 
+                       dvect, 
+                       mass,
+                       tstep, 
+                       max_iter = 1000, 
+                       coef_drag = 1, 
+                       tol = 2e-3, 
+                       sparse = FALSE,
+                       sample = 1,
+                       static_limit = NULL){
   #Runs the physics model to find the convergence of the system.
   
   #vectors are used throughout instead of a single matrix as it turns out they are faster due to less indexing and use much less RAM.
@@ -47,12 +67,16 @@ SETSe_core <- function(node_embeddings, ten_mat, non_empty_matrix, kvect, dvect,
   acceleration <- NodeList[,8]
   
   if(sparse){
-    ten_mat <- as(ten_mat, "dgTMatrix")
+    ten_mat <- as(ten_mat, "dgTMatrix") # this is done as Dgt alllows direct insertion of tension without indexing. It 
+    #is much faster than the standard format which does require indexing. This is despite dgt being slower to sum the columns
   }
   
   #The static limit is 10 times the static force
   #Sometimes numbers can explode then converge, but whatever I don't care about them
-  static_limit <- sum(abs(force))*10
+  #Why did I choose 10? what if I change to 2?
+  if(is.null(static_limit)){
+  static_limit <- sum(abs(force))
+  }
   
   #gets the dimensions of the matrix for bare bones column sum
   
@@ -71,6 +95,10 @@ SETSe_core <- function(node_embeddings, ten_mat, non_empty_matrix, kvect, dvect,
   Iter <- 1
   system_stable <- FALSE
   
+  #get the time the algo starts
+  start_time <- Sys.time()
+  
+  #run the while look as long as the iterations are less than the limit and the system is not stable
   while((Iter <= max_iter) & !system_stable ){
     
     #calculate the system dynamics. Either sparse or dense mode
@@ -100,7 +128,7 @@ SETSe_core <- function(node_embeddings, ten_mat, non_empty_matrix, kvect, dvect,
       #This uses the matrix column aggregation functions which can be used on sparse matrices. This is faster and much more memory
       #efficient for large matrices. It is also faster to tranpose and use column sum... I don't know why
       ten_mat@x <-{kvect*(Hvect-dvect)*dzvect/Hvect}
-      net_tension <- Matrix::colSums(Matrix::t(ten_mat)) #tension
+      net_tension <- Matrix::colSums(Matrix::t(ten_mat)) #colsum is faster than row sum even accounting for the transpose
     }else{
       #This uses the standard dense matrices, this is faster for smaller matrices.
       #the tension vector. the dZvect/Hvect is the vertical component of the tension
@@ -136,6 +164,11 @@ SETSe_core <- function(node_embeddings, ten_mat, non_empty_matrix, kvect, dvect,
     Iter <- Iter + 1 # add next iter
     
   }
+  stop_time <- Sys.time()
+  
+  time_taken_df <- tibble(time_diff = stop_time-start_time,
+                          nodes = nrow(node_embeddings),
+                          edges = length(kvect))
   
   #Early termination causes NA values. These are removed by the below code
   #
@@ -153,7 +186,9 @@ SETSe_core <- function(node_embeddings, ten_mat, non_empty_matrix, kvect, dvect,
                                                    net_force = as.vector(net_force),
                                                    acceleration = as.vector(acceleration),
                                                    t = tstep*(Iter-1),
-                                                   Iter = Iter-1))) #1 needs to be subtracted from the total as the final thing
+                                                   Iter = Iter-1)),  #1 needs to be subtracted from the total as the final thing
+              time_taken = time_taken_df #This is a diff time object!
+              )
   #in the loop is to add 1 to the iteration
   
   return(Out)

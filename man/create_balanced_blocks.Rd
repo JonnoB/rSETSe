@@ -4,12 +4,15 @@
 \alias{create_balanced_blocks}
 \title{Create balanced blocks}
 \usage{
-create_balanced_blocks(g, force = "force")
+create_balanced_blocks(g, force = "force", bigraph = bigraph)
 }
 \arguments{
 \item{g}{An igraph object. The network for which embeddings will be found}
 
 \item{force}{A character vector. The name of the node attribute that is the force exerted by the nodes}
+
+\item{bigraph}{A list. the list of biconnected components produced by the biconnected_components function.
+This function take a non trivial amount of time on large graphs so this pass through minimises the function being called.}
 }
 \value{
 A list containing all the bi connected component where each component is balanced to have a net force of 0.

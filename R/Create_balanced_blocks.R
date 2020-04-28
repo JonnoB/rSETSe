@@ -10,17 +10,17 @@
 #' 
 #' @param g An igraph object. The network for which embeddings will be found
 #' @param force A character vector. The name of the node attribute that is the force exerted by the nodes
+#' @param bigraph A list. the list of biconnected components produced by the biconnected_components function.
+#'  This function take a non trivial amount of time on large graphs so this pass through minimises the function being called.
 #' @return A list containing all the bi connected component where each component is balanced to have a net force of 0.
 #' 
 #' @export
 
-create_balanced_blocks <- function(g, force = "force"){
+create_balanced_blocks <- function(g, force = "force", bigraph = bigraph){
   #This function creates a list of biconnected components or blocks.
   #These blocks are balanced such that the connecting vertices contain all the power of the missing part of the network
   #balancing prevents the network reaching a steady state non-zero velocity.
-  
-  bigraph <- biconnected_components(g)
-  
+
   ArticulationPoints <- get.vertex.attribute(g, "name", bigraph$articulation_points) #can also use names(biconnected.components(g)$articulation_points)
   
   

@@ -19,8 +19,10 @@ auto_SETSe(
   hyper_tol = 0.01,
   hyper_max = 30000,
   step_size = 0.1,
-  sample = 1,
-  verbose = FALSE
+  sample = 100,
+  static_limit = NULL,
+  verbose = FALSE,
+  include_edges = TRUE
 )
 }
 \arguments{
@@ -54,6 +56,13 @@ auto_SETSe(
 
 \item{sample}{Integer. The dynamics will be stored only if the iteration number is a multiple of the sample. 
 This can greatly reduce the size of the results file for large numbers of iterations. Must be a multiple of the max_iter}
+
+\item{static_limit}{Numeric. The maximum value the static force can reach before the algorithm terminates early. This
+prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
+If left blank the static limit is the system absolute mean force.}
+
+\item{inlcude_edges}{logical. An optional variable on wehther to calculate the edge tension and strain. Default is TRUE.
+included for ease of integration into the bicomponent functions.}
 }
 \value{
 A list of four elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings, 

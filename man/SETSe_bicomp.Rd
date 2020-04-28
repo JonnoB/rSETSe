@@ -2,7 +2,7 @@
 % Please edit documentation in R/SETSe_bicomp.R
 \name{SETSe_bicomp}
 \alias{SETSe_bicomp}
-\title{Bicomponent SETS embedding}
+\title{Bi-component SETSe embedding}
 \usage{
 SETSe_bicomp(
   g,
@@ -11,12 +11,17 @@ SETSe_bicomp(
   edge_name = "edge_name",
   k = "k",
   tstep,
-  coef_drag = 1,
   tol,
   max_iter = 20000,
   mass = 1,
   sparse = FALSE,
-  sample = 1
+  sample = 100,
+  static_limit = NULL,
+  hyper_iters = 100,
+  hyper_tol = 0.01,
+  hyper_max = 30000,
+  step_size = 0.1,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -32,8 +37,6 @@ SETSe_bicomp(
 
 \item{tstep}{A numeric. The time interval used to iterate through the network dynamics.}
 
-\item{coef_drag}{A numeric. This sets the multiplier of friction. Only use if you want to be annoyed and confused}
-
 \item{tol}{A numeric. The tolerance factor for early stopping.}
 
 \item{max_iter}{An integer. The maximum number of iterations before stopping. Larger networks usually need more iterations.}
@@ -42,12 +45,46 @@ SETSe_bicomp(
 
 \item{sparse}{Logical. Whether sparse matrices will be used. This becomes valubale for larger networks}
 
+\item{sample}{Integer. The dynamics will be stored only if the iteration number is a multiple of the sample. 
+This can greatly reduce the size of the results file for large numbers of iterations. Must be a multiple of the max_iter}
+
+\item{static_limit}{Numeric. The maximum value the static force can reach before the algorithm terminates early. This
+prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
+If left blank the static limit is the system absolute mean force.}
+
+\item{hyper_iters}{integer. The hyper parameter that determines the number of iterations allowed to find an acceptable convergence value.}
+
+\item{hyper_tol}{numeric. The convergence tolerance when trying to find the minimum value}
+
+\item{hyper_max}{integer. The maximum number of iterations that the setse will go through whilst searching for the minimum.}
+
+\item{step_size}{numeric. The hyper parameter that determines the log ratio search step size for auto convergence}
+
 \item{verbose}{Logical. This value sets whether messages generated during the process are supressed or not.}
 }
 \value{
-A list containing 3 dataframes, the dataframe of the node embeddings, edge embeddings, and network dynamics
+A list containing 5 dataframes.
+\enumerate{
+  \item The node embeddings. Includes all data on the nodes the forces exerted on them position and dynamics at simulation termination
+  \item The network dynamics describing several key figures of the network during the convergence process, this includes the static_force
+  \item memory_df A datframe recording ethe iteration history of the convergence of each component.
+  \item A data frame giving the time taken for the simulation as well as the number of nodes and edges. Node and edge data is given
+  as this may differ from the total number of nodes and edges in the network depending on the method used for convergnence.
+  For example if SETSe_bicomp is used then some simulations may contain as little as two nodes and 1 edge
+  \item time taken. the amount of time taken per component, includes the edge and nodes of each component
+}
 }
 \description{
-Performs the SETS embedding on a network using the bi-connected component method. This approach can be faster for larger graphs
-or graphs with many nodes of degree 2, or networks with a low clustering coefficient.
+Performs the SETS embedding on a network using the bi-connected component/block-tree method. This is the most reliable method to 
+perform SETSe embeddings and can be substantially quicker on unsual networks.
+}
+\details{
+This approach can be faster for larger graphs or graphs with many nodes of degree 2, or networks with a low clustering coefficient.
+This is becuase although the algorithm is very efficient the topology of larger graphs make them more difficult to converge.
+Large graph tend to be made of 1 very large biconnected component and many very small biconnected components. As the mass of the 
+system is concentrated in the major biconnected component the small ones can be knocked around by minor movements of the major. This
+leads to long convergence times. By solving all biconnected components seperately and then resassmbling the block tree at the end,
+the system can be converged considerably faster. In addition the smaller biconnected components iterate faster than a single large one.
+
+Although the default mass is set to 1, setting mass to the absolute system force divided by the total nodes, often leads to faster convergence.
 }

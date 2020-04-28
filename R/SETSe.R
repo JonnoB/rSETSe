@@ -19,7 +19,9 @@
 #' @param two_node_solution Logical. The newton-raphson algo is used to find the correct angle
 #' @param sample Integer. The dynamics will be stored only if the iteration number is a multiple of the sample. 
 #'  This can greatly reduce the size of the results file for large numbers of iterations. Must be a multiple of the max_iter
-#'  
+#' @param static_limit Numeric. The maximum value the static force can reach before the algorithm terminates early. This
+#' prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
+#' If left blank the static limit is twice the system absolute mean force.
 #' @return A list of three elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings
 #' as well as the convergence dynamics dataframe for the network.
 #' @seealso \code{\link{Create_stabilised_blocks}} \code{\link{create_balanced_blocks}}
@@ -37,51 +39,23 @@ SETSe2 <- function(g,
                    tol = 1e-6,
                    sparse = FALSE,
                    two_node_solution = TRUE,
-                   sample = 1){
+                   sample = 1,
+                   static_limit = NULL){
   
   #helper function that prepares the data
   Prep <- SETSe_data_prep(g = g, 
-                           force = force, 
-                           distance = distance, 
-                           mass = mass, 
-                           edge_name = edge_name,
-                           sparse = sparse)
+                          force = force, 
+                          distance = distance, 
+                          mass = mass, 
+                          k = k,
+                          edge_name = edge_name,
+                          sparse = sparse)
   
-  #do special case solution I should change this to a standalone function for ease of reading but it isn't important
+  #do special case solution 
   if(nrow(Prep$Link)==1 & two_node_solution){
-    #If the the force of the two nodes is effectively identical then the solution angle is zero.
-    #This also covers the case of the forces being close to 0
-    if(isTRUE(all.equal(Prep$node_embeddings$force[1], Prep$node_embeddings$force[2]))){
-      
-      solution_angle <-0
-      
-    } else {
-      #uses the non-linear optimiser from minpack.lm to find the solution to the two node special case, this is much faster
-      solution_angle <- nlsLM(Force ~ ForceV_from_angle(target_angle, k = k, d = d), 
-                              start = c(target_angle = pi/4), 
-                              data = list(Force = abs(Prep$node_embeddings$force[1]), k = Prep$Link$k, d = Prep$Link$distance), 
-                              upper = pi/2) %>% coefficients()      
-      
-    }
+  
+    Out <- two_node_solution(g, Prep = Prep, auto_setse_mode = FALSE)
     
-    temp <- Prep$node_embeddings %>%
-      mutate(elevation = ifelse(force>0, 
-                                tan(solution_angle)/2, #height above mid point
-                                -tan(solution_angle)/2 ), #height below mid-point
-             net_force = 0,
-             acceleration = 0,
-             #         k      * the extension of the edge due to stretching      * 
-             net_tension = ifelse(force>0, 
-                                  -abs(Prep$node_embeddings$force[1]), 
-                                  abs(Prep$node_embeddings$force[1]) )
-      ) 
-    
-    Out <- list(network_dynamics = tibble(t = 0, 
-                                          Iter = 0,
-                                          static_force = 0, 
-                                          kinetic_force = 0), 
-                node_embeddings = temp
-    )
     #Solves using the iterative method.
   } else{
     

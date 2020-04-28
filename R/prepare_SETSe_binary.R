@@ -5,9 +5,10 @@
 #' The network takes in an igraph object and produces an undirected igraph object that can be used with SETSe/auto_SETSe for embedding.
 #'  
 #' @param g an igraph object
+#' @param node_names a character string. A vertex attribute which contains the node names.
 #' @param k The sping constant. This value is either a numeric value giving the spring constant for all edges or NULL. If NULL is used 
 #'  the k value will not be added to the network. This is useful k is made through some other processs.
-#' @param force_var An edge attribute. This is used as the force variable, it must be a character of factor
+#' @param force_var A node attribute. This is used as the force variable, it must be a character of factor
 #' @param positive_value The value in force var that will be counted as the positive value
 #' @param sum_to_one Logical. whether the total positive force sums to 1, if FALSE the total is the sum of the positive cases
 #' @param distance a positive numeric value. The default is 1
@@ -27,7 +28,7 @@
 #' @seealso \code{\link{SETSe}}, \code{\link{auto_SETSe}}, \code{\link{prepare_SETSe_continuous}}
 #' @export
 
-prepare_SETSe_binary <- function(g, k = NULL, force_var, positive_value, sum_to_one = TRUE, distance = 1){
+prepare_SETSe_binary <- function(g, node_names, k = NULL, force_var, positive_value, sum_to_one = TRUE, distance = 1){
 
 g_list <-   as_data_frame(g, what = "both")
   
@@ -51,7 +52,11 @@ g_list <-   as_data_frame(g, what = "both")
     mutate(force = ifelse(outcome_var, 1/total_pos, -1/total_neg ),
            force = ifelse(rep(sum_to_one, nrow(.)), force, force*total_pos))
   
-  g_out  <- graph_from_data_frame(edges_df, directed = FALSE, vertices = vertices_df) 
+  g_out  <- graph_from_data_frame(edges_df, directed = FALSE, 
+                                  vertices = vertices_df %>%
+                                    select(node_names, 
+                                           everything())
+  ) 
   
   return(g_out)
   

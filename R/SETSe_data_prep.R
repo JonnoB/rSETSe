@@ -23,8 +23,6 @@ SETSe_data_prep <-function(g, force, distance, mass, edge_name = edge_name, k = 
   #just in case
   diag(Adj) <-0
   
-
-  
   node_embeddings <- as_data_frame(g, what = "vertices") %>%
     select(node = name, force = force ) %>%
     mutate(
@@ -38,6 +36,10 @@ SETSe_data_prep <-function(g, force, distance, mass, edge_name = edge_name, k = 
       t = 0,
       Iter = 0)
 
+  #This dataframe is actually a large proportion of the memory requirements of the function
+  #However as it is only used by the two node solution it now returns NA unless the graph has two nodes.
+  #This should improve efficiency in some cases
+  if(ecount(g)==1){
   #Link is used for the two node solution
   Link <- as_data_frame(g)  %>%
     mutate(EdgeName = .data[[edge_name]] #The edge name has to be flexible so .data is used
@@ -47,7 +49,10 @@ SETSe_data_prep <-function(g, force, distance, mass, edge_name = edge_name, k = 
     #Very large kdiff means very little elasticty on lightly loaded lines
     select(EdgeName, distance, kvect = k) %>%
     arrange(EdgeName)
-  
+  } else{
+    
+    Link <- NA
+  }
   
   # kmat <- as_adjacency_matrix(g, attr = k, sparse = T)
   # dmat <- as_adjacency_matrix(g, attr = distance, sparse = T)

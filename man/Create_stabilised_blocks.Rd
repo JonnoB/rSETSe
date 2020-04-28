@@ -10,14 +10,22 @@ Create_stabilised_blocks(
   OriginBlock_number,
   force = "force",
   edge_name = "edge_name",
+  k = "k",
   tstep = 0.1,
-  coef_drag = coef_drag,
   tol = 1e-10,
   distance,
   max_iter,
   mass,
   sparse,
-  sample = 1
+  sample = 100,
+  static_limit = NULL,
+  hyper_iters = 100,
+  hyper_tol = 0.01,
+  hyper_max = 30000,
+  step_size = 0.1,
+  verbose = FALSE,
+  bigraph = bigraph,
+  balanced_blocks = balanced_blocks
 )
 }
 \arguments{
@@ -32,8 +40,6 @@ create_stable_blocks function. Usually this will be the largest block.}
 
 \item{tstep}{A numeric. The time interval used to iterate through the network dynamics.}
 
-\item{coef_drag}{A numeric. This sets the multiplier of friction. Only use if you want to be annoyed and confused}
-
 \item{tol}{A numeric. The tolerance factor for early stopping.}
 
 \item{distance}{A character string. The edge attribute that contains the original/horizontal distance between nodes.}
@@ -42,9 +48,23 @@ create_stable_blocks function. Usually this will be the largest block.}
 
 \item{mass}{A numeric. This is the mass constant of the nodes in normalised networks this is set to 1.}
 
-\item{Origin}{block}
+\item{sparse}{Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated}
+
+\item{static_limit}{Numeric. The maximum value the static force can reach before the algorithm terminates early. This
+prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
+If left blank the static limit is twice the system absolute mean force.}
+
+\item{hyper_iters}{integer. The hyper parameter that determines the number of iterations allowed to find an acceptable convergence value.}
+
+\item{hyper_tol}{numeric. The convergence tolerance when trying to find the minimum value}
+
+\item{hyper_max}{integer. The maximum number of iterations that the setse will go through whilst searching for the minimum.}
+
+\item{step_size}{numeric. The hyper parameter that determines the log ratio search step size for auto convergence}
 
 \item{verbose}{Logical. This value sets whether messages generated during the process are supressed or not.}
+
+\item{Origin}{block}
 }
 \value{
 A dataframe with the height embeddings of the network

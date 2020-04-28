@@ -21,27 +21,53 @@
 #' @param hyper_max integer. The maximum number of iterations that the setse will go through whilst searching for the minimum.
 #' @param sample Integer. The dynamics will be stored only if the iteration number is a multiple of the sample. 
 #'  This can greatly reduce the size of the results file for large numbers of iterations. Must be a multiple of the max_iter
+#' @param static_limit Numeric. The maximum value the static force can reach before the algorithm terminates early. This
+#' prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
+#' If left blank the static limit is the system absolute mean force.
+#' @param inlcude_edges logical. An optional variable on wehther to calculate the edge tension and strain. Default is TRUE.
+#'  included for ease of integration into the bicomponent functions.
 #'  
 #' @return A list of four elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings, 
 #' the convergence dynamics dataframe for the network as well as the search history for convergence criteria of the network
 #' @export
 
 auto_SETSe <- function(g, 
-                        force ="force", 
-                        distance = "distance", 
-                        edge_name = "edge_name",
-                        k = "k",
-                        tstep = 0.02, 
-                        mass = 1, 
-                        max_iter = 100000, 
-                        tol = 2e-3,
-                        sparse = FALSE,
-                        hyper_iters = 100,
-                        hyper_tol  = 0.01,
-                        hyper_max = 30000,
-                        step_size = 0.1,
-                        sample = 1,
-                        verbose = FALSE){
+                       force ="force", 
+                       distance = "distance", 
+                       edge_name = "edge_name",
+                       k = "k",
+                       tstep = 0.02, 
+                       mass = 1, 
+                       max_iter = 100000, 
+                       tol = 2e-3,
+                       sparse = FALSE,
+                       hyper_iters = 100,
+                       hyper_tol  = 0.01,
+                       hyper_max = 30000,
+                       step_size = 0.1,
+                       sample = 100,
+                       static_limit = NULL,
+                       verbose = FALSE,
+                       include_edges = TRUE){
+  
+  
+  if(verbose){print("prepping dataset")}
+  #Prep the data before going into the converger
+  Prep <- SETSe_data_prep(g = g, 
+                          force = force, 
+                          distance = distance, 
+                          mass = mass, 
+                          edge_name = edge_name,
+                          k = k,
+                          sparse = sparse)
+  
+  if(is.null(static_limit)){
+    static_limit <- sum(abs(vertex_attr(g, force)))
+  }
+  #this is the threshold minimum force value of the model.
+  #previously the threshold was set to two, but this only works when the abs sum of force adds up to 2.
+  #this provides a more flexible approach to force in networks
+  res_stat_limit <- static_limit
   
   
   memory_df<-tibble(iteration = 1:(2+hyper_iters),
@@ -63,7 +89,7 @@ auto_SETSe <- function(g,
   memory_df$best_log_ratio[1] <-0
   memory_df$direction[1] = 1 #increasing
   memory_df$target_area[1] <- FALSE
-  memory_df$res_stat[1] <- 2
+  memory_df$res_stat[1] <- res_stat_limit
   #These two are the limits of the log ratio. they are set to +/- infinity
   memory_df$upper[1] <- Inf
   memory_df$lower[1] <- -Inf
@@ -82,19 +108,16 @@ auto_SETSe <- function(g,
   memory_df$common_drag_iter[drag_iter+1] <- 10^( -memory_df$log_ratio[drag_iter+1]) * tstep
   
   
-  if(verbose){print("prepping dataset")}
-  #Prep the data before going into the converger
-  Prep <- SETSe_data_prep(g = g, 
-                           force = force, 
-                           distance = distance, 
-                           mass = mass, 
-                           edge_name = edge_name,
-                           k = k,
-                           sparse = sparse)
-  
-  if(verbose){print("beggining emeddings search")}
+  if(verbose){print("beginning embeddings search")}
   #The number of iterations has to be smaller than the hyper_iters variable AND the residual static force has to be bigger
   #than the tolerance AND the last two rounds cannot both be stable
+  
+  #The below commented code is useful in some debugging situations
+  
+  # print(paste("Iters smaller than max",(drag_iter <= hyper_iters),
+  #         "res_stat > tol or NA", ifelse(is.na(memory_df$res_stat[drag_iter]>tol), TRUE, memory_df$res_stat[drag_iter]>tol),
+  #         "sims unstable", !all(memory_df$stable[c(drag_iter, drag_iter-1)]))
+  #       )
   while((drag_iter <= hyper_iters) & 
         ifelse(is.na(memory_df$res_stat[drag_iter]>tol), TRUE, memory_df$res_stat[drag_iter]>tol) & 
         !all(memory_df$stable[c(drag_iter, drag_iter-1)])){
@@ -113,17 +136,18 @@ auto_SETSe <- function(g,
       coef_drag = memory_df$common_drag_iter[drag_iter],
       tol = tol,
       sparse = sparse,
-      sample = sample) 
+      sample = sample,
+      static_limit = static_limit) 
     
     node_embeds <- embeddings_data$node_embeddings
     
     memory_df$res_stat[drag_iter] <- sum(abs(node_embeds$static_force))
     
-    #set the residual static force to 2 if it exceeds this value
-    memory_df$res_stat[drag_iter] <- ifelse(memory_df$res_stat[drag_iter]>2, 2 ,memory_df$res_stat[drag_iter])
+    #set the residual static force to res_stat_limit if it exceeds this value
+    memory_df$res_stat[drag_iter] <- ifelse(memory_df$res_stat[drag_iter]>res_stat_limit, res_stat_limit ,memory_df$res_stat[drag_iter])
     
     #Is the algo in the convex area?
-    memory_df$target_area[drag_iter] <- memory_df$res_stat[drag_iter] < 2
+    memory_df$target_area[drag_iter] <- memory_df$res_stat[drag_iter] < res_stat_limit
     
     #stores a temporary error value
     temp_error <- memory_df$res_stat[drag_iter] - tol
@@ -132,22 +156,39 @@ auto_SETSe <- function(g,
     memory_df$error[drag_iter] <- log10(abs(temp_error))
     
     #setting the limits
-    if(min(memory_df$res_stat, na.rm = TRUE)<2){
+    #this is triggered when at least one hyperiteration is less than res_stat_limit
+    if(min(memory_df$res_stat, na.rm = TRUE)<res_stat_limit){
       
       #ARE THESE EQUALITES THE RIGHT WAY ROUND?
-      #THere is an issue when there are two unique values and one of them is NA
+      #There is an issue when there are two unique values and one of them is NA
+      
+      #Identify row containing the minimum error
       min_error <- which.min(memory_df$error)
+      #find log ratio that give the lowest error. there may be more than one
       upper_ratios <- memory_df$log_ratio[memory_df$log_ratio[min_error] >= memory_df$log_ratio] %>% unique()
+      #find the log ratio that gives the maximum error aka the res_stat_limit, there are almost certainly more than one of those
       lower_ratios  <- memory_df$log_ratio[memory_df$log_ratio[min_error] <= memory_df$log_ratio] %>% unique()
       
-      memory_df$upper[drag_iter+1] <-   ifelse(!is.finite( upper_ratios[rank(-upper_ratios, ties.method =  "first")==2]), 
+      #This test returns a vector of length zero if the best value is the only unique value.
+      #In that case another test needs to be performed.
+      upper_check_1 <- !is.finite( upper_ratios[rank(-upper_ratios, ties.method =  "first")==2])
+      #this checks the previous check is actually longer than 1
+      upper_check_2 <- length(upper_check_1)>0
+      upper_result_check <- ifelse(upper_check_2, upper_check_1, Inf)
+      
+      #this is the same for the lower section
+      lower_check_1 <- lower_ratios[rank(lower_ratios, ties.method =  "first" )==2]
+      lower_check_2 <- length(lower_check_1)>0
+      lower_result_check <- ifelse(lower_check_2, lower_check_1, Inf)
+      
+      memory_df$upper[drag_iter+1] <-   ifelse(!is.finite(upper_result_check), 
                                                -Inf, 
                                                upper_ratios[rank(-upper_ratios, ties.method =  "first")==2])  
       # memory_df$upper[drag_iter+1] <-   ifelse(sum(is.finite(upper_ratios))==0, 
       #                                          -Inf, 
       #                                          upper_ratios[rank(-upper_ratios, ties.method =  "first")==2])
       
-      memory_df$lower[drag_iter+1] <- ifelse(!is.finite(lower_ratios[rank(lower_ratios, ties.method =  "first" )==2]), 
+      memory_df$lower[drag_iter+1] <- ifelse(!is.finite(lower_result_check), 
                                              Inf, 
                                              lower_ratios[rank(lower_ratios, ties.method =  "first")==2])
       
@@ -225,18 +266,22 @@ auto_SETSe <- function(g,
       coef_drag = memory_df$common_drag_iter[nrow(memory_df)], #uses the best/last coefficient of drag
       tol = tol,
       sparse = sparse,
-      sample = sample) 
+      sample = sample,
+      static_limit = static_limit) 
     
     
   }
   
+  #This is TRUE in almost all cases, but for bicomp is set to false.
+  if(include_edges){  
+    #Put in edge embeddings
+    embeddings_data$edge_embeddings <- calc_tension_strain(g = g,
+                                                           embeddings_data$node_embeddings,
+                                                           distance = distance, 
+                                                           edge_name = edge_name, 
+                                                           k = k)
+  }
   
-  #Put in edge embeddings
-  embeddings_data$edge_embeddings <- calc_tension_strain(g = g,
-                                                          embeddings_data$node_embeddings,
-                                                          distance = distance, 
-                                                          edge_name = edge_name, 
-                                                          k = k)
   #Add the search record
   embeddings_data$memory_df <- memory_df
   

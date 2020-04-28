@@ -16,7 +16,8 @@ SETSe_core(
   coef_drag = 1,
   tol = 0.002,
   sparse = FALSE,
-  sample = 1
+  sample = 1,
+  static_limit = NULL
 )
 }
 \arguments{
@@ -36,7 +37,7 @@ SETSe_core(
 
 \item{max_iter}{An integer. The maximum number of iterations before stopping. Larger networks usually need more iterations.}
 
-\item{coef_drag}{A numeric value. Used to set a multiplier on the friction value. Generally leave this alone..s.}
+\item{coef_drag}{A numeric value. Used to set a multiplier on the friction value. This is usualy determined by auto_SETSe}
 
 \item{tol}{A numeric. The tolerance factor for early stopping.}
 
@@ -44,6 +45,20 @@ SETSe_core(
 
 \item{sample}{Integer. The dynamics will be stored only if the iteration number is a multiple of the sample. 
 This can greatly reduce the size of the results file for large numbers of iterations. Must be a multiple of the max_iter}
+
+\item{static_limit}{Numeric. The maximum value the static force can reach before the algorithm terminates early. This
+prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
+If left blank the static limit is the system absolute mean force.}
+}
+\value{
+A list of three dataframes
+\enumerate{
+  \item The network dynamics describing several key figures of the network during the convergence process, this includes the static_force
+  \item The node embeddings. Includes all data on the nodes the forces exerted on them position and dynamics at simulation termination
+  \item A data frame giving the time taken for the simulation as well as the number of nodes and edges. Node and edge data is given
+  as this may differ from the total number of nodes and edges in the network depending on the method used for convergnence.
+  For example if SETSe_bicomp is used then some simulations may contain as little as two nodes and 1 edge
+}
 }
 \description{
 This is the SETse core algorithm. It runs the SETSe model to find the equilibrium position of the network
