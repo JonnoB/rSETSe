@@ -9,7 +9,7 @@
 #' 
 #' @export
 #' 
-categorical_SETSe <- function(g, force_var, node_names, k = "k"){
+categorical_SETSe <- function(g, force_var, node_names, k = "k", binary = FALSE){
   
   
   #do an embedding on each level, taking out only the node elevation and the tension and strain.
@@ -19,7 +19,7 @@ categorical_SETSe <- function(g, force_var, node_names, k = "k"){
       print(.x)
       embeddings_data <- g %>%
         prepare_SETSe_binary(., node_names = node_names, k = NULL, force_var = force_var, positive_value = .x) %>%
-        auto_SETSe()
+        auto_SETSe() #why isn't bicomp used?
       
       Out <-list(node_embeddings = embeddings_data$node_embeddings %>%
                    select(node, elevation)%>% 

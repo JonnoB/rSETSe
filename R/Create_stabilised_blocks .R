@@ -66,8 +66,17 @@ Create_stabilised_blocks <- function(g,
       #again, it is worth considering the magnitude of force in the network
       sub_tol <- tol*sum(abs(get.vertex.attribute(balanced_blocks[[.x]], force)))/total_force
       sub_tol <- ifelse(sub_tol> .Machine$double.eps^0.5, sub_tol, tol)
+      
+      if(!is.null(static_limit)){
+        
       sub_static_limit <- static_limit*sum(abs(get.vertex.attribute(balanced_blocks[[.x]], force)))/total_force
+      #makes sure the static limit is not smaller than the machine precision. if it is bad things happen
       sub_static_limit <- ifelse(sub_static_limit> .Machine$double.eps^0.5, sub_static_limit, static_limit)
+      } else {
+        
+        sub_static_limit <- NULL
+        
+      }
       
       #do special case solution for two nodes only
       if(ecount(balanced_blocks[[.x]])==1){

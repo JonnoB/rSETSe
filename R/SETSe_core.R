@@ -55,7 +55,7 @@ SETSe_core <- function(node_embeddings,
   
   #vectors are used throughout instead of a single matrix as it turns out they are faster due to less indexing and use much less RAM.
   
-  #friction_stop fricton is a stopping condition. defualts to FALSE. 
+  #These have to be matrices if there is a mutli variable option
   NodeList <- node_embeddings[,-1]
   force <- NodeList[,1]
   elevation <-NodeList[,2]

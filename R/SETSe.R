@@ -1,9 +1,11 @@
 #' SETSe algorithm
+#'  
+#' The basic SETSe function.
 #' 
 #' This is the basic SETS embeddings algorithm, it outputs all elements of the embeddings as well as convergence dynamics. It is a
-#' wrapper around the core SETS algorithm which requires data preparation and only produces node embeddings and entwork dynamics.
-#' 
-#' This function is often used in conjunction with \code{Create_stabilised_blocks} and \code{create_balanced_blocks}
+#' wrapper around the core SETS algorithm which requires data preparation and only produces node embeddings and entwork dynamics. 
+#' There is little reason to use this, \code{\link{auto_SETSe}} and \code{\link{SETSe_bicomp}} 
+#' are faster and easier to use.
 #' 
 #' @param g An igraph object
 #' @param force A character string. This is the node attribute that contains the force the nodes exert on the network.
@@ -24,10 +26,10 @@
 #' If left blank the static limit is twice the system absolute mean force.
 #' @return A list of three elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings
 #' as well as the convergence dynamics dataframe for the network.
-#' @seealso \code{\link{Create_stabilised_blocks}} \code{\link{create_balanced_blocks}}
+#' @seealso \code{\link{auto_SETSe}} \code{\link{SETSe_bicomp}}
 #' @export
 
-SETSe2 <- function(g, 
+SETSe <- function(g, 
                    force ="force", 
                    distance = "distance", 
                    edge_name = "edge_name",
@@ -52,7 +54,7 @@ SETSe2 <- function(g,
                           sparse = sparse)
   
   #do special case solution 
-  if(nrow(Prep$Link)==1 & two_node_solution){
+  if(ecount(g)==1 & two_node_solution){
   
     Out <- two_node_solution(g, Prep = Prep, auto_setse_mode = FALSE)
     
@@ -72,7 +74,8 @@ SETSe2 <- function(g,
       coef_drag = coef_drag,
       tol = tol, 
       sparse = sparse,
-      sample = sample) 
+      sample = sample,
+      static_limit = static_limit) 
     
   }
   

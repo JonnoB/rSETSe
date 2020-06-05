@@ -4,7 +4,7 @@
 \alias{categorical_SETSe}
 \title{Embedd categorical values}
 \usage{
-categorical_SETSe(g, force_var, node_names, k = "k")
+categorical_SETSe(g, force_var, node_names, k = "k", binary = FALSE)
 }
 \arguments{
 \item{k}{}

@@ -10,7 +10,7 @@ SETSe_bicomp(
   distance = "distance",
   edge_name = "edge_name",
   k = "k",
-  tstep,
+  tstep = 0.02,
   tol,
   max_iter = 20000,
   mass = 1,

@@ -50,7 +50,7 @@ SETSe_bicomp <- function(g,
                           distance = "distance",
                           edge_name = "edge_name",
                           k = "k",
-                          tstep,
+                          tstep = 0.02,
                           tol,
                           max_iter = 20000,
                           mass = 1,
@@ -80,9 +80,14 @@ SETSe_bicomp <- function(g,
   #total in network
   total_force <- sum(abs(get.vertex.attribute(g, force)))
   
+  if(!is.null(static_limit)){
+    #this if statement prevents an error if the static limit is null the below returns a numeric vector of 0 length
+    static_limit <- static_limit*sum(abs(get.vertex.attribute(balanced_blocks[[OriginBlock_number]], force)))/total_force
+  }
+  
   #calculate the parameters of the largest block
   if(verbose){print("Calculating Origin Block")}
-  OriginBlock <- auto_SETSe(balanced_blocks[[OriginBlock_number]],
+  OriginBlock <- auto_SETSe(g = balanced_blocks[[OriginBlock_number]],
                             force = force,
                             distance = distance, 
                             edge_name = edge_name,
@@ -93,7 +98,7 @@ SETSe_bicomp <- function(g,
                             mass =  mass, 
                             sparse = sparse,
                             sample = sample,
-                            static_limit = static_limit*sum(abs(get.vertex.attribute(balanced_blocks[[OriginBlock_number]], force)))/total_force,
+                            static_limit = static_limit,
                             hyper_iters = hyper_iters,
                             hyper_tol = hyper_tol,
                             hyper_max = hyper_max,

@@ -118,10 +118,13 @@ auto_SETSe <- function(g,
   #         "res_stat > tol or NA", ifelse(is.na(memory_df$res_stat[drag_iter]>tol), TRUE, memory_df$res_stat[drag_iter]>tol),
   #         "sims unstable", !all(memory_df$stable[c(drag_iter, drag_iter-1)]))
   #       )
-  while((drag_iter <= hyper_iters) & 
-        ifelse(is.na(memory_df$res_stat[drag_iter]>tol), TRUE, memory_df$res_stat[drag_iter]>tol) & 
-        !all(memory_df$stable[c(drag_iter, drag_iter-1)])){
-    
+  
+ # while(drag_iter<9){  
+  while((drag_iter <= hyper_iters) &
+        ifelse(is.na(memory_df$res_stat[drag_iter]>tol), TRUE, memory_df$res_stat[drag_iter]>tol) &
+        !all(memory_df$stable[c(drag_iter, drag_iter-1)])
+        ){
+
     drag_iter <- drag_iter+1      
     # print( memory_df$common_drag_iter[drag_iter])
     embeddings_data <- SETSe_core(
@@ -144,7 +147,9 @@ auto_SETSe <- function(g,
     memory_df$res_stat[drag_iter] <- sum(abs(node_embeds$static_force))
     
     #set the residual static force to res_stat_limit if it exceeds this value
-    memory_df$res_stat[drag_iter] <- ifelse(memory_df$res_stat[drag_iter]>res_stat_limit, res_stat_limit ,memory_df$res_stat[drag_iter])
+    memory_df$res_stat[drag_iter] <- ifelse(memory_df$res_stat[drag_iter]>res_stat_limit, 
+                                            res_stat_limit ,
+                                            memory_df$res_stat[drag_iter])
     
     #Is the algo in the convex area?
     memory_df$target_area[drag_iter] <- memory_df$res_stat[drag_iter] < res_stat_limit
@@ -152,15 +157,27 @@ auto_SETSe <- function(g,
     #stores a temporary error value
     temp_error <- memory_df$res_stat[drag_iter] - tol
     
-    #Log error is negative when small, absolute difference is used to prevent NaNs if the true error is smaller than the tolerance
+    #Log error is negative when small. Absolute difference is used to prevent NaNs if the true error is smaller than the tolerance
     memory_df$error[drag_iter] <- log10(abs(temp_error))
     
     #setting the limits
     #this is triggered when at least one hyperiteration is less than res_stat_limit
-    if(min(memory_df$res_stat, na.rm = TRUE)<res_stat_limit){
+    if(sum(memory_df$target_area, na.rm = T)==1){
       
-      #ARE THESE EQUALITES THE RIGHT WAY ROUND?
-      #There is an issue when there are two unique values and one of them is NA
+      #The first time the static force is in the target zone, the lower bound of drag is known, as it has to be the previous value
+      #The upper bound is not yet known and can still be infinity
+      
+      memory_df$upper[drag_iter+1] <- Inf
+      memory_df$lower[drag_iter+1] <- memory_df$log_ratio[which(memory_df$target_area)-1]
+      
+      memory_df$best_log_ratio[drag_iter] <- memory_df$log_ratio[min_error]
+      
+      # percent change in res stat
+      memory_df$perc_change[drag_iter] <- (memory_df$res_stat[drag_iter]-min(memory_df$res_stat[1:(drag_iter-1)]))/min(memory_df$res_stat[1:(drag_iter-1)])
+      
+    } else if(sum(memory_df$target_area, na.rm = T)>1){
+      #The next and subsequent iterations the upper and lower limit will be known and one of them will be adjusted as 
+      #the search continues
       
       #Identify row containing the minimum error
       min_error <- which.min(memory_df$error)
@@ -194,9 +211,12 @@ auto_SETSe <- function(g,
       
       memory_df$best_log_ratio[drag_iter] <- memory_df$log_ratio[min_error]
       
-      memory_df$perc_change[drag_iter] <- 1 - temp_error/10^memory_df$error[drag_iter-1]
+      # percent change in res stat
+      memory_df$perc_change[drag_iter] <- (memory_df$res_stat[drag_iter]-min(memory_df$res_stat[1:(drag_iter-1)]))/min(memory_df$res_stat[1:(drag_iter-1)])
       
     } else {
+      
+      #finally if the search has never been in the target zone the upper and lower limits are the same Inf as before
       memory_df$upper[drag_iter+1] <- memory_df$upper[drag_iter] 
       memory_df$lower[drag_iter+1] <-  memory_df$lower[drag_iter]
       memory_df$best_log_ratio[drag_iter] <- memory_df$best_log_ratio[drag_iter-1]
@@ -207,21 +227,22 @@ auto_SETSe <- function(g,
     }
     #complete the stability part of the dataframe. This replaces any infinite values with 2*tol so that an error won't be thrown
     
+    #If the change in res stat is smaller than the hyper tolerance the system is considered stable.
+    #This is only ever used INSIDE the target zone
     memory_df$stable[drag_iter] <- ifelse(is.finite(memory_df$perc_change[drag_iter]), 
-                                          memory_df$perc_change[drag_iter],
+                                          abs(memory_df$perc_change[drag_iter]), #The absolute percent change otherwise large negative values count as stable
                                           hyper_tol*2 ) < hyper_tol
     
     ###
-    #if you are in the target zone updates happpen adaptively if not using a fixed step size
+    #if you are in the target zone updates happen adaptively if not using a fixed step size
     ###
-    if( is.finite(memory_df$upper[drag_iter]) ){
+    if( is.finite(memory_df$upper[drag_iter+1]) ){
       # print("upper limit found")
-      memory_df$log_ratio[drag_iter+1] <- (memory_df$upper[drag_iter] + memory_df$lower[drag_iter] )/2
-      
-      #if the logratios are the same break by choosing the lower limmit and the best value
-      memory_df$log_ratio[drag_iter+1] <- ifelse(isTRUE(all.equal( memory_df$log_ratio[drag_iter+1],
-                                                                   memory_df$log_ratio[drag_iter])), 
-                                                 (memory_df$lower[drag_iter]+ memory_df$best_log_ratio[drag_iter])/2,
+      memory_df$log_ratio[drag_iter+1] <- (memory_df$upper[drag_iter+1] + memory_df$lower[drag_iter+1] )/2
+
+      #if the logratios are the same break by choosing the lower limit and the best value
+      memory_df$log_ratio[drag_iter+1] <- ifelse(memory_df$log_ratio[drag_iter+1] %in%  memory_df$log_ratio[1:drag_iter], 
+                                                 (memory_df$lower[drag_iter] + memory_df$best_log_ratio[drag_iter])/2,
                                                  memory_df$log_ratio[drag_iter+1] )
       
     } else {
@@ -238,11 +259,13 @@ auto_SETSe <- function(g,
     
     
     if(verbose){
-      message_val <- ifelse(memory_df$direction[drag_iter] < 1, "accuracy increasing",  "accuracy decreasing")
+      message_val <- ifelse(memory_df$res_stat[drag_iter] < memory_df$res_stat[drag_iter-1], 
+                            "static force decreasing",  
+                            "static force increasing or stable")
       # print(c((drag_iter <= hyper_iters), (memory_df$res_stat[drag_iter]>tol), !all(memory_df$stable[c(drag_iter, drag_iter-1)])))
-      print(paste("Iteration", drag_iter, message_val,
-                  memory_df$common_drag_iter[drag_iter + 1],
-                  "static force", memory_df$res_stat[drag_iter]))
+      print(paste("Iteration",drag_iter, "drag value",
+                signif(memory_df$common_drag_iter[drag_iter + 1],3),
+                  message_val, signif(memory_df$res_stat[drag_iter],3)))
     }
   }
   
@@ -252,8 +275,24 @@ auto_SETSe <- function(g,
   
   #If the smallest residual force is not less than the tolerance even after the minimum point hase been found
   #Then run the setse algo again using the best log ratio but for the maximum number of iterations
+  #Ten percent is added to the drag score as the found value is likely to be noisey. This will speed up the convergence
+  #If it slows it down by over damping it won't be too bad... I am open to changing this!
   if(min(memory_df$res_stat)>tol){
-    print("Minimum tolerance not exceeded, running SETSe on best parameters")
+    
+    #if any value has reduced the static_force use the best one.
+    #otherwise use the last drag value as it doesn't matter anyway
+    if(memory_df$best_log_ratio[nrow(memory_df)]==0){
+      
+      drag_val <- memory_df$common_drag_iter[nrow(memory_df)]
+    } else{
+      
+      drag_val  <-10^( -memory_df$best_log_ratio[nrow(memory_df)]) * tstep 
+      drag_val <- drag_val * 1.1 #add tem percent to get smooth convergence
+      
+    }
+    
+    
+    print(paste0("Minimum tolerance not exceeded, running SETSe on best parameters, drag value ", drag_val))
     embeddings_data <- SETSe_core(
       node_embeddings = Prep$node_embeddings, 
       ten_mat = Prep$ten_mat, 
@@ -263,7 +302,7 @@ auto_SETSe <- function(g,
       mass = mass,
       tstep = tstep, 
       max_iter = max_iter, 
-      coef_drag = memory_df$common_drag_iter[nrow(memory_df)], #uses the best/last coefficient of drag
+      coef_drag = drag_val, #uses the best/last coefficient of drag
       tol = tol,
       sparse = sparse,
       sample = sample,
