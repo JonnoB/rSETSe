@@ -66,7 +66,7 @@ create_balanced_blocks <- function(g, force = "force", bigraph = bigraph){
                    AuxPower = .) #The Auxilary power is all the power not including the node itself
         }) %>%
         left_join(biconnected_component, ., by = "name") %>%
-        mutate(temp = ifelse(is.na(AuxPower), !!sym(force), AuxPower)) #
+        mutate(temp = ifelse(is.na(AuxPower), !!sym(force), AuxPower)) 
       
 
       Component_j <- {!(get.vertex.attribute(g, "name") %in% balanced_component_df$name)} %>%

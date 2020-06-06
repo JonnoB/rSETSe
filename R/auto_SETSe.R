@@ -89,7 +89,8 @@ auto_SETSe <- function(g,
   memory_df$best_log_ratio[1] <-0
   memory_df$direction[1] = 1 #increasing
   memory_df$target_area[1] <- FALSE
-  memory_df$res_stat[1] <- res_stat_limit
+  memory_df$res_stat[1] <- ifelse(res_stat_limit<tol, 2*tol, res_stat_limit) #this ensures setse is run at least once
+  #The above conduition is only activated on components with very small amounts of force
   #These two are the limits of the log ratio. they are set to +/- infinity
   memory_df$upper[1] <- Inf
   memory_df$lower[1] <- -Inf
@@ -107,6 +108,7 @@ auto_SETSe <- function(g,
   memory_df$log_ratio[drag_iter+1] <- 1#-memory_df$log_ratio[drag_iter] - (memory_df$error[drag_iter])* 1 *direction_change
   memory_df$common_drag_iter[drag_iter+1] <- 10^( -memory_df$log_ratio[drag_iter+1]) * tstep
   
+  min_error <- which.min(memory_df$error)
   
   if(verbose){print("beginning embeddings search")}
   #The number of iterations has to be smaller than the hyper_iters variable AND the residual static force has to be bigger
