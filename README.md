@@ -1,5 +1,11 @@
 
+img.resize {
+  max-width:50%;
+  max-height:50%;
+}
+
 <p align="center">
+  class="resize"
   <img src="https://github.com/JonnoB/rSETSe/blob/master/SETSe_logo.png" />
 </p>
 
@@ -38,7 +44,7 @@ SETSe_bicomp(g,_setse,
              verbose = T)
 ```
 
-The code used in this package is part of my PhD and a fundemental compooment of three projects
+The code used in this package is part of my PhD and a fundemental component of three projects
 
 * The spring bounces back ([code](https://github.com/JonnoB/SETSe_assortativity_and_clusters))
 * Power grid robusteness ([code](https://github.com/JonnoB/setse_and_network_robustness/edit/master/README.md))
