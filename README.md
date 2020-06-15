@@ -1,4 +1,5 @@
-![SETSe logo](https://github.com/JonnoB/rSETSe/blob/master/SETSe_logo.png  width="100")
+
+<img src="https://github.com/JonnoB/rSETSe/blob/master/SETSe_logo.png" width="100">
 
 
 # rSETSe
