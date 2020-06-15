@@ -1,6 +1,6 @@
-
-<img src="https://github.com/JonnoB/rSETSe/blob/master/SETSe_logo.png" width="100">
-
+<p align="center">
+<img src="https://github.com/JonnoB/rSETSe/blob/master/SETSe_logo.png" width="300", >
+</p>
 
 # rSETSe
 ## An R package for embedding graphs using the SETSe algorith,
