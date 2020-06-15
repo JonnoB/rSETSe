@@ -1,4 +1,4 @@
-Package: NetworkSpringEmbedding
+Package: rSETSe
 Title: Calculating the Strain Elevation Tension Spring embeddings for a network
 Version: 0.3
 Authors@R: person("Jonathan", "Bourne", email = "jonathan.bourne.15@ucl.ac.uk.com", role = c("aut", "cre"))
