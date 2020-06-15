@@ -1,13 +1,4 @@
-
-img.resize {
-  max-width:50%;
-  max-height:50%;
-}
-
-<p align="center">
-  class="resize"
-  <img src="https://github.com/JonnoB/rSETSe/blob/master/SETSe_logo.png" />
-</p>
+![](https://github.com/JonnoB/rSETSe/blob/master/SETSe_logo.png | width=100)
 
 
 # rSETSe
