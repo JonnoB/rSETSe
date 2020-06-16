@@ -4,7 +4,7 @@
 
 ## An R package for embedding graphs using the SETSe algorithm
 
-This is the R package for the Strain Elevation Tension Spring embeddgins (SETSe) algorithm. SETSe is a deterministic graph embeddings algorithm. It converts the node attributes of a graph into forces and the edge attributes into springs. The algorithm finds an equilibrium position when the forces of the nodes are balanced by the forces on the springs. A full descpription of the algorithm is given in my forthcoming paper "The spring bounces back: Introduction to Strain Elevation Tension Spring embedding for network representation"
+This is the R package for the Strain Elevation Tension Spring embeddgins (SETSe) algorithm. SETSe is a deterministic graph embeddings algorithm. It converts the node attributes of a graph into forces and the edge attributes into springs. The algorithm finds an equilibrium position when the forces of the nodes are balanced by the forces on the springs. A full description of the algorithm is given in my forthcoming paper "The spring bounces back: Introduction to Strain Elevation Tension Spring embedding for network representation"
 
 # Installation instructions
 
