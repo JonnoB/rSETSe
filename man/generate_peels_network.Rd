@@ -22,3 +22,8 @@ This function generates networks matching the 5 types described in Peel et al 20
  probability the structures produced by the networks are very different. When projected into SETSe space the network types
  occupy there own area, see Bourne 2020 for details
 }
+\examples{
+set.seed(234)
+g <- generate_peels_network(type = "E")
+plot(g)
+}

@@ -65,6 +65,18 @@ wrapper around the core SETS algorithm which requires data preparation and only 
 There is little reason to use this, \code{\link{auto_SETSe}} and \code{\link{SETSe_bicomp}} 
 are faster and easier to use.
 }
+\examples{
+set.seed(234) #set the random see for generating the network
+g <- generate_peels_network(type = "E")
+embeddings <- g \%>\%
+#prepare the network for a binary embedding
+prepare_SETSe_binary(., node_names = "name", k = 1000, 
+                     force_var = "class", 
+                     positive_value = "A") \%>\%
+#embed the network using SETSe
+  SETSe()
+}
 \seealso{
 \code{\link{auto_SETSe}} \code{\link{SETSe_bicomp}}
+#' @export
 }

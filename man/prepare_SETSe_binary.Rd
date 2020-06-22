@@ -36,8 +36,7 @@ This function prepares a binary network for SETSe projection.
 \details{
 The network takes in an igraph object and produces an undirected igraph object that can be used with SETSe/auto_SETSe for embedding.
 
-
- The function adds the node attribute 'force' and the edge attribute 'k' unless k=NULL. The purpose of the function is to easily be able to 
+The function adds the node attribute 'force' and the edge attribute 'k' unless k=NULL. The purpose of the function is to easily be able to 
  project binary networks using SETSe. 
  
  The function creates several variables
@@ -47,6 +46,17 @@ The network takes in an igraph object and produces an undirected igraph object t
   \item edge_name: the name of the edges. it takes the form "from_to" where "from" is the origin node and "to" is the destination node using the 
  \code{\link[igraph]{as_data_frame}} function from igraph
 }
+}
+\examples{
+set.seed(234) #set the random see for generating the network
+g <- generate_peels_network(type = "E")
+embeddings <- g \%>\%
+#prepare the network for a binary embedding
+prepare_SETSe_binary(., node_names = "name", k = 1000, 
+                     force_var = "class", 
+                     positive_value = "A") \%>\%
+#embed the network using auto setse
+  auto_SETSe()
 }
 \seealso{
 \code{\link{SETSe}}, \code{\link{auto_SETSe}}, \code{\link{prepare_SETSe_continuous}}

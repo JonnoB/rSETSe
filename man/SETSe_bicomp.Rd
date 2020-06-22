@@ -88,3 +88,17 @@ the system can be converged considerably faster. In addition the smaller biconne
 
 Although the default mass is set to 1, setting mass to the absolute system force divided by the total nodes, often leads to faster convergence.
 }
+\examples{
+set.seed(234) #set the random see for generating the network
+g <- generate_peels_network(type = "E")
+embeddings <- g \%>\%
+#prepare the network for a binary embedding
+prepare_SETSe_binary(., node_names = "name", k = 1000, 
+                     force_var = "class", 
+                     positive_value = "A") \%>\%
+#embed the network using  SETSe_bicomp
+  SETSe_bicomp()
+}
+\seealso{
+\code{\link{auto_SETSe}} \code{\link{SETSe}}
+}

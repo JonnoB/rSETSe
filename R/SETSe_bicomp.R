@@ -44,6 +44,17 @@
 #'   For example if SETSe_bicomp is used then some simulations may contain as little as two nodes and 1 edge
 #'   \item time taken. the amount of time taken per component, includes the edge and nodes of each component
 #' }
+#' @seealso \code{\link{auto_SETSe}} \code{\link{SETSe}}
+#' @examples
+#' set.seed(234) #set the random see for generating the network
+#' g <- generate_peels_network(type = "E")
+#' embeddings <- g %>%
+#' #prepare the network for a binary embedding
+#' prepare_SETSe_binary(., node_names = "name", k = 1000, 
+#'                      force_var = "class", 
+#'                      positive_value = "A") %>%
+#' #embed the network using  SETSe_bicomp
+#'   SETSe_bicomp()
 #' @export
 SETSe_bicomp <- function(g, 
                           force = "force",

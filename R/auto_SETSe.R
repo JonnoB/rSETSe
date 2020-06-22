@@ -2,7 +2,7 @@
 #'
 #' Uses a grid search and a binary search to find appropriate convergence conditions.
 #' 
-#' This function is pretty useful, it takes advantage of the linear relationship between the timestep and the coefficient of drag
+#' @details This function is pretty useful, it takes advantage of the linear relationship between the timestep and the coefficient of drag
 #' to search along the log linear line formed by tstep/coef_drag to find the convergence conditions.
 #' 
 #' @param g An igraph object
@@ -26,9 +26,20 @@
 #' If left blank the static limit is the system absolute mean force.
 #' @param inlcude_edges logical. An optional variable on wehther to calculate the edge tension and strain. Default is TRUE.
 #'  included for ease of integration into the bicomponent functions.
-#'  
 #' @return A list of four elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings, 
 #' the convergence dynamics dataframe for the network as well as the search history for convergence criteria of the network
+#' @seealso \code{\link{auto_SETSe}} \code{\link{SETSe_bicomp}}
+#'  @examples
+#' set.seed(234) #set the random see for generating the network
+#' g <- generate_peels_network(type = "E")
+#' embeddings <- g %>%
+#' #prepare the network for a binary embedding
+#' prepare_SETSe_binary(., node_names = "name", k = 1000, 
+#'                      force_var = "class", 
+#'                      positive_value = "A") %>%
+#' #embed the network using auto setse
+#'   auto_SETSe()
+#' 
 #' @export
 
 auto_SETSe <- function(g, 

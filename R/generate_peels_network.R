@@ -9,15 +9,12 @@
 #'  As a result all networks generated have identical assortativity. However, as the sub-classes have different connection
 #'  probability the structures produced by the networks are very different. When projected into SETSe space the network types
 #'  occupy there own area, see Bourne 2020 for details
-#'  
 #' @return An igraph object that matches one of the 5 Peel's quintet types
-#'  
 #' @examples
+#' set.seed(234)
 #' g <- generate_peels_network(type = "E")
 #' plot(g)
-#' 
 #' @export
-
 generate_peels_network <- function(type){
   
   #number of connections between classes and sub-classes for each of the types in Peel's quintet
@@ -79,9 +76,21 @@ generate_peels_network <- function(type){
   #subclass
   rownames(full_matrix) <-  rep(c("A_1", "B_1", "A_2", "B_2"), c(10, 10, 10, 10))
   
-  spec_g <-igraph::graph_from_adjacency_matrix(full_matrix, mode = "undirected", diag = FALSE, add.colnames ="class", add.rownames = "sub_class")
+  g <-igraph::graph_from_adjacency_matrix(full_matrix, 
+                                               mode = "undirected", 
+                                               diag = FALSE, 
+                                               add.colnames ="class", 
+                                               add.rownames = "sub_class")
   
-  return(spec_g)
+  g_df <- as_data_frame(g, what = "both")
+  
+  g <- graph_from_data_frame(g_df$edges, 
+                        directed = TRUE,
+                        vertices =   g_df$vertices %>%
+                          mutate(node = 1:40) %>%
+                          select(node, everything()))
+  
+  return(g)
   
   
 }

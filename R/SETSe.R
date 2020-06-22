@@ -26,8 +26,18 @@
 #' If left blank the static limit is twice the system absolute mean force.
 #' @return A list of three elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings
 #' as well as the convergence dynamics dataframe for the network.
+#' @examples
+#' set.seed(234) #set the random see for generating the network
+#' g <- generate_peels_network(type = "E")
+#' embeddings <- g %>%
+#' #prepare the network for a binary embedding
+#' prepare_SETSe_binary(., node_names = "name", k = 1000, 
+#'                      force_var = "class", 
+#'                      positive_value = "A") %>%
+#' #embed the network using SETSe
+#'   SETSe()
 #' @seealso \code{\link{auto_SETSe}} \code{\link{SETSe_bicomp}}
-#' @export
+#' #' @export
 
 SETSe <- function(g, 
                    force ="force", 
