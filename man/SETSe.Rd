@@ -78,5 +78,4 @@ prepare_SETSe_binary(., node_names = "name", k = 1000,
 }
 \seealso{
 \code{\link{auto_SETSe}} \code{\link{SETSe_bicomp}}
-#' @export
 }

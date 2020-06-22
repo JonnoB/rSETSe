@@ -37,7 +37,7 @@
 #' #embed the network using SETSe
 #'   SETSe()
 #' @seealso \code{\link{auto_SETSe}} \code{\link{SETSe_bicomp}}
-#' #' @export
+#' @export
 
 SETSe <- function(g, 
                    force ="force", 
