@@ -45,4 +45,4 @@ The code used in this package is part of my PhD and a fundemental component of t
 
 # N.B
 
-The package is still underdevleopment and only the main functions have example code available see the links above.
+Currently only the main functions have example code available see the links above for more indepth code examples.
