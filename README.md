@@ -21,18 +21,21 @@ The package can also be downloaded or cloned then installed locally using the in
 library(rSETSe)
 
 #prepares a graph for embedding using SETSe
-g_setse <- g %>%
-  remove_small_components(.) %>%
-  prepare_SETSe_continuous(., node_names = "name", k = 1000,
-                           sum_to_one = FALSE)
-  
+set.seed(234) #set the random see for generating the network
+g <- generate_peels_network(type = "E") %>%
+  #prepare the network for a binary embedding
+  prepare_SETSe_binary(., node_names = "name", k = 1000, 
+                       force_var = "class", 
+                       positive_value = "A") 
+                       
 #Embedds using the bi-connected auto-parametrization algorithm.
 #This method is strongly reccomended, it tends to be much faster and almost always converges
-SETSe_bicomp(g,_setse,
-             tol = sum(abs(vertex_attr(g_setse, "force")))/1000,
-             hyper_tol = 0.1,
-             hyper_iters = 3000,
-             verbose = T)
+embeddings <- SETSe_bicomp(g,
+                           tol = sum(abs(vertex_attr(g, "force")))/1000,
+                           hyper_tol = 0.1,
+                           hyper_iters = 3000,
+                           verbose = T)
+
 ```
 
 The code used in this package is part of my PhD and a fundemental component of the below projects
