@@ -2,7 +2,7 @@
 #' 
 #' This function prepares a binary network for SETSe projection.
 #' 
-#' The network takes in an igraph object and produces an undirected igraph object that can be used with SETSe/auto_SETSe for embedding.
+#' The network takes in an igraph object and produces an undirected igraph object that can be used with SETSe/auto_SETSe/SETse_bicomp for embedding.
 #'  
 #' @param g an igraph object
 #' @param node_names a character string. A vertex attribute which contains the node names.
@@ -33,7 +33,7 @@
 #'                      positive_value = "A") %>%
 #' #embed the network using auto setse
 #'   auto_SETSe()
-#' @seealso \code{\link{SETSe}}, \code{\link{auto_SETSe}}, \code{\link{prepare_SETSe_continuous}}
+#' @seealso \code{\link{SETSe}}, \code{\link{auto_SETSe}}, \code{\link{SETSe_bicomp}}, \code{\link{prepare_SETSe_continuous}}
 #' @export
 
 prepare_SETSe_binary <- function(g, node_names, k = NULL, force_var, positive_value, sum_to_one = TRUE, distance = 1){

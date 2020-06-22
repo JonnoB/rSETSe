@@ -75,15 +75,16 @@ Uses a grid search and a binary search to find appropriate convergence condition
 This function is pretty useful, it takes advantage of the linear relationship between the timestep and the coefficient of drag
 to search along the log linear line formed by tstep/coef_drag to find the convergence conditions.
 }
-\examples{
+\seealso{
+\code{\link{auto_SETSe}} \code{\link{SETSe_bicomp}}
+ @examples
 set.seed(234) #set the random see for generating the network
 g <- generate_peels_network(type = "E")
-embeddings <- g \%>\%
+embeddings <- g %>%
 #prepare the network for a binary embedding
 prepare_SETSe_binary(., node_names = "name", k = 1000, 
                      force_var = "class", 
-                     positive_value = "A") \%>\%
+                     positive_value = "A") %>%
 #embed the network using auto setse
   auto_SETSe()
-
 }

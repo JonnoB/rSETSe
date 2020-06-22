@@ -54,7 +54,7 @@
 #'                      force_var = "class", 
 #'                      positive_value = "A") %>%
 #' #embed the network using  SETSe_bicomp
-#'   SETSe_bicomp()
+#'   SETSe_bicomp(tol = 0.02)
 #' @export
 SETSe_bicomp <- function(g, 
                           force = "force",
@@ -77,11 +77,40 @@ SETSe_bicomp <- function(g,
   
   bigraph <- biconnected_components(g)
   
-  #seperate out the network into blocks
-  if(verbose){print("creating balanced blocks")}
-  balanced_blocks <- create_balanced_blocks(g, 
-                                            force = force,
-                                            bigraph = bigraph)
+  #if the network cannot be decomposed into biconnected components then
+  #create balanced blocks throughs an error and create_Stabilised blocks throughs an error
+  #This prevents that
+  if(bigraph$no==1){
+    if(verbose){print("Network has no bi-connected components, running auto-SETSe instead")}
+    embeddings_data <- auto_SETSe(g = balanced_blocks[[OriginBlock_number]],
+                              force = force,
+                              distance = distance, 
+                              edge_name = edge_name,
+                              k = k,
+                              tstep = tstep, 
+                              tol = tol*sum(abs(get.vertex.attribute(balanced_blocks[[OriginBlock_number]], force)))/total_force, #the force has to be scaled to the component 
+                              max_iter =  max_iter, 
+                              mass =  mass, 
+                              sparse = sparse,
+                              sample = sample,
+                              static_limit = static_limit,
+                              hyper_iters = hyper_iters,
+                              hyper_tol = hyper_tol,
+                              hyper_max = hyper_max,
+                              step_size = step_size,
+                              verbose = verbose,
+                              include_edges = FALSE )
+    
+  } else {
+    
+    #seperate out the network into blocks
+    if(verbose){print("creating balanced blocks")}
+    balanced_blocks <- create_balanced_blocks(g, 
+                                              force = force,
+                                              bigraph = bigraph)
+
+  
+
   
   #find the largest component and use that as the origin block
   OriginBlock_number <-balanced_blocks %>% map_dbl(~vcount(.x)) %>% which.max()
@@ -143,6 +172,7 @@ SETSe_bicomp <- function(g,
                                               bigraph = bigraph,
                                               balanced_blocks = balanced_blocks)
   
+  } 
   # print("Height embeddings complete")
   
   #Extract edge tension and strain from the network
