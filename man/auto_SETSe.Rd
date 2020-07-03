@@ -18,7 +18,7 @@ auto_SETSe(
   hyper_iters = 100,
   hyper_tol = 0.01,
   hyper_max = 30000,
-  step_size = 0.1,
+  step_size = 1,
   sample = 100,
   static_limit = NULL,
   verbose = FALSE,

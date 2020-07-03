@@ -86,7 +86,7 @@ SETSe_core <- function(node_embeddings,
   non_empty_t_index_vect <- non_empty_matrix[,4]
   #This dataframe is one of the final outputs of the function, it is premade for memory allocation
   network_dynamics <- matrix(data = NA, nrow = max_iter/sample, ncol = 6) %>%
-    as_tibble() %>%
+    as_tibble(.name_repair = "minimal") %>%
     set_names(c("Iter","t", "static_force", "kinetic_force", "potential_energy", "kinetic_energy")) %>%
     as.matrix()
   
