@@ -131,8 +131,10 @@ Create_stabilised_blocks <- function(g,
   relative_blocks <- 1:length(StabilModels) %>% 
     map_df(~{
       #print(.x) #It is a bit annoying and pointless now
-      StabilModels[[.x]]$node_embeddings %>%
-        mutate(Reference_ID = .x)
+      temp <- StabilModels[[.x]]$node_embeddings
+      temp$Reference_ID <- .x
+      
+      return(temp)
       
     }) %>%
     bind_rows(OriginBlock$node_embeddings %>% 
@@ -142,37 +144,39 @@ Create_stabilised_blocks <- function(g,
   #get the network_dynamics dataframe for the total calculation
   network_dynamics <- 1:length(StabilModels) %>% 
     map_df(~{
-      StabilModels[[.x]]$network_dynamics %>%
-        mutate(component = BlockNumbers[.x])
+      temp <- StabilModels[[.x]]$network_dynamics
+      temp$component <-  BlockNumbers[.x]
+      
+      return(temp)
       
     }) %>%
     bind_rows(OriginBlock$network_dynamics %>% mutate(component = OriginBlock_number))  %>%
-  #It can also be useful to get the individual component values out.
+    #It can also be useful to get the individual component values out.
     group_by(Iter) %>%
     summarise_all(sum) %>%
     mutate(t = Iter/tstep) %>%
     select(-component)
-
-
+  
+  
   #gets back the memory of the convergence process.
   #This is useful for knowing what logratio works for various network families
   memory_df <- 1:length(StabilModels) %>% 
     map_df(~{
-      StabilModels[[.x]]$memory_df %>%
-        mutate(component = BlockNumbers[.x]) #puts in the original block ordering so we can know which block was which
-      
+      temp <- StabilModels[[.x]]$memory_df 
+      temp$component <-  BlockNumbers[.x] #puts in the original block ordering so we can know which block was which
+      return(temp)
     }) %>%
     bind_rows(OriginBlock$memory_df %>% mutate(component = OriginBlock_number)) 
-
-
-time_taken_df <- 1:length(StabilModels) %>% 
+  
+  
+  time_taken_df <- 1:length(StabilModels) %>% 
     map_df(~{
-      StabilModels[[.x]]$time_taken %>%
-        mutate(component = BlockNumbers[.x]) #puts in the original block ordering so we can know which block was which
-      
+      temp <- StabilModels[[.x]]$time_taken
+      temp$component <-  BlockNumbers[.x] #puts in the original block ordering so we can know which block was which
+      return(temp)
     }) %>%
     bind_rows( OriginBlock$time_taken %>%
-              mutate(component = OriginBlock_number)) 
+                 mutate(component = OriginBlock_number)) 
   
 #  test <- fix_z_to_origin(relative_blocks, ArticulationVect) #this is just to see what is added and subtracted
   #The height of each node relative to the origin and normalised

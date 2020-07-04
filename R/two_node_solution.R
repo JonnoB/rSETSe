@@ -40,17 +40,27 @@ two_node_solution <- function(g, Prep = Prep, auto_setse_mode = FALSE){
   
   stop_time <- Sys.time()
   
-  temp <- Prep$node_embeddings %>%
-    mutate(elevation = ifelse(force>0, 
-                              tan(solution_angle)/2, #height above mid point
-                              -tan(solution_angle)/2 ), #height below mid-point
-           net_force = 0,
-           acceleration = 0,
-           #         k      * the extension of the edge due to stretching      * 
-           net_tension = ifelse(force>0, 
-                                -abs(Prep$node_embeddings$force[1]), 
-                                abs(Prep$node_embeddings$force[1]) )
-    ) 
+  temp <- Prep$node_embeddings #%>%
+  # mutate(elevation = ifelse(force>0, 
+  #                           tan(solution_angle)/2, #height above mid point
+  #                           -tan(solution_angle)/2 ), #height below mid-point
+  #        net_force = 0,
+  #        acceleration = 0,
+  #        #         k      * the extension of the edge due to stretching      * 
+  #        net_tension = ifelse(force>0, 
+  #                             -abs(Prep$node_embeddings$force[1]), 
+  #                             abs(Prep$node_embeddings$force[1]) )
+  # ) 
+  temp$elevation <-ifelse(temp$force>0, 
+                          tan(solution_angle)/2, #height above mid point
+                          -tan(solution_angle)/2 )
+  temp$net_force <- 0
+  temp$acceleration <- 0
+  temp$net_tension <- ifelse(temp$force>0, 
+                             -abs(Prep$node_embeddings$force[1]), 
+                             abs(Prep$node_embeddings$force[1])
+  )
+
   
   Out <- list(network_dynamics = tibble(t = 0, 
                                         Iter = 0,

@@ -12,9 +12,16 @@
 
 fix_z_to_origin <- function(relative_blocks, ArticulationVect){
   
-  #This function needs some further explaining!
+  #This function has been greatly improved, however, it still uses entire dataframes and has a horrible
+  #memory growth issue, as the relative blocks grows from nothing to the entire dataset.
+  #This whole function would be better if only the elevation vector was manipulated and the rest of the
+  #relative blocks dataframe stayed the same.
+  #It is not really worth doing it right now though
   
+  #The first block to be made absolute is the origin block indexed at 0
   target_blocks <- 0
+  #The dataframe of absolute blocks starts empty...
+  #This is not great due to memory growth issues
   absolute_blocks <- Articulation_df <- relative_blocks[relative_blocks$Reference_ID ==-1,]
   
   #This vector stors articulation nodes that have already been used,
@@ -25,7 +32,7 @@ fix_z_to_origin <- function(relative_blocks, ArticulationVect){
   next_group <- relative_blocks[relative_blocks$Reference_ID %in% target_blocks,]
   
   
-  # vectors that are used
+  # vectors that are used and could be the basis for a vector version
   # reference_id <- relative_blocks$Reference_ID
   # node_vect <- relative_blocks$node
   # articulation_df <- relative_blocks$Articulation_node
