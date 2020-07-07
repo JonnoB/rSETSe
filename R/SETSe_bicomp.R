@@ -11,7 +11,8 @@
 #' @param tstep A numeric. The time interval used to iterate through the network dynamics.
 #' @param tol A numeric. The tolerance factor for early stopping.
 #' @param max_iter An integer. The maximum number of iterations before stopping. Larger networks usually need more iterations.
-#' @param mass A numeric. This is the mass constant of the nodes in normalised networks this is set to 1.
+#' @param mass A numeric. This is the mass constant of the nodes in normalised networks. 
+#' Default is set to NULL and call mass_adjuster to set the mass for each biconnected component
 #' @param sparse Logical. Whether sparse matrices will be used. This becomes valubale for larger networks
 #' @param sample Integer. The dynamics will be stored only if the iteration number is a multiple of the sample. 
 #'  This can greatly reduce the size of the results file for large numbers of iterations. Must be a multiple of the max_iter
@@ -64,7 +65,7 @@ SETSe_bicomp <- function(g,
                           tstep = 0.02,
                           tol,
                           max_iter = 20000,
-                          mass = 1,
+                          mass = NULL,
                           sparse = FALSE,
                           sample = 100,
                           static_limit = NULL,
@@ -73,24 +74,29 @@ SETSe_bicomp <- function(g,
                           hyper_max = 30000,
                           step_size = 1,
                           verbose = FALSE){
-  if(verbose){print("finding biconnected components")}
   
+    if(verbose){print("finding biconnected components")}
+  
+  start_time_bigraph <- Sys.time()
   bigraph <- biconnected_components(g)
+  if(verbose){print(paste("Biconnected components found. Time taken",
+                    round(as.numeric( difftime(Sys.time(), start_time_bigraph, units = "mins")), 1),
+                    "minutes."))}
   
   #if the network cannot be decomposed into biconnected components then
   #create balanced blocks throughs an error and create_Stabilised blocks throughs an error
   #This prevents that
   if(bigraph$no==1){
     if(verbose){print("Network has no bi-connected components, running auto-SETSe instead")}
-    embeddings_data <- auto_SETSe(g = balanced_blocks[[OriginBlock_number]],
+    embeddings_data <- auto_SETSe(g = g,
                               force = force,
                               distance = distance, 
                               edge_name = edge_name,
                               k = k,
                               tstep = tstep, 
-                              tol = tol*sum(abs(get.vertex.attribute(balanced_blocks[[OriginBlock_number]], force)))/total_force, #the force has to be scaled to the component 
+                              tol = tol, #the force has to be scaled to the component 
                               max_iter =  max_iter, 
-                              mass =  mass, 
+                              mass =  ifelse(is.null(mass), mass_adjuster(g, force = "force", resolution_limit = TRUE), mass), 
                               sparse = sparse,
                               sample = sample,
                               static_limit = static_limit,
@@ -105,18 +111,22 @@ SETSe_bicomp <- function(g,
     
     #seperate out the network into blocks
     if(verbose){print("creating balanced blocks")}
+    start_time_bb <-Sys.time()
     balanced_blocks <- create_balanced_blocks(g, 
                                               force = force,
                                               bigraph = bigraph)
-
+    
+    if(verbose){print(paste("Balanced blocks created. Time taken",
+                            round(as.numeric( difftime(Sys.time(), start_time_bb, units = "mins")), 1),
+                            "minutes.",
+                            "Total number of bi-connected components",
+                            bigraph$no))}
   
 
   
   #find the largest component and use that as the origin block
   OriginBlock_number <-balanced_blocks %>% map_dbl(~vcount(.x)) %>% which.max()
-  
-  #print("Giant component found")
-  
+
   #total in network
   total_force <- sum(abs(get.vertex.attribute(g, force)))
   
@@ -127,6 +137,8 @@ SETSe_bicomp <- function(g,
   
   #calculate the parameters of the largest block
   if(verbose){print("Calculating Origin Block")}
+  
+  start_time_origin <- Sys.time()
   OriginBlock <- auto_SETSe(g = balanced_blocks[[OriginBlock_number]],
                             force = force,
                             distance = distance, 
@@ -135,7 +147,8 @@ SETSe_bicomp <- function(g,
                             tstep = tstep, 
                             tol = tol*sum(abs(get.vertex.attribute(balanced_blocks[[OriginBlock_number]], force)))/total_force, #the force has to be scaled to the component 
                             max_iter =  max_iter, 
-                            mass =  mass, 
+                            mass =  ifelse(is.null(mass), mass_adjuster(balanced_blocks[[OriginBlock_number]], 
+                                                                        force = "force", resolution_limit = TRUE), mass), 
                             sparse = sparse,
                             sample = sample,
                             static_limit = static_limit,
@@ -146,7 +159,10 @@ SETSe_bicomp <- function(g,
                             verbose = verbose,
                             include_edges = FALSE )
   
-  if(verbose){print("Origin block complete, beginning remaining blocks")}
+  
+  if(verbose){print(paste("Origin block complete, time taken", 
+                          round(as.numeric( difftime(Sys.time(), start_time_origin, units = "mins")), 1), 
+                          "minutes. beginning remaining blocks"))}
   
   
   #Calculate the height embeddings using the Orgin block as a base

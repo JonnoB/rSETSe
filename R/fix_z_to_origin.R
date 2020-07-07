@@ -12,86 +12,104 @@
 
 fix_z_to_origin <- function(relative_blocks, ArticulationVect){
   
-  #This function has been greatly improved, however, it still uses entire dataframes and has a horrible
-  #memory growth issue, as the relative blocks grows from nothing to the entire dataset.
-  #This whole function would be better if only the elevation vector was manipulated and the rest of the
-  #relative blocks dataframe stayed the same.
-  #It is not really worth doing it right now though
+  #This is an integer vector of blocks that have been converted to absolute values
+  #This is one of the growing vectors.
+  absolute_blocks <- c(0)
   
   #The first block to be made absolute is the origin block indexed at 0
   target_blocks <- 0
-  #The dataframe of absolute blocks starts empty...
-  #This is not great due to memory growth issues
-  absolute_blocks <- Articulation_df <- relative_blocks[relative_blocks$Reference_ID ==-1,]
+  
+  #The queued articulation nodes.
+  #These are articulation nodes that have been converted to absolute elevation in at least one of thier blocks
+  #They can be used to make subsequent blocks absolute
+  queued_articulation_nodes <- as.numeric(list())
   
   #This vector stors articulation nodes that have already been used,
   #This stops the same node being recycled which causes errors
   #The vector begins as an empty vector
-  used_articulation_nodes<- as.numeric(list())
+  used_articulation_nodes <- as.numeric(list())
   
-  next_group <- relative_blocks[relative_blocks$Reference_ID %in% target_blocks,]
+  #The block reference number.The origin block is always 0
+  reference_id <- relative_blocks$Reference_ID
+  #The node IDs
+  node_vect <- relative_blocks$node
+  #the aarticulation vectors
+  articulation_vect <- relative_blocks$Articulation_node
+  #The node elevation vector. This is converted block by block from relative elevation to 
+  #absolute elevation
+  elevation_vect <- relative_blocks$elevation
   
-  
-  # vectors that are used and could be the basis for a vector version
-  # reference_id <- relative_blocks$Reference_ID
-  # node_vect <- relative_blocks$node
-  # articulation_df <- relative_blocks$Articulation_node
-  
-  #The previous while used the rows in Articulation_df but this changed and so could be confusing. As there can only be the same 
-  #amount of loops as there are articulation nodes. n must be equal to or smaller than the number of articulation nodes - 1
-  #nrow(Articulation_df)
-  #while(n <= (length(ArticulationVect)-2)){
-  
-  while(length(used_articulation_nodes)< length(ArticulationVect)){
+  #The while loop continues as long as used articulation nodes vector is smaller than the total number
+  #of articulation nodes in the network
+  while(length(used_articulation_nodes) < length(ArticulationVect)){
+    #while(sum(used_articulation_nodes %in% ArticulationVect) == length(ArticulationVect)){
     #  while(Art_n != 190){
     
-    #add new absolute references to the dataframe
-    absolute_blocks <- bind_rows(absolute_blocks, next_group)
+    #add new articulation nodes to the queue
+    #It has four logical conditions
+    #1 the nodes must be in the target block
+    #2 The nodes must be an articulation node
+    #3 the node cannot already be in the queue
+    #4 cannot be a node that has already been used
     
-    #add new articulation nodes to the dataframe
-    {
-      Articulation_df <- bind_rows(Articulation_df, next_group[next_group$Articulation_node,] )
-      Articulation_df <-Articulation_df[!(Articulation_df$node %in% used_articulation_nodes),]  #remove all previously used articulation nodes
-    }
-    
-    #The removal of previously used articulation nodes is important as all articulation nodes are in the network at least twice
-    
-    #remove all new absolute references from the dataframe
-    relative_blocks <- relative_blocks[!(relative_blocks$Reference_ID %in% target_blocks),] 
+    #The removal of previously used articulation nodes is important as all articulation nodes are in the network at least twice.
+    # not removing later occurances can lead to levelling errors and crazy results
+    #The 4th logical constraint is becuase the target blocks from the previous round also contain the previous rounds
+    #Art_n node (active node), this means it will be added in again.
+    queued_articulation_nodes <- c(queued_articulation_nodes, node_vect[reference_id %in% target_blocks & 
+                                                                          articulation_vect &
+                                                                          !(node_vect %in% queued_articulation_nodes) &
+                                                                          !(node_vect %in% used_articulation_nodes)])
+    #print(queued_articulation_nodes)
     
     #get the next articulation node in the queue
-    Art_n <-Articulation_df$node[1] #
+    #This is the active articulation node
+    Art_n <-queued_articulation_nodes[1] #
+    
+    
+    #add the current articulation node to the vector of used nodes
+    used_articulation_nodes <- c(used_articulation_nodes, Art_n)
     #print(Art_n)
     #subtract art_n relative from all elevation scores
     #ass art_n abs to all values
     
-    #This has to be done by block not all blocks together
-    target_blocks <- relative_blocks$Reference_ID[relative_blocks$node == Art_n] #%>%
-    #filter(node == Art_n) %>% pull(Reference_ID)
+    #The blocks that this articulation node is in excluding the current active block
+    #1 The block is not already absolute
+    #2 The node is the active articulation node
+    #Only unique values are used, this is more a security blanket than anything. I don't know if it is necessary
+    target_blocks <- unique(reference_id[!(reference_id %in% absolute_blocks) & node_vect == Art_n])
     
-    next_group <- map_df(.x = target_blocks, ~{
+    
+    #This is the value that the nodes in the target blocks will be adjusted by
+    #It is the elevation that matches the following conditions
+    #1 The reference id of the block has to already been adjusted to absolute terms
+    #2 The node has to be the articulation node being adjusted
+    elevation_adjust <-  unique(elevation_vect[(reference_id %in% absolute_blocks) & node_vect == Art_n])
+    
+    for(n in target_blocks){
+      #print(n)
+      #The local origin is the active articulation node's elevation in the target block
+      #This is the node which is both
+      #1 in the target block
+      #2 the active articulation node
+      local_origin <- elevation_vect[(reference_id %in% n) & node_vect == Art_n]
       
-      temp <- relative_blocks[relative_blocks$Reference_ID == .x,] 
-      
-      local_origin <- temp$elevation[temp$node ==Art_n] #find the local origin which is the articulation node n
-      
-      temp$elevation <- temp$elevation -local_origin + Articulation_df$elevation[1] #add the global absolute reference
-      
-      return(temp)
+      #The elevation of all nodes in the target block have the local origin remove to place everything relative to 0
+      #then the absolute height of the articulation node is added making the entire bi-connected component elevation absolute.
+      elevation_vect[(reference_id %in% n)] <- elevation_vect[(reference_id %in% n)] - local_origin + elevation_adjust
       
     }
     
-    )
+    #add to the absolute blocks vector
+    absolute_blocks <- c(absolute_blocks, target_blocks)
     
-    used_articulation_nodes <- c(used_articulation_nodes, Articulation_df$node[1])
-    
-    
+    #The active articulation node is removed from the queue
+    queued_articulation_nodes <- queued_articulation_nodes[-1]
+
   }
-  #The final block is added on here.
-  #if I rearrange the process I can get it all in the loop
-  #But I just can't be bothered right now :'(
-  absolute_blocks <- bind_rows(absolute_blocks,next_group ) 
+  #The elevation vector is now absolute and can be inserted back into the original datframe
+  relative_blocks$elevation <- elevation_vect
   
-  return(absolute_blocks)
+  return(relative_blocks)
   
 }

@@ -60,23 +60,26 @@ Create_stabilised_blocks <- function(g,
   
   StabilModels <- BlockNumbers %>% 
     map(~{
-      print(paste("Block", .x, "of", max(BlockNumbers), "bicomp has", vcount(balanced_blocks[[.x]]), "nodes."))
-      
+
       #sub tol can be extremely small. if it is then I say that it is zero and effectively the nodes are left unconverged
       #again, it is worth considering the magnitude of force in the network
       sub_tol <- tol*sum(abs(get.vertex.attribute(balanced_blocks[[.x]], force)))/total_force
-      sub_tol <- ifelse(sub_tol> .Machine$double.eps^0.5, sub_tol, tol)
+      sub_tol_larger_than_limit <- sub_tol> .Machine$double.eps^0.5
+      sub_tol <- ifelse(sub_tol_larger_than_limit, sub_tol, tol)
       
       if(!is.null(static_limit)){
         
       sub_static_limit <- static_limit*sum(abs(get.vertex.attribute(balanced_blocks[[.x]], force)))/total_force
-      #makes sure the static limit is not smaller than the machine precision. if it is bad things happen
-      sub_static_limit <- ifelse(sub_static_limit> .Machine$double.eps^0.5, sub_static_limit, static_limit)
+
       } else {
         
-        sub_static_limit <- NULL
+        sub_static_limit <- sum(abs(vertex_attr(g, force))) #NULL
         
       }
+      
+      #makes sure the static limit is not smaller than the machine precision. if it is bad things happen
+      sub_static_larger_than_limit <- sub_static_limit> .Machine$double.eps^0.5
+      sub_static_limit <- ifelse(sub_static_larger_than_limit, sub_static_limit, static_limit)
       
       #do special case solution for two nodes only
       if(ecount(balanced_blocks[[.x]])==1){
@@ -84,16 +87,21 @@ Create_stabilised_blocks <- function(g,
         Prep <- SETSe_data_prep(g = balanced_blocks[[.x]], 
                                 force = force, 
                                 distance = distance, 
-                                mass = mass, 
+                                mass = ifelse(is.null(mass), mass_adjuster(balanced_blocks[[.x]], 
+                                                                           force = "force", resolution_limit = TRUE), mass), 
                                 k = k,
                                 edge_name = edge_name,
                                 sparse = sparse)
         
         Out <- two_node_solution(g, Prep = Prep, auto_setse_mode = TRUE)
         
-        #Solves using the iterative method.
-      } else {
+        #S if the subtolerance and the sub static values are larger than the sqrt of the machine eps
+        #Then solve using the auto-SETSe method.
+      }  else if(sub_tol_larger_than_limit  & sub_tol_larger_than_limit){
         
+        print(paste("Block", .x, "of", max(BlockNumbers),  "has more than two nodes. Running auto-setse"))
+        
+        start_time_block <- Sys.time()
         
         Out <- auto_SETSe(balanced_blocks[[.x]],
                           force = force,
@@ -103,7 +111,8 @@ Create_stabilised_blocks <- function(g,
                           tstep = tstep, 
                           tol = sub_tol, #the force has to be scaled to the component                           
                           max_iter =  max_iter, 
-                          mass =  mass, 
+                          mass =  ifelse(is.null(mass), mass_adjuster(balanced_blocks[[.x]], 
+                                                                      force = "force", resolution_limit = TRUE), mass), 
                           sparse = sparse,
                           sample = sample,
                           static_limit = sub_static_limit,
@@ -113,13 +122,58 @@ Create_stabilised_blocks <- function(g,
                           step_size = step_size,
                           verbose = verbose,
                           include_edges = FALSE
-                          )
+        )
+        
+        #Print the details of the completed block
+        #This is not done for biconns of size 2 they are so fast and numerous
+        print(paste("Block", .x, "of", max(BlockNumbers), 
+                    "complete. bicomp has", 
+                    vcount(balanced_blocks[[.x]]), "nodes.",
+                    " Time taken",
+                    round(as.numeric( difftime(Sys.time(), start_time_block, units = "mins")), 1),
+                    " minutes"))
+        #Otherwise the values are smaller than the machine tolerance and should be left unconverged.
+        #For very small values, uncoverged is approximately equal to the converged value
+      } else {
+        
+        print(paste("Block", .x, "of", max(BlockNumbers),  
+                    "has more than two nodes but approximately 0 force, no convergence necessary, continuing to next block"))
+        
+        Prep <- SETSe_data_prep(g = balanced_blocks[[.x]], 
+                                force = force, 
+                                distance = distance, 
+                                mass = ifelse(is.null(mass), mass_adjuster(balanced_blocks[[.x]], 
+                                                                           force = "force", resolution_limit = TRUE), mass), 
+                                k = k,
+                                edge_name = edge_name,
+                                sparse = sparse)
+        
+        
+        Out <- list(network_dynamics = tibble(t = 0, 
+                                              Iter = 0,
+                                              static_force = 0, 
+                                              kinetic_force = 0), 
+                    node_embeddings = Prep$node_embeddings,
+                    #NA value is included as the timing is not applicable.
+                    #It also indicates that the forces were so small as to not rquire convergence
+                    time_taken = tibble(time_diff = NA, nodes = vcount(balanced_blocks[[.x]]), 
+                                        edges =  ecount(balanced_blocks[[.x]])),
+                    memory_df = tibble(iteration = 1,
+                                      error = 0,
+                                      perc_change = NA,
+                                      log_ratio = NA,
+                                      common_drag_iter = NA,
+                                      direction = 1,
+                                      target_area = NA,
+                                      res_stat = NA,
+                                      upper = NA,
+                                      lower = NA,
+                                      best_log_ratio =NA,
+                                      stable = TRUE))
+        
         
       }
 
-      #print if the print requirement is on otherwise silent
-      #if(!verbose){print(paste("Block" ,.x, "of", max(BlockNumbers) ,"termination", nrow(Out$network_dynamics) )) }
-      
       return(Out)
       
     })
@@ -178,33 +232,27 @@ Create_stabilised_blocks <- function(g,
     bind_rows( OriginBlock$time_taken %>%
                  mutate(component = OriginBlock_number)) 
   
-#  test <- fix_z_to_origin(relative_blocks, ArticulationVect) #this is just to see what is added and subtracted
-  #The height of each node relative to the origin and normalised
-  # node_embeddings <- relative_blocks %>% mutate(elevation_diff = 1,
-  #   elevation2 = pull(test, elevation),
-  #                                            elevation_diff = elevation - elevation2)
-  
-  # component_adjust_mat <- adjust_components(g, max_iter =max(relative_blocks$Iter),
-  #                                           force = force, flow = flow)
+  #The biconnected components are converted to absolute values from relative ones
+  node_embeddings <- fix_z_to_origin(relative_blocks, ArticulationVect) 
   
   print("Removing multiple articulation nodes")
-  node_embeddings <- fix_z_to_origin(relative_blocks, ArticulationVect) %>%
-    group_by(node) %>%
-    summarise(Iter = first(Iter),
-      force = sum(force),
-              elevation = first(elevation),
-              net_tension = sum(net_tension),
-              velocity = sum(velocity)) %>% #the articulation nodes appear multiple times this removes them
-    ungroup %>%
+  #this bind rows takes place as, there are vastly more non-articulation nodes than 
+  #articulation nodes, this can mean and absolutely massive number of groups which is very slow to summarise
+  #by aggregating only the necessary nodes it will be much faster
+  node_embeddings <- bind_rows(node_embeddings[!(node_embeddings$node %in% ArticulationVect),],
+                               remove_articulation_duplicates(node_embeddings, ArticulationVect))  %>%
     #friction is different depending on the biconnected component so is meaningless in the overall analysis
     #Poissibly could use the drag for the major biconn
     mutate(
       friction = NA,#coef_drag * velocity,
       static_force = force + net_tension,
       net_force = NA,#static_force - friction,
-      acceleration = net_force/mass,
+      acceleration = net_force/ifelse(is.null(mass), mass_adjuster(balanced_blocks[[OriginBlock_number]], 
+                                                                   force = "force", resolution_limit = TRUE), mass),
       t = 1,
-      t = tstep * Iter)
+      t = tstep * Iter) %>%
+    arrange(node)
+  
   
   # node_embeddings <- fix_z_to_origin(relative_blocks, ArticulationVect) %>%
   #   group_by(node) %>%

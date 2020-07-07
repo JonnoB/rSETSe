@@ -75,11 +75,15 @@ auto_SETSe <- function(g,
   if(is.null(static_limit)){
     static_limit <- sum(abs(vertex_attr(g, force)))
   }
-  #this is the threshold minimum force value of the model.
-  #previously the threshold was set to two, but this only works when the abs sum of force adds up to 2.
-  #this provides a more flexible approach to force in networks
-  res_stat_limit <- static_limit
   
+  #This is a safety feature!
+  #makes sure the static limit is not smaller than the machine precision. If it is the static limit is set to half
+  #the tolerance making the simulation terminate at the first opportunity
+  #print(paste("static limit greater than eps", static_limit> .Machine$double.eps^0.5))
+  res_stat_limit <- ifelse(static_limit> .Machine$double.eps^0.5, static_limit, tol/2)
+  
+  #This print out can be deleted, it is only here for debugging reasons
+  #print(paste("static_limit", res_stat_limit ))
   
   memory_df<-tibble(iteration = 1:(2+hyper_iters),
                     error = NA,

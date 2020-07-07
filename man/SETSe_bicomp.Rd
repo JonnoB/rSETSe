@@ -13,7 +13,7 @@ SETSe_bicomp(
   tstep = 0.02,
   tol,
   max_iter = 20000,
-  mass = 1,
+  mass = NULL,
   sparse = FALSE,
   sample = 100,
   static_limit = NULL,
@@ -41,7 +41,8 @@ SETSe_bicomp(
 
 \item{max_iter}{An integer. The maximum number of iterations before stopping. Larger networks usually need more iterations.}
 
-\item{mass}{A numeric. This is the mass constant of the nodes in normalised networks this is set to 1.}
+\item{mass}{A numeric. This is the mass constant of the nodes in normalised networks. 
+Default is set to NULL and call mass_adjuster to set the mass for each biconnected component}
 
 \item{sparse}{Logical. Whether sparse matrices will be used. This becomes valubale for larger networks}
 
