@@ -74,18 +74,18 @@ two_node_solution <- function(g, Prep = Prep, auto_setse_mode = FALSE){
     #the memory_df data frame
     #everything is basically NA but it allows easier post processing
     Out$memory_df<-tibble(iteration = 1,
-                      error = 0,
-                      perc_change = NA,
-                      log_ratio = NA,
-                      common_drag_iter = NA,
-                      direction = 1,
-                      target_area = NA,
-                      res_stat = NA,
-                      upper = NA,
-                      lower = NA,
-                      best_log_ratio =NA,
-                      stable = TRUE)
-    
+                          error = NA,
+                          perc_change = NA,
+                          log_ratio = NA,
+                          common_drag_iter = NA,
+                          tstep = NA,
+                          direction = 1,
+                          target_area = NA,
+                          res_stat = NA,
+                          upper = NA,
+                          lower = NA,
+                          best_log_ratio =NA,
+                          stable = NA)
   }
   
   return(Out)

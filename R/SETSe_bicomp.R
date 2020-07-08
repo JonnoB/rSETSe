@@ -22,7 +22,8 @@
 #' @param hyper_iters integer. The hyper parameter that determines the number of iterations allowed to find an acceptable convergence value.
 #' @param hyper_tol numeric. The convergence tolerance when trying to find the minimum value
 #' @param hyper_max integer. The maximum number of iterations that the setse will go through whilst searching for the minimum.
-#' @param step_size numeric. The hyper parameter that determines the log ratio search step size for auto convergence
+#' @param drag_max integer. A power of ten. if the drag exceeds this value the tstep is reduced
+#' @param tstep_change numeric. A value between 0 and 1 that determines how much the time step will be reduced by default value is 0.5
 #' @param verbose Logical. This value sets whether messages generated during the process are supressed or not.
 #'
 #'@details
@@ -58,22 +59,23 @@
 #'   SETSe_bicomp(tol = 0.02)
 #' @export
 SETSe_bicomp <- function(g, 
-                          force = "force",
-                          distance = "distance",
-                          edge_name = "edge_name",
-                          k = "k",
-                          tstep = 0.02,
-                          tol,
-                          max_iter = 20000,
-                          mass = NULL,
-                          sparse = FALSE,
-                          sample = 100,
-                          static_limit = NULL,
-                          hyper_iters = 100,
-                          hyper_tol  = 0.1,
-                          hyper_max = 30000,
-                          step_size = 1,
-                          verbose = FALSE){
+                         force = "force",
+                         distance = "distance",
+                         edge_name = "edge_name",
+                         k = "k",
+                         tstep = 0.02,
+                         tol,
+                         max_iter = 20000,
+                         mass = NULL,
+                         sparse = FALSE,
+                         sample = 100,
+                         static_limit = NULL,
+                         hyper_iters = 100,
+                         hyper_tol  = 0.1,
+                         hyper_max = 30000,
+                         drag_max = 100,
+                         tstep_change = 0.2,
+                         verbose = FALSE){
   
     if(verbose){print("finding biconnected components")}
   
@@ -103,7 +105,8 @@ SETSe_bicomp <- function(g,
                               hyper_iters = hyper_iters,
                               hyper_tol = hyper_tol,
                               hyper_max = hyper_max,
-                              step_size = step_size,
+                              drag_max = drag_max,
+                              tstep_change = tstep_change,
                               verbose = verbose,
                               include_edges = FALSE )
     
@@ -155,7 +158,8 @@ SETSe_bicomp <- function(g,
                             hyper_iters = hyper_iters,
                             hyper_tol = hyper_tol,
                             hyper_max = hyper_max,
-                            step_size = step_size,
+                            drag_max = drag_max,
+                            tstep_change = tstep_change,
                             verbose = verbose,
                             include_edges = FALSE )
   
@@ -181,7 +185,8 @@ SETSe_bicomp <- function(g,
                                               hyper_iters = hyper_iters,
                                               hyper_tol = hyper_tol,
                                               hyper_max = hyper_max,
-                                              step_size = step_size,
+                                              drag_max = drag_max,
+                                              tstep_change = tstep_change,
                                               sample = sample,
                                               static_limit = static_limit,
                                               verbose = verbose,

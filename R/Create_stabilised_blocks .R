@@ -21,7 +21,8 @@
 #' If left blank the static limit is twice the system absolute mean force.
 #' @param verbose Logical. This value sets whether messages generated during the process are supressed or not.
 #' @param hyper_iters integer. The hyper parameter that determines the number of iterations allowed to find an acceptable convergence value.
-#' @param step_size numeric. The hyper parameter that determines the log ratio search step size for auto convergence
+#' @param drag_max integer. A power of ten. if the drag exceeds this value the tstep is reduced
+#' @param tstep_change numeric. A value between 0 and 1 that determines how much the time step will be reduced by default value is 0.5
 #' @param hyper_tol numeric. The convergence tolerance when trying to find the minimum value
 #' @param hyper_max integer. The maximum number of iterations that the setse will go through whilst searching for the minimum.
 #' 
@@ -47,7 +48,8 @@ Create_stabilised_blocks <- function(g,
                                      hyper_iters = 100,
                                      hyper_tol  = 0.01,
                                      hyper_max = 30000,
-                                     step_size = 0.1,
+                                     drag_max = drag_max,
+                                     tstep_change = tstep_change,
                                      verbose = FALSE,
                                      bigraph = bigraph,
                                      balanced_blocks = balanced_blocks){
@@ -122,7 +124,8 @@ Create_stabilised_blocks <- function(g,
                           hyper_iters = hyper_iters,
                           hyper_tol = hyper_tol,
                           hyper_max = hyper_max,
-                          step_size = step_size,
+                          drag_max = drag_max,
+                          tstep_change = tstep_change,
                           verbose = verbose,
                           include_edges = FALSE
         )
@@ -162,17 +165,18 @@ Create_stabilised_blocks <- function(g,
                     time_taken = tibble(time_diff = NA, nodes = vcount(balanced_blocks[[.x]]), 
                                         edges =  ecount(balanced_blocks[[.x]])),
                     memory_df = tibble(iteration = 1,
-                                      error = 0,
-                                      perc_change = NA,
-                                      log_ratio = NA,
-                                      common_drag_iter = NA,
-                                      direction = 1,
-                                      target_area = NA,
-                                      res_stat = NA,
-                                      upper = NA,
-                                      lower = NA,
-                                      best_log_ratio =NA,
-                                      stable = TRUE))
+                                       error = NA,
+                                       perc_change = NA,
+                                       log_ratio = NA,
+                                       common_drag_iter = NA,
+                                       tstep = NA,
+                                       direction = 1,
+                                       target_area = NA,
+                                       res_stat = NA,
+                                       upper = NA,
+                                       lower = NA,
+                                       best_log_ratio =NA,
+                                       stable = NA))
         
         
       }

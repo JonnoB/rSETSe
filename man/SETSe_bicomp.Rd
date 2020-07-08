@@ -20,7 +20,8 @@ SETSe_bicomp(
   hyper_iters = 100,
   hyper_tol = 0.1,
   hyper_max = 30000,
-  step_size = 1,
+  drag_max = 100,
+  tstep_change = 0.2,
   verbose = FALSE
 )
 }
@@ -59,7 +60,9 @@ If left blank the static limit is the system absolute mean force.}
 
 \item{hyper_max}{integer. The maximum number of iterations that the setse will go through whilst searching for the minimum.}
 
-\item{step_size}{numeric. The hyper parameter that determines the log ratio search step size for auto convergence}
+\item{drag_max}{integer. A power of ten. if the drag exceeds this value the tstep is reduced}
+
+\item{tstep_change}{numeric. A value between 0 and 1 that determines how much the time step will be reduced by default value is 0.5}
 
 \item{verbose}{Logical. This value sets whether messages generated during the process are supressed or not.}
 }
