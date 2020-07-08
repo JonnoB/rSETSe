@@ -58,6 +58,9 @@ Create_stabilised_blocks <- function(g,
   #total in network
   total_force <- sum(abs(get.vertex.attribute(g, force)))
   
+  #Get timing for rest of process
+  start_time_all_other_blocks <- Sys.time()
+  
   StabilModels <- BlockNumbers %>% 
     map(~{
 
@@ -177,7 +180,15 @@ Create_stabilised_blocks <- function(g,
       return(Out)
       
     })
+  
+  
+  if(verbose){print(paste("All Other blocks completed, time taken", 
+                          round(as.numeric( difftime(Sys.time(), start_time_all_other_blocks, units = "mins")), 1), 
+                          "minutes."))}
 
+  if(verbose){print("Re-assembling network")}
+  
+  start_reassembly <- Sys.time()
   #extract the articulation nodes
   ArticulationVect <- get.vertex.attribute(g, "name", bigraph$articulation_points)
   
@@ -253,11 +264,10 @@ Create_stabilised_blocks <- function(g,
       t = tstep * Iter) %>%
     arrange(node)
   
-  
-  # node_embeddings <- fix_z_to_origin(relative_blocks, ArticulationVect) %>%
-  #   group_by(node) %>%
-  #   summarise_all(mean) %>%
-  #   mutate(Articulation_node = Articulation_node==1)
+  if(verbose){print(paste("Re-assembly complete, time taken", 
+                          round(as.numeric( difftime(Sys.time(), start_reassembly, units = "mins")), 1), 
+                          "minutes."))}
+
   
   #combine the node_embeddings and the network_dynamics into a single list
   Out <- list(node_embeddings = node_embeddings, 
