@@ -29,17 +29,20 @@
 #'  included for ease of integration into the bicomponent functions.
 #' @return A list of four elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings, 
 #' the convergence dynamics dataframe for the network as well as the search history for convergence criteria of the network
-#' @seealso \code{\link{auto_SETSe}} \code{\link{SETSe_bicomp}}
-#'  @examples
+#' @seealso \code{\link{SETSe}} \code{\link{SETSe_bicomp}}
+#' @examples
 #' set.seed(234) #set the random see for generating the network
+#' 
 #' g <- generate_peels_network(type = "E")
-#' embeddings <- g %>%
+#' 
+#' g_prep <- g %>%
 #' #prepare the network for a binary embedding
 #' prepare_SETSe_binary(., node_names = "name", k = 1000, 
 #'                      force_var = "class", 
-#'                      positive_value = "A") %>%
-#' #embed the network using auto setse
-#'   auto_SETSe()
+#'                      positive_value = "A")
+#'                      
+#' #embed the network using auto setse with default settings
+#' embeddings <- auto_SETSe(g)
 #' 
 #' @export
 
@@ -63,6 +66,7 @@ auto_SETSe <- function(g,
                         verbose = FALSE,
                         include_edges = TRUE){
   
+  #The more negative the log ratio becomes the larger the drag ratio becomes
   
   if(verbose){print("prepping dataset")}
   #Prep the data before going into the converger
@@ -111,10 +115,10 @@ auto_SETSe <- function(g,
   memory_df$res_stat[1] <- ifelse(res_stat_limit<tol, 2*tol, res_stat_limit) #this ensures setse is run at least once
   #The above conduition is only activated on components with very small amounts of force
   #These two are the limits of the log ratio. they are set to +/- infinity
-  memory_df$upper[1] <- log10(drag_max/tstep)
-  memory_df$lower[1] <-  -Inf
-  memory_df$upper[2] <- log10(drag_max/tstep)
-  memory_df$lower[2] <- -Inf
+  memory_df$upper[1] <- -log10(drag_max/tstep)
+  memory_df$lower[1] <-  Inf
+  memory_df$upper[2] <- -log10(drag_max/tstep)
+  memory_df$lower[2] <- Inf
   #This calculates the percentage change it is set to 1 by default for all values of res_stat =2
   memory_df$perc_change[1] <- 1
   memory_df$perc_change[2] <- 1
@@ -134,8 +138,11 @@ auto_SETSe <- function(g,
   min_error <- which.min(memory_df$error)
   
   if(verbose){print("beginning embeddings search")}
-  #The number of iterations has to be smaller than the hyper_iters variable AND the residual static force has to be bigger
-  #than the tolerance AND the last two rounds cannot both be stable
+  
+  #For the loop to continue the following conditions must all hold
+  #1 The number of iterations the loop has gone through has to be smaller than the hyper_iters variable 
+  #2 The residual static force has to be bigger than the minimum system tolerance
+  #3 The las two rounds cannot both be stable
   
   #The below commented code is useful in some debugging situations
   
@@ -156,7 +163,7 @@ auto_SETSe <- function(g,
     if(memory_df$common_drag_iter[drag_iter]>drag_max){
       tstep_adapt <- tstep_adapt*tstep_change
       memory_df$log_ratio[drag_iter] <- 1#-memory_df$log_ratio[drag_iter] - (memory_df$error[drag_iter])* 1 *direction_change
-      memory_df$common_drag_iter[drag_iter] <- 10^( -memory_df$log_ratio[drag_iter]) * tstep
+      memory_df$common_drag_iter[drag_iter] <- 10^( -memory_df$log_ratio[drag_iter]) * tstep #uses original tstep
       
     } 
     
@@ -202,7 +209,7 @@ auto_SETSe <- function(g,
     #setting the limits
     #this is triggered when at least one hyperiteration is less than res_stat_limit
     if(sum(memory_df$target_area, na.rm = T)>=1){
-      # print("A")
+      #print("A")
       #Identify row containing the minimum error
       min_error <- which.min(memory_df$error)
       #find log ratio that give the lowest error. there may be more than one
@@ -224,11 +231,11 @@ auto_SETSe <- function(g,
       
       memory_df$upper[drag_iter+1] <-  ifelse(upper_result_check, 
                                               # ifelse(!is.finite(upper_result_check), 
-                                              log10(drag_max/tstep), 
+                                              -log10(drag_max/tstep), 
                                               upper_ratios[rank(-upper_ratios, ties.method =  "first")==2])  
       
       memory_df$lower[drag_iter+1] <- ifelse(lower_result_check, 
-                                             -Inf, 
+                                             Inf, 
                                              lower_ratios[rank(lower_ratios, ties.method =  "first")==2])
       
       memory_df$best_log_ratio[drag_iter] <- memory_df$log_ratio[min_error]
@@ -259,25 +266,27 @@ auto_SETSe <- function(g,
     #if you are in the target zone updates happen adaptively if not using a fixed step size
     ###
     if( sum(memory_df$target_area, na.rm = T)>0 ){
-      # print("1")
+      #print("1")
       # print("upper limit found")
+      #This makes the next drag ratio the mean of the upper and lower limit.
+      #The first time the drag is in the target area the lower limit will be -Inf
       memory_df$log_ratio[drag_iter+1] <- (memory_df$upper[drag_iter+1] + memory_df$lower[drag_iter+1] )/2
-      
+      #print(memory_df$log_ratio[drag_iter+1] )
       #if the new log ratio has been used before, break the tie by using the mid point between
       #the best log ratio and the lower log ratio
-      memory_df$log_ratio[drag_iter+1] <- ifelse(memory_df$log_ratio[drag_iter+1] %in% memory_df$log_ratio[memory_df$iteration <=drag_iter & memory_df$tstep==tstep_adapt], 
+      memory_df$log_ratio[drag_iter+1] <- ifelse(memory_df$log_ratio[drag_iter+1] %in% memory_df$log_ratio[memory_df$iteration <=drag_iter & 
+                                                                                                             memory_df$tstep==tstep_adapt], 
                                                  (memory_df$lower[drag_iter] + memory_df$best_log_ratio[drag_iter])/2,
                                                  memory_df$log_ratio[drag_iter+1] )
-      
-      #If the lower limit has not been found. Then subtract the mean of the best value and the upper limit from the best value
-      #otherwise do nothing
-      #This prevents negative infinate drag values occuring which mess everything up
+      #print(memory_df$log_ratio[drag_iter+1] )
+      #If the lower limit has not been found the log ratio will be infinite. 
+      #In that case subtract the mean of the best value and the upper limit from the best value otherwise do nothing
       memory_df$log_ratio[drag_iter+1] <- ifelse(is.finite(memory_df$log_ratio[drag_iter+1]),
                                                  memory_df$log_ratio[drag_iter+1],
-                                                 memory_df$best_log_ratio[drag_iter] + (memory_df$best_log_ratio[drag_iter] + memory_df$lower[drag_iter+1] )/2)
-      
+                                                 memory_df$best_log_ratio[drag_iter] - (memory_df$best_log_ratio[drag_iter] + memory_df$upper[drag_iter] )/2)
+      #print(memory_df$log_ratio[drag_iter+1] )
     } else {
-      # print("2")
+      #print("2")
       #Before the non trivial upper and lower bound are found simple search is performed to find the target zone
       #fixed rate search across the plateau
       memory_df$log_ratio[drag_iter+1] <- memory_df$log_ratio[drag_iter] - memory_df$direction[drag_iter]
@@ -300,7 +309,7 @@ auto_SETSe <- function(g,
                   "tstep", tstep_adapt,
                   message_val, signif(memory_df$res_stat[drag_iter],3), "target is", signif(tol,3)))
       
-      #    print(paste("log ratio",memory_df$log_ratio[drag_iter+1]  ,"next drag", memory_df$common_drag_iter[drag_iter+1]))
+     # print(paste("log ratio",memory_df$log_ratio[drag_iter+1]  ,"next drag", memory_df$common_drag_iter[drag_iter+1]))
     }
   }
   
@@ -323,7 +332,6 @@ auto_SETSe <- function(g,
     } else{
       
       drag_val  <-10^( -memory_df$best_log_ratio[nrow(memory_df)]) * tstep 
-      drag_val <- drag_val * 1.1 #add tem percent to get smooth convergence
       
     }
     
@@ -336,7 +344,7 @@ auto_SETSe <- function(g,
       kvect = Prep$kvect, 
       dvect = Prep$dvect, 
       mass = mass,
-      tstep = tstep, 
+      tstep = tstep_adapt, 
       max_iter = max_iter, 
       coef_drag = drag_val, #uses the best/last coefficient of drag
       tol = tol,

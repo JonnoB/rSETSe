@@ -27,9 +27,19 @@ SETSe_data_prep(
 
 \item{sparse}{Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated}
 }
+\value{
+Returns a list that contains all the parts needed to allow the SETSe family of functions and the two_node_solution
+function to produce embeddings.
+}
 \description{
 This is a helper function that makes the `SETSe` function code easier to read.
 }
 \details{
 The file outputs a named list containing
+
+The output of the function is different depending on the number of nodes in the network. This optimises the
+operations performed so that networks that will be solved using the two node solution only have data for the two node solution
+whilst networks that will be solved using the SETSe algorithm do not have data required for the two node solution.
+This minimises time and memory, which is useful when large numbers of data preparations need to be performed, for example
+when running setse_bicomp() on a large network.
 }

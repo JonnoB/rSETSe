@@ -18,6 +18,18 @@
 #' The function can become important when using setset_bicomp as the force mass ratio of biconnection components can vary widely from
 #' the total force mass ratio of the network.
 #' 
+#' @return A numeric value giving the adjusted mass of the nodes in the network.
+#' 
+#' @examples 
+#' set.seed(234) #set the random see for generating the network
+#' 
+#' g <- generate_peels_network(type = "E") %>%
+#' prepare_SETSe_binary(., node_names = "name", k = 1000, 
+#'                      force_var = "class", 
+#'                      positive_value = "A")
+#' 
+#' mass_adjuster(g, force = "force", resolution_limit = TRUE)
+#' 
 #' @export
 #' 
 mass_adjuster <- function(g, force = "force", resolution_limit = TRUE){

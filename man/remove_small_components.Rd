@@ -9,6 +9,9 @@ remove_small_components(g)
 \arguments{
 \item{g}{An igraph object of the graph to embed.}
 }
+\value{
+An igrapg object.
+}
 \description{
 keep only maximum component of graph
 }

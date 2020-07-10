@@ -10,6 +10,16 @@
 #' @param mass A numeric. This is the mass constant of the nodes in normalised networks this is set to 1.
 #' @param edge_name a character string. The edge attribute that contains the names of all the edges.
 #' @param sparse Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated
+#'
+#' @details The output of the function is different depending on the number of nodes in the network. This optimises the
+#' operations performed so that networks that will be solved using the two node solution only have data for the two node solution
+#' whilst networks that will be solved using the SETSe algorithm do not have data required for the two node solution.
+#' This minimises time and memory, which is useful when large numbers of data preparations need to be performed, for example
+#' when running setse_bicomp() on a large network.
+#'
+#' @return Returns a list that contains all the parts needed to allow the SETSe family of functions and the two_node_solution
+#' function to produce embeddings.
+#' 
 #' @export
 
 SETSe_data_prep  <-function(g, force, distance, mass, edge_name = edge_name, k = "k", sparse = FALSE){

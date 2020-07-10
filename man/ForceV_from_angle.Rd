@@ -14,5 +14,9 @@ ForceV_from_angle(target_angle = 5 * pi/12, k, d = temp$d)
 \item{d}{A numeric. The original distance between nodes}
 }
 \description{
-This is mostly useful just for single edges. It may be removed from the package for being to specialised
+Calculates the vertical force for a given angle for a network or bi-connected sub graph of two nodes.
+}
+\details{
+This function is used by the two_node_solution function to calculate the correct vertical distance between two nodes.
+It has very little functionality outside small networks or bi-connected components.
 }

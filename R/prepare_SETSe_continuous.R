@@ -26,6 +26,8 @@
 #'   \item edge_name: the name of the edges. it takes the form "from_to" where "from" is the origin node and "to" is the destination node using the 
 #'  \code{\link[igraph]{as_data_frame}} function from igraph
 #' }
+#' 
+#' @return A network with the correct edge and node attributes for the embeddings process.
 #'  
 #' @seealso \code{\link{SETSe}}, \code{\link{auto_SETSe}}, \code{\link{prepare_SETSe_binary}}
 #' @export

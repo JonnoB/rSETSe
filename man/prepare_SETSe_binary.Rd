@@ -30,6 +30,9 @@ the k value will not be added to the network. This is useful k is made through s
 
 \item{distance}{a positive numeric value. The default is 1}
 }
+\value{
+A network with the correct edge and node attributes for the embeddings process.
+}
 \description{
 This function prepares a binary network for SETSe projection.
 }

@@ -1,12 +1,7 @@
 #' SETSe algorithm
 #'  
 #' The basic SETSe function.
-#' 
-#' This is the basic SETS embeddings algorithm, it outputs all elements of the embeddings as well as convergence dynamics. It is a
-#' wrapper around the core SETS algorithm which requires data preparation and only produces node embeddings and entwork dynamics. 
-#' There is little reason to use this, \code{\link{auto_SETSe}} and \code{\link{SETSe_bicomp}} 
-#' are faster and easier to use.
-#' 
+#' #' 
 #' @param g An igraph object
 #' @param force A character string. This is the node attribute that contains the force the nodes exert on the network.
 #' @param distance A character string. The edge attribute that contains the original/horizontal distance between nodes.
@@ -24,6 +19,12 @@
 #' @param static_limit Numeric. The maximum value the static force can reach before the algorithm terminates early. This
 #' prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
 #' If left blank the static limit is twice the system absolute mean force.
+#' 
+#' @details This is the basic SETS embeddings algorithm, it outputs all elements of the embeddings as well as convergence dynamics. It is a
+#' wrapper around the core SETS algorithm which requires data preparation and only produces node embeddings and entwork dynamics. 
+#' There is little reason to use this function as \code{\link{auto_SETSe}} and \code{\link{SETSe_bicomp}} 
+#' are faster and easier to use.
+#' 
 #' @return A list of three elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings
 #' as well as the convergence dynamics dataframe for the network.
 #' @examples

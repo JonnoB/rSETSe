@@ -11,6 +11,10 @@ remove_articulation_duplicates(node_embeddings, ArticulationVect)
 
 \item{ArticulationVect}{Vector of articulation nodes}
 }
+\value{
+A dataframe with with articulation nodes aggregated so that the dataframe has the same number of rows
+as nodes
+}
 \description{
 This is a helper function that is used to efficiently aggregate the articulation nodes after embedding
 }

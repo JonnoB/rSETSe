@@ -14,6 +14,9 @@ mass_adjuster(g, force = "force", resolution_limit = TRUE)
 \item{resolution_limit}{logical. If the forces in the network are smaller than the square root of the machine floating point limit
 then the mass is set to one. default is true}
 }
+\value{
+A numeric value giving the adjusted mass of the nodes in the network.
+}
 \description{
 This function adjusts the mass of the nodes so that the force in each direction over the mass for that direction 
 produces an acceleration of 1.
@@ -28,4 +31,15 @@ one of the two directions, then each node would have an acceleration of 1ms^-2
 
 The function can become important when using setset_bicomp as the force mass ratio of biconnection components can vary widely from
 the total force mass ratio of the network.
+}
+\examples{
+set.seed(234) #set the random see for generating the network
+
+g <- generate_peels_network(type = "E") \%>\%
+prepare_SETSe_binary(., node_names = "name", k = 1000, 
+                     force_var = "class", 
+                     positive_value = "A")
+
+mass_adjuster(g, force = "force", resolution_limit = TRUE)
+
 }

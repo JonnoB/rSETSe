@@ -23,6 +23,9 @@
 #'   \item edge_name: the name of the edges. it takes the form "from_to" where "from" is the origin node and "to" is the destination node using the 
 #'  \code{\link[igraph]{as_data_frame}} function from igraph
 #' }
+#' 
+#' @return A network with the correct edge and node attributes for the embeddings process.
+#' 
 #' @examples
 #' set.seed(234) #set the random see for generating the network
 #' g <- generate_peels_network(type = "E")
