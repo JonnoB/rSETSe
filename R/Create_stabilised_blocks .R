@@ -21,10 +21,14 @@
 #' If left blank the static limit is twice the system absolute mean force.
 #' @param verbose Logical. This value sets whether messages generated during the process are supressed or not.
 #' @param hyper_iters integer. The hyper parameter that determines the number of iterations allowed to find an acceptable convergence value.
+#' @param drag_min integer. A power of ten. The lowest drag value to be used in the search
 #' @param drag_max integer. A power of ten. if the drag exceeds this value the tstep is reduced
 #' @param tstep_change numeric. A value between 0 and 1 that determines how much the time step will be reduced by default value is 0.5
 #' @param hyper_tol numeric. The convergence tolerance when trying to find the minimum value
 #' @param hyper_max integer. The maximum number of iterations that the setse will go through whilst searching for the minimum.
+#' @param noisey_termination Stop the process if the static force does not monotonically decrease.
+#' 
+#' @details This function isn't really supposed to be used apart from as a sub-routine of the SETSe biconnected component method.
 #' 
 #' @seealso \code{\link{SETSe_bicomp}} \code{\link{SETSe}}
 #' @return A dataframe with the height embeddings of the network
@@ -48,11 +52,13 @@ Create_stabilised_blocks <- function(g,
                                      hyper_iters = 100,
                                      hyper_tol  = 0.01,
                                      hyper_max = 30000,
+                                     drag_min = drag_min,
                                      drag_max = drag_max,
                                      tstep_change = tstep_change,
                                      verbose = FALSE,
                                      bigraph = bigraph,
-                                     balanced_blocks = balanced_blocks){
+                                     balanced_blocks = balanced_blocks,
+                                     noisey_termination = TRUE){
 
   #remove the Origin block so it doesn't have to be calculated again
   BlockNumbers <-(1:length(balanced_blocks))[-OriginBlock_number]
@@ -127,7 +133,8 @@ Create_stabilised_blocks <- function(g,
                           drag_max = drag_max,
                           tstep_change = tstep_change,
                           verbose = verbose,
-                          include_edges = FALSE
+                          include_edges = FALSE,
+                          noisey_termination = noisey_termination
         )
         
         #Print the details of the completed block
@@ -223,7 +230,7 @@ Create_stabilised_blocks <- function(g,
     #It can also be useful to get the individual component values out.
     group_by(Iter) %>%
     summarise_all(sum) %>%
-    mutate(t = Iter/tstep) %>%
+    mutate(t = Iter*tstep) %>%
     select(-component)
   
   

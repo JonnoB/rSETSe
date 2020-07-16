@@ -22,9 +22,11 @@
 #' @param hyper_iters integer. The hyper parameter that determines the number of iterations allowed to find an acceptable convergence value.
 #' @param hyper_tol numeric. The convergence tolerance when trying to find the minimum value
 #' @param hyper_max integer. The maximum number of iterations that the setse will go through whilst searching for the minimum.
+#' @param drag_min integer. A power of ten. The lowest drag value to be used in the search
 #' @param drag_max integer. A power of ten. if the drag exceeds this value the tstep is reduced
 #' @param tstep_change numeric. A value between 0 and 1 that determines how much the time step will be reduced by default value is 0.5
 #' @param verbose Logical. This value sets whether messages generated during the process are supressed or not.
+#' @param noisey_termination Stop the process if the static force does not monotonically decrease.
 #'
 #'@details
 #' This approach can be faster for larger graphs or graphs with many nodes of degree 2, or networks with a low clustering coefficient.
@@ -34,7 +36,8 @@
 #' leads to long convergence times. By solving all biconnected components seperately and then resassmbling the block tree at the end,
 #' the system can be converged considerably faster. In addition the smaller biconnected components iterate faster than a single large one.
 #' 
-#' Although the default mass is set to 1, setting mass to the absolute system force divided by the total nodes, often leads to faster convergence.
+#' Setting mass to the absolute system force divided by the total nodes, often leads to faster convergence. As such
+#' When mass is left to the default of NULL, the mean force value is used.
 #' 
 #' @return A list containing 5 dataframes.
 #' \enumerate{
@@ -73,9 +76,12 @@ SETSe_bicomp <- function(g,
                          hyper_iters = 100,
                          hyper_tol  = 0.1,
                          hyper_max = 30000,
+                         drag_min = 0.01,
                          drag_max = 100,
                          tstep_change = 0.2,
-                         verbose = FALSE){
+                         verbose = FALSE,
+                         noisey_termination = TRUE
+                         ){
   
     if(verbose){print("finding biconnected components")}
   
@@ -105,10 +111,12 @@ SETSe_bicomp <- function(g,
                               hyper_iters = hyper_iters,
                               hyper_tol = hyper_tol,
                               hyper_max = hyper_max,
+                              drag_min = drag_min,
                               drag_max = drag_max,
                               tstep_change = tstep_change,
                               verbose = verbose,
-                              include_edges = FALSE )
+                              include_edges = FALSE,
+                              noisey_termination = noisey_termination)
     
   } else {
     
@@ -158,10 +166,12 @@ SETSe_bicomp <- function(g,
                             hyper_iters = hyper_iters,
                             hyper_tol = hyper_tol,
                             hyper_max = hyper_max,
+                            drag_min = drag_min,
                             drag_max = drag_max,
                             tstep_change = tstep_change,
                             verbose = verbose,
-                            include_edges = FALSE )
+                            include_edges = FALSE,
+                            noisey_termination = noisey_termination)
   
   
   if(verbose){print(paste("Origin block complete, time taken", 
@@ -185,13 +195,15 @@ SETSe_bicomp <- function(g,
                                               hyper_iters = hyper_iters,
                                               hyper_tol = hyper_tol,
                                               hyper_max = hyper_max,
+                                              drag_min = drag_min,
                                               drag_max = drag_max,
                                               tstep_change = tstep_change,
                                               sample = sample,
                                               static_limit = static_limit,
                                               verbose = verbose,
                                               bigraph = bigraph,
-                                              balanced_blocks = balanced_blocks)
+                                              balanced_blocks = balanced_blocks,
+                                              noisey_termination = noisey_termination)
   
   } 
   # print("Height embeddings complete")

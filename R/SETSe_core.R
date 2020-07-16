@@ -22,6 +22,7 @@
 #' @param static_limit Numeric. The maximum value the static force can reach before the algorithm terminates early. This
 #' prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
 #' If left blank the static limit is the system absolute mean force.
+#' @param noisey_termination Stop the process if the static force does not monotonically decrease.
 #' 
 #' @details The non_empty matrix contains the row, column position and absolute index and transpose index of the edges in the matrix
 #' This means vectors can be used for most operations greatly reducing the amount of memory required and 
@@ -50,11 +51,12 @@ SETSe_core <- function(node_embeddings,
                        tol = 2e-3, 
                        sparse = FALSE,
                        sample = 1,
-                       static_limit = NULL){
+                       static_limit = NULL,
+                       noisey_termination = FALSE){
   #Runs the physics model to find the convergence of the system.
   
   #vectors are used throughout instead of a single matrix as it turns out they are faster due to less indexing and use much less RAM.
-  
+
   #These have to be matrices if there is a mutli variable option
   NodeList <- node_embeddings[,-1]
   force <- NodeList[,1]
@@ -71,11 +73,10 @@ SETSe_core <- function(node_embeddings,
     #is much faster than the standard format which does require indexing. This is despite dgt being slower to sum the columns
   }
   
-  #The static limit is 10 times the static force
-  #Sometimes numbers can explode then converge, but whatever I don't care about them
-  #Why did I choose 10? what if I change to 2?
+  #The default value for the static limit if null is the sum of the absolute force.
+  #This value is chosen becuase with good parameterization the static force never exceeds the starting amount.
   if(is.null(static_limit)){
-  static_limit <- sum(abs(force))
+    static_limit <- sum(abs(force))
   }
   
   #gets the dimensions of the matrix for bare bones column sum
@@ -84,15 +85,23 @@ SETSe_core <- function(node_embeddings,
   non_empty_t_vect <- non_empty_matrix[,2]
   non_empty_index_vect <- non_empty_matrix[,3]
   non_empty_t_index_vect <- non_empty_matrix[,4]
-  #This dataframe is one of the final outputs of the function, it is premade for memory allocation
+  
+  #This dataframe is one of the final outputs of the function, it is premade for memory allocation.
+  #Although it would be faster to use vectors, the matrix is used only a fraction of the iteration, so has
+  #very little impact on speed.
   network_dynamics <- matrix(data = NA, nrow = max_iter/sample, ncol = 6) %>%
     as_tibble(.name_repair = "minimal") %>%
     set_names(c("Iter","t", "static_force", "kinetic_force", "potential_energy", "kinetic_energy")) %>%
     as.matrix()
   
+  network_dynamics_initial_value <- network_dynamics[1:2, ,drop = FALSE]
+  network_dynamics_initial_value[1,] <- c(0, 0, sum(abs(force)), 0,0,0)
+  network_dynamics_initial_value <- network_dynamics_initial_value[1 , ,drop = FALSE]
+  
   one_vect <- rep(1, nrow(NodeList))
   
   Iter <- 1
+  is_noisey <- FALSE 
   system_stable <- FALSE
   
   #get the time the algo starts
@@ -141,24 +150,41 @@ SETSe_core <- function(node_embeddings,
     # NodeList[,9] <- NodeList[,9] + tstep #current time #This may not be neccessary but doesn't really hurt
     
     if((Iter %% sample)==0){
-      network_dynamics[Iter/sample,]<-  c(Iter, #Iteration
-                                          Iter*tstep, #time in seconds
-                                          sum(abs(static_force)),  #static force. The force exerted on the node
-                                          sum(abs(0.5*mass*velocity/tstep)), #kinetic_force 
-                                          sum( 0.5*kvect*(Hvect-dvect)^2),     #spring potential_energy
-                                          sum(0.5*mass*velocity^2)    #kinetic_energy
+      #The row of the networks dynamics dataframe/matrix the current data will be inserted into  
+      dynamics_row <- Iter/sample 
+  
+      network_dynamics[dynamics_row,] <- c(Iter, #Iteration
+                                           Iter*tstep, #time in seconds
+                                           sum(abs(static_force)),  #static force. The force exerted on the node
+                                           sum(abs(0.5*mass*velocity/tstep)), #kinetic_force #I am not sure how I justify this value
+                                           sum( 0.5*kvect*(Hvect-dvect)^2),     #spring potential_energy
+                                           sum(0.5*mass*velocity^2)    #kinetic_energy
       ) 
       
-      
-      #check if system is stable using static force
-      #If static force is not finite or exceeds the static limit then the process terminates early
-      if(!is.finite(network_dynamics[Iter/sample,3])| network_dynamics[Iter/sample,3]>static_limit){ #if there are infinte values terminate early
-        system_stable <- TRUE
-        # print(network_dynamics[Iter/sample,3])
-      } else{
-        system_stable <- (network_dynamics[Iter/sample,3] < tol)
+      #checks to ensure that the reduction in static force is smooth and not in the noisey zone.
+      #This is important force most convergence processes as autoconvergence can get stuck in the noisey zone
+      #preventing the network from converging. However such a mode is not always desired.
+      #The option is implemented in the core algo as noisey convergence can take a long time so
+      #automatic termination can greatly reduce the amount of time searching for optimal parameters.
+      #The if statment has two conditions
+      #1 is the noisey_termmination option on?
+      #2 Is this the second row or higher of the networks_dynamic matrix. Prevents NA values
+      if(noisey_termination & dynamics_row > 1){
+        #The convergence is noisey if the static force at time t is greater than the static force at t-1
+        is_noisey <- network_dynamics[dynamics_row,3] > network_dynamics[dynamics_row-1,3]
+        
       }
       
+      #Checks for early termination conditions. There are three or conditions
+      #1 If the static force is not a finite value, this covers NA, NaN and infinite.
+      #2 The static force exceeds the static limit
+      #3 The system is in the noisey zone
+      #4 If the static force is less than the required tolerance then the system is stable and the process can terminate
+      system_stable <- !is.finite(network_dynamics[dynamics_row,3])| 
+        (network_dynamics[dynamics_row,3]>static_limit) |
+        is_noisey |
+        (network_dynamics[dynamics_row,3] < tol)
+
     }
     
     Iter <- Iter + 1 # add next iter
@@ -172,10 +198,10 @@ SETSe_core <- function(node_embeddings,
   
   #Early termination causes NA values. These are removed by the below code
   #
-  network_dynamics <- as_tibble(network_dynamics) %>%
+  network_dynamics <- as.data.frame(network_dynamics) %>%
     filter(complete.cases(.))
   #combine all the vectors together again into a tibble
-  Out <- list(network_dynamics = as_tibble(network_dynamics), 
+  Out <- list(network_dynamics = bind_rows(as.data.frame(network_dynamics_initial_value), network_dynamics), 
               node_embeddings = bind_cols(node_embeddings[,"node",drop=FALSE] , 
                                           tibble(  force = force,
                                                    elevation = as.vector(elevation),
@@ -187,9 +213,9 @@ SETSe_core <- function(node_embeddings,
                                                    acceleration = as.vector(acceleration),
                                                    t = tstep*(Iter-1),
                                                    Iter = Iter-1)),  #1 needs to be subtracted from the total as the final thing
+              #in the loop is to add 1 to the iteration
               time_taken = time_taken_df #This is a diff time object!
               )
-  #in the loop is to add 1 to the iteration
   
   return(Out)
   

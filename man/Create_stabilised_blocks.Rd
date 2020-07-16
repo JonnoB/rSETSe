@@ -22,11 +22,13 @@ Create_stabilised_blocks(
   hyper_iters = 100,
   hyper_tol = 0.01,
   hyper_max = 30000,
+  drag_min = drag_min,
   drag_max = drag_max,
   tstep_change = tstep_change,
   verbose = FALSE,
   bigraph = bigraph,
-  balanced_blocks = balanced_blocks
+  balanced_blocks = balanced_blocks,
+  noisey_termination = TRUE
 )
 }
 \arguments{
@@ -61,11 +63,15 @@ If left blank the static limit is twice the system absolute mean force.}
 
 \item{hyper_max}{integer. The maximum number of iterations that the setse will go through whilst searching for the minimum.}
 
+\item{drag_min}{integer. A power of ten. The lowest drag value to be used in the search}
+
 \item{drag_max}{integer. A power of ten. if the drag exceeds this value the tstep is reduced}
 
 \item{tstep_change}{numeric. A value between 0 and 1 that determines how much the time step will be reduced by default value is 0.5}
 
 \item{verbose}{Logical. This value sets whether messages generated during the process are supressed or not.}
+
+\item{noisey_termination}{Stop the process if the static force does not monotonically decrease.}
 
 \item{Origin}{block}
 }
@@ -76,6 +82,9 @@ A dataframe with the height embeddings of the network
 decomposes the network into bi-connected components using articulation points. This speeds up the convergence process
 and reduces the chances of the SETS algorithm diverging on certain classes of network. This function is rarely called
 directly and is usually called by SETSe_bicomp
+}
+\details{
+This function isn't really supposed to be used apart from as a sub-routine of the SETSe biconnected component method.
 }
 \seealso{
 \code{\link{SETSe_bicomp}} \code{\link{SETSe}}

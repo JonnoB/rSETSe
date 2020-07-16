@@ -18,12 +18,14 @@ auto_SETSe(
   hyper_iters = 100,
   hyper_tol = 0.01,
   hyper_max = 30000,
+  drag_min = 0.01,
   drag_max = 100,
   tstep_change = 0.2,
   sample = 100,
   static_limit = NULL,
   verbose = FALSE,
-  include_edges = TRUE
+  include_edges = TRUE,
+  noisey_termination = TRUE
 )
 }
 \arguments{
@@ -53,6 +55,8 @@ auto_SETSe(
 
 \item{hyper_max}{integer. The maximum number of iterations that the setse will go through whilst searching for the minimum.}
 
+\item{drag_min}{integer. A power of ten. The lowest drag value to be used in the search}
+
 \item{drag_max}{integer. A power of ten. if the drag exceeds this value the tstep is reduced}
 
 \item{tstep_change}{numeric. A value between 0 and 1 that determines how much the time step will be reduced by default value is 0.5}
@@ -63,6 +67,8 @@ This can greatly reduce the size of the results file for large numbers of iterat
 \item{static_limit}{Numeric. The maximum value the static force can reach before the algorithm terminates early. This
 prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
 If left blank the static limit is the system absolute mean force.}
+
+\item{noisey_termination}{Stop the process if the static force does not monotonically decrease.}
 
 \item{inlcude_edges}{logical. An optional variable on wehther to calculate the edge tension and strain. Default is TRUE.
 included for ease of integration into the bicomponent functions.}
@@ -75,8 +81,13 @@ the convergence dynamics dataframe for the network as well as the search history
 Uses a grid search and a binary search to find appropriate convergence conditions.
 }
 \details{
-This function is pretty useful, it takes advantage of the linear relationship between the timestep and the coefficient of drag
-to search along the log linear line formed by tstep/coef_drag to find the convergence conditions.
+This is one of the most commonly used SETSe functions. It automatically selects the convergence time-step and drag values
+to ensure efficient convergence.
+
+The noisey_termination parameter is used as in some cases the convergenve process can get stuck in the noisey zone of SETSe space.
+To prevent this the process is stopped early if the static force does not monotonically decrease.  On large networks this 
+greatly speeds up the search for good parameter values. It increases the chance of successful convergence. 
+More detail on auto-SETSe can be found in the paper "The spring bounces back" (Bourne 2020).
 }
 \examples{
 set.seed(234) #set the random see for generating the network

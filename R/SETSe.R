@@ -19,6 +19,7 @@
 #' @param static_limit Numeric. The maximum value the static force can reach before the algorithm terminates early. This
 #' prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
 #' If left blank the static limit is twice the system absolute mean force.
+#' @param noisey_termination Stop the process if the static force does not monotonically decrease.
 #' 
 #' @details This is the basic SETS embeddings algorithm, it outputs all elements of the embeddings as well as convergence dynamics. It is a
 #' wrapper around the core SETS algorithm which requires data preparation and only produces node embeddings and entwork dynamics. 
@@ -27,6 +28,7 @@
 #' 
 #' @return A list of three elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings
 #' as well as the convergence dynamics dataframe for the network.
+#' 
 #' @examples
 #' set.seed(234) #set the random see for generating the network
 #' g <- generate_peels_network(type = "E")
@@ -41,19 +43,20 @@
 #' @export
 
 SETSe <- function(g, 
-                   force ="force", 
-                   distance = "distance", 
-                   edge_name = "edge_name",
-                   k ="k",
-                   tstep = 0.02, 
-                   mass = 1, 
-                   max_iter = 20000, 
-                   coef_drag = 1, 
-                   tol = 1e-6,
-                   sparse = FALSE,
-                   two_node_solution = TRUE,
-                   sample = 1,
-                   static_limit = NULL){
+                  force ="force", 
+                  distance = "distance", 
+                  edge_name = "edge_name",
+                  k ="k",
+                  tstep = 0.02, 
+                  mass = 1, 
+                  max_iter = 20000, 
+                  coef_drag = 1, 
+                  tol = 1e-6,
+                  sparse = FALSE,
+                  two_node_solution = TRUE,
+                  sample = 1,
+                  static_limit = NULL,
+                  noisey_termination = TRUE){
   
   #helper function that prepares the data
   Prep <- SETSe_data_prep(g = g, 
@@ -86,7 +89,8 @@ SETSe <- function(g,
       tol = tol, 
       sparse = sparse,
       sample = sample,
-      static_limit = static_limit) 
+      static_limit = static_limit,
+      noisey_termination = noisey_termination) 
     
   }
   

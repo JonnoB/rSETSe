@@ -21,7 +21,8 @@ SETSe(
   sparse = FALSE,
   two_node_solution = TRUE,
   sample = 1,
-  static_limit = NULL
+  static_limit = NULL,
+  noisey_termination = TRUE
 )
 }
 \arguments{
@@ -55,6 +56,8 @@ This can greatly reduce the size of the results file for large numbers of iterat
 \item{static_limit}{Numeric. The maximum value the static force can reach before the algorithm terminates early. This
 prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
 If left blank the static limit is twice the system absolute mean force.}
+
+\item{noisey_termination}{Stop the process if the static force does not monotonically decrease.}
 }
 \value{
 A list of three elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings

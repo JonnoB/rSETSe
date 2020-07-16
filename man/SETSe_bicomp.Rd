@@ -20,9 +20,11 @@ SETSe_bicomp(
   hyper_iters = 100,
   hyper_tol = 0.1,
   hyper_max = 30000,
+  drag_min = 0.01,
   drag_max = 100,
   tstep_change = 0.2,
-  verbose = FALSE
+  verbose = FALSE,
+  noisey_termination = TRUE
 )
 }
 \arguments{
@@ -60,11 +62,15 @@ If left blank the static limit is the system absolute mean force.}
 
 \item{hyper_max}{integer. The maximum number of iterations that the setse will go through whilst searching for the minimum.}
 
+\item{drag_min}{integer. A power of ten. The lowest drag value to be used in the search}
+
 \item{drag_max}{integer. A power of ten. if the drag exceeds this value the tstep is reduced}
 
 \item{tstep_change}{numeric. A value between 0 and 1 that determines how much the time step will be reduced by default value is 0.5}
 
 \item{verbose}{Logical. This value sets whether messages generated during the process are supressed or not.}
+
+\item{noisey_termination}{Stop the process if the static force does not monotonically decrease.}
 }
 \value{
 A list containing 5 dataframes.
@@ -90,7 +96,8 @@ system is concentrated in the major biconnected component the small ones can be 
 leads to long convergence times. By solving all biconnected components seperately and then resassmbling the block tree at the end,
 the system can be converged considerably faster. In addition the smaller biconnected components iterate faster than a single large one.
 
-Although the default mass is set to 1, setting mass to the absolute system force divided by the total nodes, often leads to faster convergence.
+Setting mass to the absolute system force divided by the total nodes, often leads to faster convergence. As such
+When mass is left to the default of NULL, the mean force value is used.
 }
 \examples{
 set.seed(234) #set the random see for generating the network

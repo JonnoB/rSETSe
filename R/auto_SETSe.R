@@ -2,9 +2,6 @@
 #'
 #' Uses a grid search and a binary search to find appropriate convergence conditions.
 #' 
-#' @details This function is pretty useful, it takes advantage of the linear relationship between the timestep and the coefficient of drag
-#' to search along the log linear line formed by tstep/coef_drag to find the convergence conditions.
-#' 
 #' @param g An igraph object
 #' @param force A character string. This is the node attribute that contains the force the nodes exert on the network.
 #' @param distance A character string. The edge attribute that contains the original/horizontal distance between nodes.
@@ -16,6 +13,7 @@
 #' @param tol A numeric. The tolerance factor for early stopping.
 #' @param sparse Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated
 #' @param hyper_iters integer. The hyper parameter that determines the number of iterations allowed to find an acceptable convergence value.
+#' @param drag_min integer. A power of ten. The lowest drag value to be used in the search
 #' @param drag_max integer. A power of ten. if the drag exceeds this value the tstep is reduced
 #' @param tstep_change numeric. A value between 0 and 1 that determines how much the time step will be reduced by default value is 0.5
 #' @param hyper_tol numeric. The convergence tolerance when trying to find the minimum value
@@ -27,8 +25,19 @@
 #' If left blank the static limit is the system absolute mean force.
 #' @param inlcude_edges logical. An optional variable on wehther to calculate the edge tension and strain. Default is TRUE.
 #'  included for ease of integration into the bicomponent functions.
+#' @param noisey_termination Stop the process if the static force does not monotonically decrease.
+#' 
+#' @details This is one of the most commonly used SETSe functions. It automatically selects the convergence time-step and drag values
+#' to ensure efficient convergence.
+#' 
+#' The noisey_termination parameter is used as in some cases the convergenve process can get stuck in the noisey zone of SETSe space.
+#' To prevent this the process is stopped early if the static force does not monotonically decrease.  On large networks this 
+#' greatly speeds up the search for good parameter values. It increases the chance of successful convergence. 
+#' More detail on auto-SETSe can be found in the paper "The spring bounces back" (Bourne 2020).
+#' 
 #' @return A list of four elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings, 
 #' the convergence dynamics dataframe for the network as well as the search history for convergence criteria of the network
+#' 
 #' @seealso \code{\link{SETSe}} \code{\link{SETSe_bicomp}}
 #' @examples
 #' set.seed(234) #set the random see for generating the network
@@ -47,26 +56,30 @@
 #' @export
 
 auto_SETSe <- function(g, 
-                        force ="force", 
-                        distance = "distance", 
-                        edge_name = "edge_name",
-                        k = "k",
-                        tstep = 0.02, 
-                        mass = 1, 
-                        max_iter = 100000, 
-                        tol = 2e-3,
-                        sparse = FALSE,
-                        hyper_iters = 100,
-                        hyper_tol  = 0.01,
-                        hyper_max = 30000,
-                        drag_max = 100,
-                        tstep_change = 0.2,
-                        sample = 100,
-                        static_limit = NULL,
-                        verbose = FALSE,
-                        include_edges = TRUE){
+                       force ="force", 
+                       distance = "distance", 
+                       edge_name = "edge_name",
+                       k = "k",
+                       tstep = 0.02, 
+                       mass = 1, 
+                       max_iter = 100000, 
+                       tol = 2e-3,
+                       sparse = FALSE,
+                       hyper_iters = 100,
+                       hyper_tol  = 0.01,
+                       hyper_max = 30000,
+                       drag_min = 0.01,
+                       drag_max = 100,
+                       tstep_change = 0.2,
+                       sample = 100,
+                       static_limit = NULL,
+                       verbose = FALSE,
+                       include_edges = TRUE,
+                       noisey_termination = TRUE){
   
   #The more negative the log ratio becomes the larger the drag ratio becomes
+  
+  #mass <- ifelse(is.null(mass), mass_adjuster(g, force = force, resolution_limit = TRUE), mass)
   
   if(verbose){print("prepping dataset")}
   #Prep the data before going into the converger
@@ -108,8 +121,8 @@ auto_SETSe <- function(g,
   memory_df$log_ratio[1] <- 0
   memory_df$common_drag_iter[1] <- 0
   memory_df$tstep[1] <- tstep
-  memory_df$error[1] <-drag_max
-  memory_df$best_log_ratio[1] <-0
+  memory_df$error[1] <- drag_max
+  memory_df$best_log_ratio[1] <- 0
   memory_df$direction[1] = 1 #increasing
   memory_df$target_area[1] <- FALSE
   memory_df$res_stat[1] <- ifelse(res_stat_limit<tol, 2*tol, res_stat_limit) #this ensures setse is run at least once
@@ -128,12 +141,20 @@ auto_SETSe <- function(g,
   
   drag_iter<- 1
   
+  #The vector of drag values to search through
+  #If the target zone is not found the time step is reduced and the search repeated.
+  #This process continues until the target zone is found or hyper_iters < drag_iter
+  drag_values <- seq(round(log10(drag_min)), round(log10(drag_max)), by = 1)
+  drag_value_index <- 1
+
   #the tstep value that is passed to setse_core.
   #This value is adapted if no suitable drag coeffeicient is found
   tstep_adapt <- tstep
   
-  memory_df$log_ratio[drag_iter+1] <- 1#-memory_df$log_ratio[drag_iter] - (memory_df$error[drag_iter])* 1 *direction_change
-  memory_df$common_drag_iter[drag_iter+1] <- 10^( -memory_df$log_ratio[drag_iter+1]) * tstep
+  #The ratio of the drag coefficient over the timestep, the result is then log10'ened
+  memory_df$log_ratio[drag_iter+1] <- log10(tstep) - drag_values[drag_value_index]  
+  #The first drag value is simply the lowest drag value
+  memory_df$common_drag_iter[drag_iter+1] <- 10^drag_values[drag_value_index]
   
   min_error <- which.min(memory_df$error)
   
@@ -156,14 +177,20 @@ auto_SETSe <- function(g,
         ifelse(is.na(memory_df$res_stat[drag_iter]>tol), TRUE, memory_df$res_stat[drag_iter]>tol) &
         !all(memory_df$stable[c(drag_iter, drag_iter-1)])
   ){
-    
     drag_iter <- drag_iter+1    
-    
+
     #If the drag exceeds the max reset to minimum and divide the time by value x
-    if(memory_df$common_drag_iter[drag_iter]>drag_max){
+    #This should never be needed but just in case it is here.
+    #can be removed after testing to make everything easier
+    if(memory_df$common_drag_iter[drag_iter] > drag_max){
+      
+      drag_value_index <- 1
       tstep_adapt <- tstep_adapt*tstep_change
-      memory_df$log_ratio[drag_iter] <- 1#-memory_df$log_ratio[drag_iter] - (memory_df$error[drag_iter])* 1 *direction_change
-      memory_df$common_drag_iter[drag_iter] <- 10^( -memory_df$log_ratio[drag_iter]) * tstep #uses original tstep
+      
+      #move on to the next drag value and log ratio
+      memory_df$log_ratio[drag_iter+1] <- drag_values[drag_value_index] - log10(tstep_adapt)
+      
+      memory_df$common_drag_iter[drag_iter] <- 10^drag_values[drag_value_index]
       
     } 
     
@@ -181,7 +208,8 @@ auto_SETSe <- function(g,
       tol = tol,
       sparse = sparse,
       sample = sample,
-      static_limit = static_limit) 
+      static_limit = static_limit,
+      noisey_termination = noisey_termination) 
     
     node_embeds <- embeddings_data$node_embeddings
     
@@ -196,6 +224,17 @@ auto_SETSe <- function(g,
     memory_df$res_stat[drag_iter] <- ifelse(memory_df$res_stat[drag_iter]>res_stat_limit, 
                                             res_stat_limit ,
                                             memory_df$res_stat[drag_iter])
+    
+    #when noisey_termination =TRUE. processes that terminate due to noisey behaviour are treated as if they had exceeded the
+    #static limit
+    #note noisey behaviour is a system that does not have a monotonic reduction in static force
+    if(noisey_termination & nrow(embeddings_data$network_dynamics)>1){
+
+      monotonic_decrease <- all(embeddings_data$network_dynamics$static_force[2:nrow(embeddings_data$network_dynamics)]<
+      embeddings_data$network_dynamics$static_force[1:(nrow(embeddings_data$network_dynamics)-1)])
+      
+      memory_df$res_stat[drag_iter] <-  ifelse(monotonic_decrease, memory_df$res_stat[drag_iter] , res_stat_limit)
+    }
     
     #Is the algo in the convex area?
     memory_df$target_area[drag_iter] <- memory_df$res_stat[drag_iter] < res_stat_limit
@@ -284,30 +323,45 @@ auto_SETSe <- function(g,
       memory_df$log_ratio[drag_iter+1] <- ifelse(is.finite(memory_df$log_ratio[drag_iter+1]),
                                                  memory_df$log_ratio[drag_iter+1],
                                                  memory_df$best_log_ratio[drag_iter] - (memory_df$best_log_ratio[drag_iter] + memory_df$upper[drag_iter] )/2)
+      
+      #Calculate the common drag iteration for this round
+      memory_df$common_drag_iter[drag_iter+1] <- 10^( -memory_df$log_ratio[drag_iter+1]) * tstep_adapt
       #print(memory_df$log_ratio[drag_iter+1] )
     } else {
       #print("2")
       #Before the non trivial upper and lower bound are found simple search is performed to find the target zone
       #fixed rate search across the plateau
-      memory_df$log_ratio[drag_iter+1] <- memory_df$log_ratio[drag_iter] - memory_df$direction[drag_iter]
       
+        drag_value_index <-  drag_value_index + 1
+        
+        #If the index exceeds the total number of elements in the drag range
+        #reset the to minimum drag value and reduce the timstep
+ 
+        #if(10^drag_values[drag_value_index] > drag_max){
+        if(drag_value_index > length(drag_values)) {
+         
+          drag_value_index <- 1
+          tstep_adapt <- tstep_adapt*tstep_change
+        }
+        
+      #move on to the next drag value and log ratio
+      memory_df$log_ratio[drag_iter+1] <-  log10(tstep_adapt) - drag_values[drag_value_index] 
+      
+      memory_df$common_drag_iter[drag_iter+1] <- 10^(drag_values[drag_value_index])
     }
     
-    #Calculate the common drag iteration for this round
-    memory_df$common_drag_iter[drag_iter+1] <- 10^( -memory_df$log_ratio[drag_iter+1]) * tstep
-    
-    
-    
-    
+
     if(verbose){
-      message_val <- ifelse(memory_df$res_stat[drag_iter] < memory_df$res_stat[drag_iter-1], 
-                            "static force decreasing",  
-                            "static force increasing or stable")
+      # message_val <- ifelse(memory_df$res_stat[drag_iter] < memory_df$res_stat[drag_iter-1], 
+      #                       "static force decreasing",  
+      #                       "static force increasing or stable")
       # print(c((drag_iter <= hyper_iters), (memory_df$res_stat[drag_iter]>tol), !all(memory_df$stable[c(drag_iter, drag_iter-1)])))
       print(paste("Iteration",drag_iter, "drag value",
                   signif(memory_df$common_drag_iter[drag_iter],3),
-                  "tstep", tstep_adapt,
-                  message_val, signif(memory_df$res_stat[drag_iter],3), "target is", signif(tol,3)))
+                  "tstep", memory_df$tstep[drag_iter],
+                  #message_val, 
+                  "static force is",
+                  signif(memory_df$res_stat[drag_iter],3), "target is", signif(tol,3)))
       
      # print(paste("log ratio",memory_df$log_ratio[drag_iter+1]  ,"next drag", memory_df$common_drag_iter[drag_iter+1]))
     }
@@ -326,12 +380,13 @@ auto_SETSe <- function(g,
     
     #if any value has reduced the static_force use the best one.
     #otherwise use the last drag value as it doesn't matter anyway
+
     if(memory_df$best_log_ratio[nrow(memory_df)]==0){
       
       drag_val <- memory_df$common_drag_iter[nrow(memory_df)]
     } else{
       
-      drag_val  <-10^( -memory_df$best_log_ratio[nrow(memory_df)]) * tstep 
+      drag_val  <-10^( -memory_df$best_log_ratio[nrow(memory_df)]) * tstep_adapt
       
     }
     
@@ -350,7 +405,8 @@ auto_SETSe <- function(g,
       tol = tol,
       sparse = sparse,
       sample = sample,
-      static_limit = static_limit) 
+      static_limit = static_limit,
+      noisey_termination = FALSE) #This is false as something has to be produced by the algo. I can change later 
     
     
     
