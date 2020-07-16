@@ -392,7 +392,7 @@ auto_SETSe <- function(g,
     
     
     print(paste0("Minimum tolerance not exceeded, running SETSe on best parameters, drag value ", signif(drag_val, 3)))
-    embeddings_data <- SETSe_core(
+    embeddings_data <- SETSe_core_time_shift(
       node_embeddings = Prep$node_embeddings, 
       ten_mat = Prep$ten_mat, 
       non_empty_matrix = Prep$non_empty_matrix, 
@@ -406,7 +406,8 @@ auto_SETSe <- function(g,
       sparse = sparse,
       sample = sample,
       static_limit = static_limit,
-      noisey_termination = FALSE) #This is false as something has to be produced by the algo. I can change later 
+      tstep_change = 0.5,
+      dynamic_reset = TRUE) #This is false as something has to be produced by the algo. I can change later 
     
     
     

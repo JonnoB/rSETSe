@@ -1,4 +1,4 @@
-#' SETSe algorithm
+#' SETSe algorith with time shift
 #'  
 #' The basic SETSe function.
 #'  
@@ -19,8 +19,9 @@
 #' @param static_limit Numeric. The maximum value the static force can reach before the algorithm terminates early. This
 #' prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
 #' If left blank the static limit is twice the system absolute mean force.
-#' @param noisey_termination Stop the process if the static force does not monotonically decrease.
-#' 
+#' @param tstep_change a numeric scaler. A value between 0 and one, the fraction the new timestep will be relative to the previous one
+#' @param dynamic_reset Logical. Whether the dynamic portion of the emebeddings is reset to zero when the timestep is changed
+#' this can stop the momentum of the nodes forcing a divergence, but also can slow down the process. default is TRUE.
 #' @details This is the basic SETS embeddings algorithm, it outputs all elements of the embeddings as well as convergence dynamics. It is a
 #' wrapper around the core SETS algorithm which requires data preparation and only produces node embeddings and entwork dynamics. 
 #' There is little reason to use this function as \code{\link{auto_SETSe}} and \code{\link{SETSe_bicomp}} 
@@ -38,11 +39,11 @@
 #'                      force_var = "class", 
 #'                      positive_value = "A") %>%
 #' #embed the network using SETSe
-#'   SETSe()
+#'   SETSe_shift()
 #' @seealso \code{\link{auto_SETSe}} \code{\link{SETSe_bicomp}}
 #' @export
 
-SETSe <- function(g, 
+SETSe_shift <- function(g, 
                   force ="force", 
                   distance = "distance", 
                   edge_name = "edge_name",
@@ -56,7 +57,7 @@ SETSe <- function(g,
                   two_node_solution = TRUE,
                   sample = 1,
                   static_limit = NULL,
-                  noisey_termination = TRUE){
+                  tstep_change){
   
   #helper function that prepares the data
   Prep <- SETSe_data_prep(g = g, 
@@ -69,14 +70,14 @@ SETSe <- function(g,
   
   #do special case solution 
   if(ecount(g)==1 & two_node_solution){
-  
+    
     Out <- two_node_solution(g, Prep = Prep, auto_setse_mode = FALSE)
     
     #Solves using the iterative method.
   } else{
     
     #The core algorithm
-    Out <- SETSe_core(
+    Out <- SETSe_core_time_shift(
       node_embeddings = Prep$node_embeddings, 
       ten_mat = Prep$ten_mat, 
       non_empty_matrix = Prep$non_empty_matrix, 
@@ -90,17 +91,17 @@ SETSe <- function(g,
       sparse = sparse,
       sample = sample,
       static_limit = static_limit,
-      noisey_termination = noisey_termination) 
+      tstep_change = tstep_change) 
     
   }
   
   
   #Extract edge tension and strain from the network
   Out$edge_embeddings <- calc_tension_strain(g = g,
-                                              Out$node_embeddings,
-                                              distance = distance, 
-                                              edge_name = edge_name, 
-                                              k = k)
+                                             Out$node_embeddings,
+                                             distance = distance, 
+                                             edge_name = edge_name, 
+                                             k = k)
   
   
   return(Out)

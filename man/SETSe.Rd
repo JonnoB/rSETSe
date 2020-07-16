@@ -4,8 +4,7 @@
 \alias{SETSe}
 \title{SETSe algorithm
  
-The basic SETSe function.
-#'}
+The basic SETSe function.}
 \usage{
 SETSe(
   g,
@@ -67,7 +66,6 @@ as well as the convergence dynamics dataframe for the network.
 SETSe algorithm
  
 The basic SETSe function.
-#'
 }
 \details{
 This is the basic SETS embeddings algorithm, it outputs all elements of the embeddings as well as convergence dynamics. It is a

@@ -226,12 +226,12 @@ Create_stabilised_blocks <- function(g,
       return(temp)
       
     }) %>%
-    bind_rows(OriginBlock$network_dynamics %>% mutate(component = OriginBlock_number))  %>%
+    bind_rows(OriginBlock$network_dynamics %>% mutate(component = OriginBlock_number))  #%>%
     #It can also be useful to get the individual component values out.
-    group_by(Iter) %>%
-    summarise_all(sum) %>%
-    mutate(t = Iter*tstep) %>%
-    select(-component)
+    # group_by(Iter) %>%
+    # summarise_all(sum) %>%
+    # mutate(t = Iter*tstep) %>%
+    # select(-component)
   
   
   #gets back the memory of the convergence process.

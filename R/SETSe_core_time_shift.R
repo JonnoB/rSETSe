@@ -1,6 +1,7 @@
-#' SETSe Core
+#' SETSe Core with time shift
 #' 
-#' This is the SETse core algorithm. It runs the SETSe model to find the equilibrium position of the network
+#' This is a variant of the SETse core algorithm. It runs the SETSe model to find the equilibrium position of the network,
+#' it changes the time step if the algo is in the noisey zone
 #' 
 #' @param node_embeddings A data frame The current dynamics and forces experienced by the node a data frame.
 #' @param ten_mat A data frame The current dynamics and forces experienced by the node a data frame.
@@ -18,7 +19,9 @@
 #' @param static_limit Numeric. The maximum value the static force can reach before the algorithm terminates early. This
 #' prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
 #' If left blank the static limit is the system absolute mean force.
-#' @param noisey_termination Stop the process if the static force does not monotonically decrease.
+#' @param tstep_change a numeric scaler. A value between 0 and one, the fraction the new timestep will be relative to the previous one
+#' @param dynamic_reset Logical. Whether the dynamic portion of the emebeddings is reset to zero when the timestep is changed
+#' this can stop the momentum of the nodes forcing a divergence, but also can slow down the process. default is TRUE.
 #' 
 #' @details 
 #' This function is usally run inside a more easy to use function such as The SETSe function, SETse_bicomp or auto_SETSe. These
@@ -41,7 +44,7 @@
 #' @export
 # Strips out all pre processing to make it as efficient and simple as possible
 
-SETSe_core <- function(node_embeddings, 
+SETSe_core_time_shift <- function(node_embeddings, 
                        ten_mat, 
                        non_empty_matrix, 
                        kvect, 
@@ -54,21 +57,22 @@ SETSe_core <- function(node_embeddings,
                        sparse = FALSE,
                        sample = 1,
                        static_limit = NULL,
-                       noisey_termination = FALSE){
+                       tstep_change = 0.5,
+                       dynamic_reset = TRUE){
   #Runs the physics model to find the convergence of the system.
   
   #vectors are used throughout instead of a single matrix as it turns out they are faster due to less indexing and use much less RAM.
 
   #These have to be matrices if there is a mutli variable option
   NodeList <- node_embeddings[,-1]
-  force <- NodeList[,1]
-  elevation <-NodeList[,2]
-  net_tension <-NodeList[,3]
-  velocity <- NodeList[,4]
-  friction <- NodeList[,5]
-  static_force <-NodeList[,6]
-  net_force <- NodeList[,7]
-  acceleration <- NodeList[,8]
+  force <- force_saved <- NodeList[,1]
+  elevation <- elevation_saved <- NodeList[,2]
+  net_tension <- net_tension_saved <- NodeList[,3]
+  velocity <- velocity_saved <- NodeList[,4]
+  friction <- friction_saved <- NodeList[,5]
+  static_force <- static_force_saved <- NodeList[,6]
+  net_force <- net_force_saved <- NodeList[,7]
+  acceleration <- acceleration_saved <- NodeList[,8]
   
   if(sparse){
     ten_mat <- as(ten_mat, "dgTMatrix") # this is done as Dgt alllows direct insertion of tension without indexing. It 
@@ -103,6 +107,7 @@ SETSe_core <- function(node_embeddings,
   one_vect <- rep(1, nrow(NodeList))
   
   Iter <- 1
+  current_time <- 0
   is_noisey <- FALSE 
   system_stable <- FALSE
   
@@ -154,37 +159,79 @@ SETSe_core <- function(node_embeddings,
     if((Iter %% sample)==0){
       #The row of the networks dynamics dataframe/matrix the current data will be inserted into  
       dynamics_row <- Iter/sample 
+      ##
+      ##This can be removed it is only for debugging
+      ##
+      # print(paste("Dyanmics row", Iter, 
+      #             "is noisey?", 
+      #             sum(abs(static_force)) > network_dynamics[dynamics_row-1,3],
+      #             "current",  round(sum(abs(static_force))) ,
+      #             "previous",round(network_dynamics[dynamics_row-1,3])
+      #             ))
   
-      network_dynamics[dynamics_row,] <- c(Iter, #Iteration
-                                           Iter*tstep, #time in seconds
-                                           sum(abs(static_force)),  #static force. The force exerted on the node
-                                           sum(abs(0.5*mass*velocity/tstep)), #kinetic_force #I am not sure how I justify this value
-                                           sum( 0.5*kvect*(Hvect-dvect)^2),     #spring potential_energy
-                                           sum(0.5*mass*velocity^2)    #kinetic_energy
-      ) 
-      
       #checks to ensure that the reduction in static force is smooth and not in the noisey zone.
       #This is important force most convergence processes as autoconvergence can get stuck in the noisey zone
       #preventing the network from converging. However such a mode is not always desired.
       #The option is implemented in the core algo as noisey convergence can take a long time so
       #automatic termination can greatly reduce the amount of time searching for optimal parameters.
       #The if statment has two conditions
-      #1 is the noisey_termmination option on?
-      #2 Is this the second row or higher of the networks_dynamic matrix. Prevents NA values
-      if(noisey_termination & dynamics_row > 1){
+      #1 Is this the second row or higher of the networks_dynamic matrix. Prevents NA values
+      #2 The convergence is noisey if the static force at time t is greater than the static force at t-1
+      
+      if(dynamics_row > 1){
         #The convergence is noisey if the static force at time t is greater than the static force at t-1
-        is_noisey <- network_dynamics[dynamics_row,3] > network_dynamics[dynamics_row-1,3]
+        is_noisey <- sum(abs(static_force))  > network_dynamics[dynamics_row-1,3]
         
       }
+      #If the convergnece is noisey then load the previous saved versions and change the timestep
+      #Otherwise overwrite the previous saved data and continue
+      if(is_noisey){
+        print("changing timestep")
+        #change the tstep
+        tstep <- tstep*tstep_change
+
+        #overwrite data with previously saved info
+        #If dynamic reset is zero then all the dynamics are set to zero
+        force <- force_saved
+        elevation <- elevation_saved
+        net_tension <- net_tension_saved
+        velocity <- velocity_saved*(!dynamic_reset)
+        friction <- friction_saved*(!dynamic_reset)
+        static_force <- static_force_saved
+        net_force <- net_force_saved*(!dynamic_reset) + static_force_saved*(dynamic_reset)
+        acceleration <- acceleration_saved*(!dynamic_reset) + (net_force/mass)*(dynamic_reset)
+        
+      } else {
+        
+        #as the time can change, it needs to be tracked 
+        #current time is not updated if the system reverts to the previous saved point
+        current_time <- current_time + sample*tstep
+        
+        force_saved <- force
+        elevation_saved <- elevation
+        net_tension_saved <- net_tension
+        velocity_saved <- velocity
+        friction_saved <- friction
+        static_force_saved <- static_force
+        net_force_saved <- net_force
+        acceleration_saved <- acceleration
+        
+      }
+      #These will be the same as the previous row if the reset has been tripped.
+      network_dynamics[dynamics_row,] <- c(Iter, #Iteration
+                                           current_time, #time in seconds
+                                           sum(abs(static_force)),  #static force. The force exerted on the node
+                                           sum(abs(0.5*mass*velocity/tstep)), #kinetic_force #I am not sure how I justify this value
+                                           sum( 0.5*kvect*(Hvect-dvect)^2),     #spring potential_energy
+                                           sum(0.5*mass*velocity^2)    #kinetic_energy
+      ) 
       
       #Checks for early termination conditions. There are three or conditions
       #1 If the static force is not a finite value, this covers NA, NaN and infinite.
       #2 The static force exceeds the static limit
-      #3 The system is in the noisey zone
       #4 If the static force is less than the required tolerance then the system is stable and the process can terminate
       system_stable <- !is.finite(network_dynamics[dynamics_row,3])| 
-        (network_dynamics[dynamics_row,3]>static_limit) |
-        is_noisey |
+        (network_dynamics[dynamics_row,3] > static_limit) |
         (network_dynamics[dynamics_row,3] < tol)
 
     }
@@ -213,7 +260,7 @@ SETSe_core <- function(node_embeddings,
                                                    static_force = as.vector(static_force),
                                                    net_force = as.vector(net_force),
                                                    acceleration = as.vector(acceleration),
-                                                   t = tstep*(Iter-1),
+                                                   t = current_time,
                                                    Iter = Iter-1)),  #1 needs to be subtracted from the total as the final thing
               #in the loop is to add 1 to the iteration
               time_taken = time_taken_df #This is a diff time object!
