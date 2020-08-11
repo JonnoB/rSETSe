@@ -49,4 +49,4 @@ Currently only the main functions have example code available see the links abov
 
 # Cite
 
-When using this package please cite the paper [The spring bounces back](https://arxiv.org/pdf/2007.09437.pdf)
+When using this package please cite the paper [The spring bounces back](https://export.arxiv.org/abs/2007.09437)
