@@ -46,3 +46,7 @@ The code used in this package is part of my PhD and a fundemental component of t
 # N.B
 
 Currently only the main functions have example code available see the links above for more indepth code examples.
+
+# Cite
+
+When using this package please cite the paper [The spring bounces back](https://arxiv.org/pdf/2007.09437.pdf)
