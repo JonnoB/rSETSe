@@ -10,7 +10,7 @@ This is the R package for the Strain Elevation Tension Spring embeddgins (SETSe)
 
  1. Open R/Rstudio and ensure that devtools has been installed
  1. Run the following code library(devtools); install_github("JonnoB/rSETSE")
- 1. Load the Power Grid Networking package normally using library(rSETSe)
+ 1. Load the package normally using library(rSETSe)
  1. All functions have help files e.g ?auto_SETSe
 
 The package can also be downloaded or cloned then installed locally using the install function from devtools.
