@@ -85,7 +85,7 @@ generate_peels_network <- function(type){
   g_df <- as_data_frame(g, what = "both")
   
   g <- graph_from_data_frame(g_df$edges, 
-                        directed = TRUE,
+                        directed = FALSE,
                         vertices =   g_df$vertices %>%
                           mutate(node = 1:40) %>%
                           select(node, everything()))
