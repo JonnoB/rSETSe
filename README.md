@@ -4,13 +4,13 @@
 
 ## An R package for embedding graphs using the SETSe algorithm
 
-This is the R package for the Strain Elevation Tension Spring embeddgins (SETSe) algorithm. SETSe is a deterministic graph embeddings algorithm. It converts the node attributes of a graph into forces and the edge attributes into springs. The algorithm finds an equilibrium position when the forces of the nodes are balanced by the forces on the springs. A full description of the algorithm is given in my forthcoming paper "The spring bounces back: Introduction to Strain Elevation Tension Spring embedding for network representation"
+This is the R package for the Strain Elevation Tension Spring embeddgins (SETSe) algorithm. SETSe is a deterministic graph embeddings algorithm. It converts the node attributes of a graph into forces and the edge attributes into springs. The algorithm finds an equilibrium position when the forces of the nodes are balanced by the forces on the springs. A full description of the algorithm is given in my forthcoming paper "The spring bounces back: Introduction to Strain Elevation Tension Spring embedding for network representation" ([arxiv version here](https://arxiv.org/pdf/2007.09437.pdf))
 
 # Installation instructions
 
  1. Open R/Rstudio and ensure that devtools has been installed
  1. Run the following code library(devtools); install_github("JonnoB/rSETSE")
- 1. Load the Power Grid Networking package normally using library(rSETSe)
+ 1. Load the package normally using library(rSETSe)
  1. All functions have help files e.g ?auto_SETSe
 
 The package can also be downloaded or cloned then installed locally using the install function from devtools.
@@ -46,3 +46,7 @@ The code used in this package is part of my PhD and a fundemental component of t
 # N.B
 
 Currently only the main functions have example code available see the links above for more indepth code examples.
+
+# Cite
+
+When using this package please cite the paper [The spring bounces back](https://export.arxiv.org/abs/2007.09437)
