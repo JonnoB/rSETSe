@@ -29,7 +29,7 @@ two_node_solution <- function(g, Prep = Prep, auto_setse_mode = FALSE){
     
     
     #uses the non-linear optimiser from minpack.lm to find the solution to the two node special case, this is much faster
-    solution_angle <- nlsLM(Force ~ ForceV_from_angle(target_angle, k = k, d = d), 
+    solution_angle <- minpack.lm::nlsLM(Force ~ ForceV_from_angle(target_angle, k = k, d = d), 
                             start = c(target_angle = pi/4), 
                             data = list(Force = abs(Prep$node_embeddings$force[1]), k = Prep$Link$k, d = Prep$Link$distance), 
                             upper = pi/2) %>% coefficients()      
@@ -62,7 +62,7 @@ two_node_solution <- function(g, Prep = Prep, auto_setse_mode = FALSE){
   )
 
   
-  Out <- list(network_dynamics = tibble(t = 0, 
+  Out <- list(network_dynamics = tibble::tibble(t = 0, 
                                         Iter = 0,
                                         static_force = 0, 
                                         kinetic_force = 0), 
@@ -73,7 +73,7 @@ two_node_solution <- function(g, Prep = Prep, auto_setse_mode = FALSE){
   if(auto_setse_mode){
     #the memory_df data frame
     #everything is basically NA but it allows easier post processing
-    Out$memory_df<-tibble(iteration = 1,
+    Out$memory_df<-tibble::tibble(iteration = 1,
                           error = NA,
                           perc_change = NA,
                           log_ratio = NA,

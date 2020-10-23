@@ -14,6 +14,7 @@ ForceV_from_angle(target_angle = 5 * pi/12, k, d = temp$d)
 \item{d}{A numeric. The original distance between nodes}
 }
 \description{
+This is an internal function
 Calculates the vertical force for a given angle for a network or bi-connected sub graph of two nodes.
 }
 \details{

@@ -1,13 +1,13 @@
 #' Remove small components
 #' 
-#' keep only maximum component of graph
+#' keep only the largest component of graph
 #' 
 #' @param g An igraph object of the graph to embed.
 #' 
 #' @details As SETSe only works on connected components this function removes all but the largest component. 
 #' This is a helper function to quickly project a network with SETSe.
 #' 
-#' @return An igrapg object.
+#' @return An igraph object.
 #' 
 #' @export
 #' 

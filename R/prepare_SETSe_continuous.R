@@ -56,11 +56,12 @@ prepare_SETSe_continuous <- function(g, node_names, k = NULL, force_var, sum_to_
   if(sum_to_one){
     
     vertices_df <- vertices_df %>%
-      mutate(force = force/(sum(abs(force))/2))
+      dplyr::mutate(force = force/(sum(abs(force))/2))
     
   }
   
-  g_out  <- graph_from_data_frame(edges_df, directed = FALSE, vertices = vertices_df %>% select(node_names, everything())) 
+  g_out  <- igraph::graph_from_data_frame(edges_df, directed = FALSE, vertices = vertices_df %>% 
+                                            dplyr::select(node_names, dplyr::everything())) 
   
   return(g_out)
   

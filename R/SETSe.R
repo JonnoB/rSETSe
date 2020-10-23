@@ -68,7 +68,7 @@ SETSe <- function(g,
                           sparse = sparse)
   
   #do special case solution 
-  if(ecount(g)==1 & two_node_solution){
+  if(igraph::ecount(g)==1 & two_node_solution){
   
     Out <- two_node_solution(g, Prep = Prep, auto_setse_mode = FALSE)
     

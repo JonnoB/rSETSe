@@ -1,5 +1,6 @@
 #' Calculate for from a given angle
 #' 
+#' This is an internal function
 #' Calculates the vertical force for a given angle for a network or bi-connected sub graph of two nodes.
 #' 
 #' @param target_angle A numeric. The angle for which the force is needed
@@ -16,7 +17,7 @@ ForceV_from_angle <- function(target_angle = 5*pi/12, k, d=temp$d){
   H = sqrt(d^2 * (1 + tan(target_angle)^2))
   ForceT = k*(H-d)
   ForceV = ForceT*sin(target_angle)
-  #IT is reallt slow to use a tibble here keeping everything thing base R is much faster
+  #It is really slow to use a tibble here keeping everything thing base R is much faster
   # tibble(H = sqrt(d^2 * (1 + tan(target_angle)^2)),
   #        ForceT = k*(H-d), 
   #        ForceV = ForceT*sin(target_angle)) %>%

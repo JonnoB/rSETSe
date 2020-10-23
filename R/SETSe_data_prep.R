@@ -10,7 +10,8 @@
 #' @param mass A numeric. This is the mass constant of the nodes in normalised networks this is set to 1.
 #' @param edge_name a character string. The edge attribute that contains the names of all the edges.
 #' @param sparse Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated
-#'
+#' @param k A character string. This is k for the moment don't change it.
+#' 
 #' @details The output of the function is different depending on the number of nodes in the network. This optimises the
 #' operations performed so that networks that will be solved using the two node solution only have data for the two node solution
 #' whilst networks that will be solved using the SETSe algorithm do not have data required for the two node solution.

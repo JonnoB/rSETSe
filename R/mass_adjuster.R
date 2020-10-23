@@ -34,7 +34,7 @@
 #' 
 mass_adjuster <- function(g, force = "force", resolution_limit = TRUE){
   
-  total_force <- sum(abs(vertex_attr(g, name = force)))
+  total_force <- sum(abs(igraph::vertex_attr(g, name = force)))
   
   if(resolution_limit &  total_force > .Machine$double.eps^0.5){
     
@@ -42,7 +42,7 @@ mass_adjuster <- function(g, force = "force", resolution_limit = TRUE){
     
   } else{
     
-    mass <- total_force /vcount(g)
+    mass <- total_force /igraph::vcount(g)
     
   }
   

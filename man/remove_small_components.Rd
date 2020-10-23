@@ -10,10 +10,10 @@ remove_small_components(g)
 \item{g}{An igraph object of the graph to embed.}
 }
 \value{
-An igrapg object.
+An igraph object.
 }
 \description{
-keep only maximum component of graph
+keep only the largest component of graph
 }
 \details{
 As SETSe only works on connected components this function removes all but the largest component. 

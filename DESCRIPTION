@@ -4,7 +4,7 @@ Version: 0.3
 Authors@R: person("Jonathan", "Bourne", email = "jonathan.bourne.15@ucl.ac.uk.com", role = c("aut", "cre"))
 Description: This package is used to calculate the Strain Elevation and Tension embeddings produced by the SETSe algorithm.
 Depends: R (>= 3.4.2)
-License: GNU General Public License v3 (GPL-3)
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Imports: 
@@ -15,5 +15,7 @@ Imports:
     purrr,
     tibble,
     minpack.lm,
-    magrittr
+    magrittr, 
+    methods,
+    stats
 RoxygenNote: 7.1.1

@@ -86,7 +86,7 @@ SETSe_bicomp <- function(g,
   if(verbose){print("finding biconnected components")}
   
   start_time_bigraph <- Sys.time()
-  bigraph <- biconnected_components(g)
+  bigraph <- igraph::biconnected_components(g)
   if(verbose){print(paste("Biconnected components found. Time taken",
                           round(as.numeric( difftime(Sys.time(), start_time_bigraph, units = "mins")), 1),
                           "minutes."))}
@@ -136,14 +136,14 @@ SETSe_bicomp <- function(g,
     
     
     #find the largest component and use that as the origin block
-    OriginBlock_number <-balanced_blocks %>% map_dbl(~vcount(.x)) %>% which.max()
+    OriginBlock_number <-balanced_blocks %>% purrr::map_dbl(~igraph::vcount(.x)) %>% which.max()
     
     #total in network
-    total_force <- sum(abs(get.vertex.attribute(g, force)))
+    total_force <- sum(abs(igraph::get.vertex.attribute(g, force)))
     
     if(!is.null(static_limit)){
       #this if statement prevents an error if the static limit is null the below returns a numeric vector of 0 length
-      static_limit <- static_limit*sum(abs(get.vertex.attribute(balanced_blocks[[OriginBlock_number]], force)))/total_force
+      static_limit <- static_limit*sum(abs(igraph::get.vertex.attribute(balanced_blocks[[OriginBlock_number]], force)))/total_force
     }
     
     #calculate the parameters of the largest block
@@ -152,7 +152,7 @@ SETSe_bicomp <- function(g,
     
     
     #do special case solution for two nodes only
-    if(ecount(balanced_blocks[[OriginBlock_number]])==1){
+    if(igraph::ecount(balanced_blocks[[OriginBlock_number]])==1){
       
       Prep <- SETSe_data_prep(g = balanced_blocks[[OriginBlock_number]], 
                               force = force, 
@@ -174,7 +174,7 @@ SETSe_bicomp <- function(g,
                                 edge_name = edge_name,
                                 k = k,
                                 tstep = tstep, 
-                                tol = tol*sum(abs(get.vertex.attribute(balanced_blocks[[OriginBlock_number]], force)))/total_force, #the force has to be scaled to the component 
+                                tol = tol*sum(abs(igraph::get.vertex.attribute(balanced_blocks[[OriginBlock_number]], force)))/total_force, #the force has to be scaled to the component 
                                 max_iter =  max_iter, 
                                 mass =  ifelse(is.null(mass), mass_adjuster(balanced_blocks[[OriginBlock_number]], 
                                                                             force = "force", resolution_limit = TRUE), mass), 

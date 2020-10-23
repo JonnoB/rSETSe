@@ -4,7 +4,8 @@
 \alias{SETSe_shift}
 \title{SETSe algorith with time shift
  
-The basic SETSe function.}
+The basic SETSe function with added tie shift. The time shift functionality automatically adjusts 
+the timestep if the convergence process is noisey}
 \usage{
 SETSe_shift(
   g,
@@ -21,7 +22,7 @@ SETSe_shift(
   two_node_solution = TRUE,
   sample = 1,
   static_limit = NULL,
-  tstep_change
+  tstep_change = 0.5
 )
 }
 \arguments{
@@ -68,7 +69,8 @@ as well as the convergence dynamics dataframe for the network.
 \description{
 SETSe algorith with time shift
  
-The basic SETSe function.
+The basic SETSe function with added tie shift. The time shift functionality automatically adjusts 
+the timestep if the convergence process is noisey
 }
 \details{
 This is the basic SETS embeddings algorithm, it outputs all elements of the embeddings as well as convergence dynamics. It is a

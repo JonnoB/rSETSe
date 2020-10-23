@@ -21,17 +21,17 @@ create_balanced_blocks <- function(g, force = "force", bigraph = bigraph){
   #These blocks are balanced such that the connecting vertices contain all the power of the missing part of the network
   #balancing prevents the network reaching a steady state non-zero velocity.
   
-  ArticulationPoints <- get.vertex.attribute(g, "name", bigraph$articulation_points) #can also use names(biconnected.components(g)$articulation_points)
+  ArticulationPoints <- igraph::get.vertex.attribute(g, "name", bigraph$articulation_points) #can also use names(biconnected.components(g)$articulation_points)
   
-  biconnected_component_raw <- as_data_frame(g, what = "vertices")
-  edge_df_raw <- as_data_frame(g)
+  biconnected_component_raw <- igraph::as_data_frame(g, what = "vertices")
+  edge_df_raw <- igraph::as_data_frame(g)
   
   List_of_BiConComps <-1:length(bigraph$components) %>%
-    map(~{
+    purrr::map(~{
       Comp_num <- .x
       
       #nodes in the current block
-      Nodes_in_j <- get.vertex.attribute(g, "name", bigraph$components[[Comp_num]]) 
+      Nodes_in_j <- igraph::get.vertex.attribute(g, "name", bigraph$components[[Comp_num]]) 
       
       #The nodes in the current block that are articulation points. 
       #There will be at least one articulation point, unless the whol network is one block
@@ -41,12 +41,12 @@ create_balanced_blocks <- function(g, force = "force", bigraph = bigraph){
       biconnected_component <- biconnected_component_raw[biconnected_component_raw$name  %in% Nodes_in_j,]
       
       balanced_component_df <- 1:length(component_art_points) %>%
-        map_df(~{
+        purrr::map_df(~{
           
           CurrArt <- component_art_points[.x]
           
           #delete the articulation point to split the network into 2 peices
-          membership_vect <- components(delete.vertices(g, CurrArt))$membership
+          membership_vect <- igraph::components(delete.vertices(g, CurrArt))$membership
           
           
           #Identify the component that contains nodes from the same block as the articulation point. 
@@ -60,18 +60,18 @@ create_balanced_blocks <- function(g, force = "force", bigraph = bigraph){
                      AuxPower = sum(biconnected_component_raw[(biconnected_component_raw$name %in% nodes_of_interest), force])) 
           
         }) %>%
-        left_join(biconnected_component, ., by = "name") %>%
-        mutate(temp = ifelse(is.na(AuxPower), !!sym(force), AuxPower)) 
+        dplyr::left_join(biconnected_component, ., by = "name") %>%
+        dplyr::mutate(temp = ifelse(is.na(AuxPower), !!rlang::sym(force), AuxPower)) 
       
       
-      Component_j <- {!(get.vertex.attribute(g, "name") %in% balanced_component_df$name)} %>%
-        (1:vcount(g))[.] %>%
-        delete.vertices(g,.) 
+      Component_j <- {!(igraph::get.vertex.attribute(g, "name") %in% balanced_component_df$name)} %>%
+        (1:igraph::vcount(g))[.] %>%
+        igraph::delete.vertices(g,.) 
       
-      balanced_component <- data.frame(name = get.vertex.attribute(Component_j, "name")) %>%
-        left_join(balanced_component_df, by = "name") %>%
-        pull(temp) %>%
-        set.vertex.attribute(Component_j, name = force, value = .)
+      balanced_component <- data.frame(name = igraph::get.vertex.attribute(Component_j, "name")) %>%
+        dplyr::left_join(balanced_component_df, by = "name") %>%
+        dplyr::pull(temp) %>%
+        igraph::set.vertex.attribute(Component_j, name = force, value = .)
       
       return(balanced_component)
     })

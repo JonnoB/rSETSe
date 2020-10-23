@@ -1,6 +1,7 @@
 #' SETSe algorith with time shift
 #'  
-#' The basic SETSe function.
+#' The basic SETSe function with added tie shift. The time shift functionality automatically adjusts 
+#' the timestep if the convergence process is noisey
 #'  
 #' @param g An igraph object
 #' @param force A character string. This is the node attribute that contains the force the nodes exert on the network.
@@ -57,7 +58,7 @@ SETSe_shift <- function(g,
                   two_node_solution = TRUE,
                   sample = 1,
                   static_limit = NULL,
-                  tstep_change){
+                  tstep_change = 0.5){
   
   #helper function that prepares the data
   Prep <- SETSe_data_prep(g = g, 
@@ -69,7 +70,7 @@ SETSe_shift <- function(g,
                           sparse = sparse)
   
   #do special case solution 
-  if(ecount(g)==1 & two_node_solution){
+  if(igraph::ecount(g)==1 & two_node_solution){
     
     Out <- two_node_solution(g, Prep = Prep, auto_setse_mode = FALSE)
     

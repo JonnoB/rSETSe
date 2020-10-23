@@ -1,16 +1,17 @@
 #' fix elevation to origin
 #' 
-#' This function makes the elevation of the different blocks all relative to the same fixed point, 
+#' Internal function. This function makes the elevation of the different blocks all relative to the same fixed point, 
 #' this allows easy use of bi-connected components This is a helper function only.
-#' z is used instead of elevation for legacy issues. This can be changed when I can be bothered
-#' 
-#' 
-#' The function needs to be renamed to make it more SETSe friendly something like fix_elevation_to_origin. But I need to see what it will impact first
 #' 
 #' @param relative_blocks a data frame containing the outputs from the 
 #' @param ArticulationVect The articulation nodes of the network.
+#' 
+#' @details When a network is broken into bi-connected components the elevation of the nodes is relative to the
+#' local origin. This means all bi-connected components have there own "center of gravity". This function makes sure
+#' all nodes are relative to a fixed point
+#' 
 
-fix_z_to_origin <- function(relative_blocks, ArticulationVect){
+fix_elevation_to_origin <- function(relative_blocks, ArticulationVect){
   
   #This is an integer vector of blocks that have been converted to absolute values
   #This is one of the growing vectors.

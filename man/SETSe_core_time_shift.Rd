@@ -68,8 +68,8 @@ A list of three dataframes
 }
 }
 \description{
-This is a variant of the SETse core algorithm. It runs the SETSe model to find the equilibrium position of the network,
-it changes the time step if the algo is in the noisey zone
+Internal function. This is a variant of the SETse core algorithm. It runs the SETSe model to find the equilibrium position of the network,
+it changes the time step if the algo is in the noisey zone. The function is called by auto_setse
 }
 \details{
 This function is usally run inside a more easy to use function such as The SETSe function, SETse_bicomp or auto_SETSe. These

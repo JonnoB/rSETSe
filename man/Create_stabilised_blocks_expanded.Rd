@@ -54,5 +54,5 @@ decomposes the network into bi-connected components using articulation points. T
 and reduces the chances of the SETS algorithm diverging
 }
 \seealso{
-\code{\link{Create_stabilised_blocks}} \code{\link{Find_network_balance}}
+\code{\link{Create_stabilised_blocks}}
 }

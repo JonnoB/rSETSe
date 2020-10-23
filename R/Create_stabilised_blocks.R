@@ -1,21 +1,23 @@
 #' Create stabilised blocks
 #' 
-#' decomposes the network into bi-connected components using articulation points. This speeds up the convergence process
-#' and reduces the chances of the SETS algorithm diverging on certain classes of network. This function is rarely called
-#' directly and is usually called by SETSe_bicomp
+#' An internal function. This function is called by SETSe_bicomp and performs auto_SETSe on all the bi-connected components
+#' of the network. This function is rarely called directly.
 #' 
 #' @param g An igraph object
-#' @param Origin block
+#' @param OriginBlock An Igraph object. This is created by Create_balanced_blocks function
 #' @param OriginBlock_number An integer. this is the origin block chosen from the
 #' create_stable_blocks function. Usually this will be the largest block.
 #' @param force A character string. This is the node attribute that contains the force the nodes exert on the network.
 #' @param edge_name A character string. This is the edge attribute that contains the edge_name of the edges.
+#' @param k A character string. name of the spring constant variable
 #' @param tstep A numeric. The time interval used to iterate through the network dynamics.
 #' @param tol A numeric. The tolerance factor for early stopping.
 #' @param distance A character string. The edge attribute that contains the original/horizontal distance between nodes.
 #' @param max_iter An integer. The maximum number of iterations before stopping. Larger networks usually need more iterations.
 #' @param mass A numeric. This is the mass constant of the nodes in normalised networks this is set to 1.
 #' @param sparse Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated
+#' @param sample Integer. The dynamics will be stored only if the iteration number is a multiple of the sample. 
+#'  This can greatly reduce the size of the results file for large numbers of iterations. Must be a multiple of the max_iter
 #' @param static_limit Numeric. The maximum value the static force can reach before the algorithm terminates early. This
 #' prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
 #' If left blank the static limit is twice the system absolute mean force.
@@ -24,8 +26,11 @@
 #' @param drag_min integer. A power of ten. The lowest drag value to be used in the search
 #' @param drag_max integer. A power of ten. if the drag exceeds this value the tstep is reduced
 #' @param tstep_change numeric. A value between 0 and 1 that determines how much the time step will be reduced by default value is 0.5
+#' @param bigraph A list. the list of biconnected components produced by the biconnected_components function.
+#'  This function take a non trivial amount of time on large graphs so this pass through minimises the function being called.
 #' @param hyper_tol numeric. The convergence tolerance when trying to find the minimum value
 #' @param hyper_max integer. The maximum number of iterations that the setse will go through whilst searching for the minimum.
+#' @param balanced_blocks A list 
 #' @param noisey_termination Stop the process if the static force does not monotonically decrease.
 #' 
 #' @details This function isn't really supposed to be used apart from as a sub-routine of the SETSe biconnected component method.
@@ -255,7 +260,7 @@ Create_stabilised_blocks <- function(g,
                  mutate(component = OriginBlock_number)) 
   
   #The biconnected components are converted to absolute values from relative ones
-  node_embeddings <- fix_z_to_origin(relative_blocks, ArticulationVect) 
+  node_embeddings <- fix_elevation_to_origin(relative_blocks, ArticulationVect) 
   
   print("Removing multiple articulation nodes")
   #this bind rows takes place as, there are vastly more non-articulation nodes than 

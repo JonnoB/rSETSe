@@ -68,7 +68,7 @@ g_list <-   igraph::as_data_frame(g, what = "both")
   g_out  <- igraph::graph_from_data_frame(edges_df, directed = FALSE, 
                                   vertices = vertices_df %>%
                                     dplyr::select(node_names, 
-                                           everything())
+                                           dplyr::everything())
   ) 
   
   return(g_out)

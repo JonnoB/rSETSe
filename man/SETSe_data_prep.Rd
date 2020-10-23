@@ -25,6 +25,8 @@ SETSe_data_prep(
 
 \item{edge_name}{a character string. The edge attribute that contains the names of all the edges.}
 
+\item{k}{A character string. This is k for the moment don't change it.}
+
 \item{sparse}{Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated}
 }
 \value{

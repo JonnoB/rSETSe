@@ -17,7 +17,7 @@
 #' @param mass A numeric. This is the mass constant of the nodes in normalised networks this is set to 1.
 #' @param verbose Logical. This value sets whether messages generated during the process are supressed or not.
 #' 
-#' @seealso \code{\link{Create_stabilised_blocks}} \code{\link{Find_network_balance}}
+#' @seealso \code{\link{Create_stabilised_blocks}}
 #' @return A dataframe with the height embeddings of the network
 #' 
 #' 
