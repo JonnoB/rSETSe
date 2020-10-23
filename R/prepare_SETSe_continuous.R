@@ -6,7 +6,7 @@
 #'  
 #' @param g an igraph object
 #' @param node_names a character string. A vertex attribute which contains the node names.
-#' @param k The sping constant. This value is either a numeric value giving the spring constant for all edges or NULL. If NULL is used 
+#' @param k The spring constant. This value is either a numeric value giving the spring constant for all edges or NULL. If NULL is used 
 #'  the k value will not be added to the network. This is useful k is made through some other processs.
 #' @param force_var A node attribute. This is used as the force variable, it must be a numeric or integer value, it cannot have NA's
 #' @param sum_to_one Logical. whether the total positive force sums to 1, if FALSE the total is the sum of the positive cases
@@ -34,23 +34,23 @@
 
 prepare_SETSe_continuous <- function(g, node_names, k = NULL, force_var, sum_to_one = TRUE, distance = 1){
   
-  force_var_sym <- sym(force_var)
+  force_var_sym <- rlang::sym(force_var)
   
-  g_list <-   as_data_frame(g, what = "both")
+  g_list <-   igraph::as_data_frame(g, what = "both")
   
   edges_df <- g_list$edges %>%
-    mutate(distance = distance,
+    dplyr::mutate(distance = distance,
            edge_name = paste(from, to, sep ="-"))
   
   if(!is.null(k)){
     edges_df <- edges_df %>% 
-      mutate( k = k)
+      dplyr::mutate( k = k)
   }
   
-  vertices_df <- g_list$vertices %>% tibble
+  vertices_df <- g_list$vertices %>% tibble::tibble(.)
   
   vertices_df <- vertices_df %>%
-    mutate(force = {{force_var_sym}},
+    dplyr::mutate(force = {{force_var_sym}},
            force = force - mean(force))
   
   if(sum_to_one){

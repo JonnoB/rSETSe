@@ -26,16 +26,31 @@ SETSe_data_prep  <-function(g, force, distance, mass, edge_name = edge_name, k =
   #this is a helper function that goes inside the the find network balance function to help make the code easier to read
   
   #just calls distance 'distance' for simplicities sake
-  g <- set.edge.attribute(g, "distance", value = get.edge.attribute(g, distance))
+  g <- igraph::set.edge.attribute(g, "distance", value = igraph::get.edge.attribute(g, distance))
   
   #node_embeddings <- as_data_frame(g, what = "vertices") %>%
   #select(node = name, force = force ) %>%
   # 
-  node_embeddings <-  data.frame(node = get.vertex.attribute(g, "name"), 
-                                 force =  get.vertex.attribute(g, force),
+  
+  #
+  # These commmented out chunks are me trying to remove compilation errors that show up when I am using pkgdown
+  #
+  
+  #  total_nodes <- igraph::vcount(g)
+
+  # node_embeddings <-  data.frame(node = igraph::get.vertex.attribute(g, "name"), 
+  #                                force =  igraph::get.vertex.attribute(g, force),
+  #                                elevation = rep(0, total_nodes),
+  #                                net_tension = rep(0, total_nodes), 
+  #                                velocity = rep(0, total_nodes), 
+  #                                friction = rep(0, total_nodes),
+  #                                stringsAsFactors = rep(FALSE, total_nodes))
+    
+  node_embeddings <-  data.frame(node = igraph::get.vertex.attribute(g, "name"),
+                                 force =  igraph::get.vertex.attribute(g, force),
                                  elevation = 0,
-                                 net_tension = 0, 
-                                 velocity = 0, 
+                                 net_tension = 0,
+                                 velocity = 0,
                                  friction = 0,
                                  stringsAsFactors = FALSE)
   
@@ -48,9 +63,9 @@ SETSe_data_prep  <-function(g, force, distance, mass, edge_name = edge_name, k =
   #This dataframe is actually a large proportion of the memory requirements of the function
   #However as it is only used by the two node solution it now returns NA unless the graph has two nodes.
   #This should improve efficiency in some cases
-  if(ecount(g)==1){
+  if(igraph::ecount(g)==1){
     #Link is used for the two node solution
-    Link <- as_data_frame(g) 
+    Link <- igraph::as_data_frame(g) 
     Link$EdgeName <- Link[,edge_name]
     Link <- Link[,c("EdgeName", "distance", "k")] #%>%
     # arrange(EdgeName) The arrange is removed as the edges are already ordered alphabetically
@@ -64,7 +79,7 @@ SETSe_data_prep  <-function(g, force, distance, mass, edge_name = edge_name, k =
     #two node solutions to be solved.
     
     #get the adjacency matrix
-    Adj <- as_adjacency_matrix(g, sparse = T) #produces a zero 1 adjacency matrix
+    Adj <- igraph::as_adjacency_matrix(g, sparse = T) #produces a zero 1 adjacency matrix
     #just in case
     diag(Adj) <-0
     
@@ -75,7 +90,7 @@ SETSe_data_prep  <-function(g, force, distance, mass, edge_name = edge_name, k =
     Adj2 <- as(Adj, "dgTMatrix")
     
     non_empty_matrix <-cbind(i = Adj2@i + 1, j = Adj2@j + 1) %>% 
-      tibble(#names = rownames(.), 
+      tibble::tibble(#names = rownames(.), 
         rows = .[,1], 
         cols = .[,2],
         index = rows+ (cols-1)*ncol(Adj),
@@ -84,9 +99,9 @@ SETSe_data_prep  <-function(g, force, distance, mass, edge_name = edge_name, k =
     
     #extract the non-zero entries of the weighted adjacency matrix for K and distance
     #k can change, whilst distance is effectively a constant
-    kvect <- as_adjacency_matrix(g, attr = k, sparse = T)[non_empty_matrix[,3]]
+    kvect <- igraph::as_adjacency_matrix(g, attr = k, sparse = T)[non_empty_matrix[,3]]
     
-    dvect <- as_adjacency_matrix(g, attr = distance, sparse = T)[non_empty_matrix[,3]]
+    dvect <- igraph::as_adjacency_matrix(g, attr = distance, sparse = T)[non_empty_matrix[,3]]
     
     #Sparse matrix mode reduces time and memory requirements for larger matrices 100 nodes use dense. matrices of 300or more 300 I'm not sure though
     if(!sparse){

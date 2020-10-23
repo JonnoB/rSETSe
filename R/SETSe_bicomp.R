@@ -81,15 +81,15 @@ SETSe_bicomp <- function(g,
                          tstep_change = 0.2,
                          verbose = FALSE,
                          noisey_termination = TRUE
-                         ){
+){
   
-    if(verbose){print("finding biconnected components")}
+  if(verbose){print("finding biconnected components")}
   
   start_time_bigraph <- Sys.time()
   bigraph <- biconnected_components(g)
   if(verbose){print(paste("Biconnected components found. Time taken",
-                    round(as.numeric( difftime(Sys.time(), start_time_bigraph, units = "mins")), 1),
-                    "minutes."))}
+                          round(as.numeric( difftime(Sys.time(), start_time_bigraph, units = "mins")), 1),
+                          "minutes."))}
   
   #if the network cannot be decomposed into biconnected components then
   #create balanced blocks throughs an error and create_Stabilised blocks throughs an error
@@ -97,26 +97,26 @@ SETSe_bicomp <- function(g,
   if(bigraph$no==1){
     if(verbose){print("Network has no bi-connected components, running auto-SETSe instead")}
     embeddings_data <- auto_SETSe(g = g,
-                              force = force,
-                              distance = distance, 
-                              edge_name = edge_name,
-                              k = k,
-                              tstep = tstep, 
-                              tol = tol, #the force has to be scaled to the component 
-                              max_iter =  max_iter, 
-                              mass =  ifelse(is.null(mass), mass_adjuster(g, force = "force", resolution_limit = TRUE), mass), 
-                              sparse = sparse,
-                              sample = sample,
-                              static_limit = static_limit,
-                              hyper_iters = hyper_iters,
-                              hyper_tol = hyper_tol,
-                              hyper_max = hyper_max,
-                              drag_min = drag_min,
-                              drag_max = drag_max,
-                              tstep_change = tstep_change,
-                              verbose = verbose,
-                              include_edges = FALSE,
-                              noisey_termination = noisey_termination)
+                                  force = force,
+                                  distance = distance, 
+                                  edge_name = edge_name,
+                                  k = k,
+                                  tstep = tstep, 
+                                  tol = tol, #the force has to be scaled to the component 
+                                  max_iter =  max_iter, 
+                                  mass =  ifelse(is.null(mass), mass_adjuster(g, force = "force", resolution_limit = TRUE), mass), 
+                                  sparse = sparse,
+                                  sample = sample,
+                                  static_limit = static_limit,
+                                  hyper_iters = hyper_iters,
+                                  hyper_tol = hyper_tol,
+                                  hyper_max = hyper_max,
+                                  drag_min = drag_min,
+                                  drag_max = drag_max,
+                                  tstep_change = tstep_change,
+                                  verbose = verbose,
+                                  include_edges = FALSE,
+                                  noisey_termination = noisey_termination)
     
   } else {
     
@@ -132,79 +132,99 @@ SETSe_bicomp <- function(g,
                             "minutes.",
                             "Total number of bi-connected components",
                             bigraph$no))}
-  
-
-  
-  #find the largest component and use that as the origin block
-  OriginBlock_number <-balanced_blocks %>% map_dbl(~vcount(.x)) %>% which.max()
-
-  #total in network
-  total_force <- sum(abs(get.vertex.attribute(g, force)))
-  
-  if(!is.null(static_limit)){
-    #this if statement prevents an error if the static limit is null the below returns a numeric vector of 0 length
-    static_limit <- static_limit*sum(abs(get.vertex.attribute(balanced_blocks[[OriginBlock_number]], force)))/total_force
-  }
-  
-  #calculate the parameters of the largest block
-  if(verbose){print("Calculating Origin Block")}
-  
-  start_time_origin <- Sys.time()
-  OriginBlock <- auto_SETSe(g = balanced_blocks[[OriginBlock_number]],
-                            force = force,
-                            distance = distance, 
-                            edge_name = edge_name,
-                            k = k,
-                            tstep = tstep, 
-                            tol = tol*sum(abs(get.vertex.attribute(balanced_blocks[[OriginBlock_number]], force)))/total_force, #the force has to be scaled to the component 
-                            max_iter =  max_iter, 
-                            mass =  ifelse(is.null(mass), mass_adjuster(balanced_blocks[[OriginBlock_number]], 
-                                                                        force = "force", resolution_limit = TRUE), mass), 
-                            sparse = sparse,
-                            sample = sample,
-                            static_limit = static_limit,
-                            hyper_iters = hyper_iters,
-                            hyper_tol = hyper_tol,
-                            hyper_max = hyper_max,
-                            drag_min = drag_min,
-                            drag_max = drag_max,
-                            tstep_change = tstep_change,
-                            verbose = verbose,
-                            include_edges = FALSE,
-                            noisey_termination = noisey_termination)
-  
-  
-  if(verbose){print(paste("Origin block complete, time taken", 
-                          round(as.numeric( difftime(Sys.time(), start_time_origin, units = "mins")), 1), 
-                          "minutes. beginning remaining blocks"))}
-  
-  
-  #Calculate the height embeddings using the Orgin block as a base
-  embeddings_data <- Create_stabilised_blocks(g = g,
-                                              OriginBlock = OriginBlock,
-                                              OriginBlock_number = OriginBlock_number,
-                                              force = force,
-                                              k = "k",
-                                              distance = distance,
-                                              edge_name = edge_name,
-                                              tstep = tstep,
-                                              tol = tol,
-                                              max_iter = max_iter,
-                                              mass = mass,
-                                              sparse = sparse,
-                                              hyper_iters = hyper_iters,
-                                              hyper_tol = hyper_tol,
-                                              hyper_max = hyper_max,
-                                              drag_min = drag_min,
-                                              drag_max = drag_max,
-                                              tstep_change = tstep_change,
-                                              sample = sample,
-                                              static_limit = static_limit,
-                                              verbose = verbose,
-                                              bigraph = bigraph,
-                                              balanced_blocks = balanced_blocks,
-                                              noisey_termination = noisey_termination)
-  
+    
+    
+    
+    #find the largest component and use that as the origin block
+    OriginBlock_number <-balanced_blocks %>% map_dbl(~vcount(.x)) %>% which.max()
+    
+    #total in network
+    total_force <- sum(abs(get.vertex.attribute(g, force)))
+    
+    if(!is.null(static_limit)){
+      #this if statement prevents an error if the static limit is null the below returns a numeric vector of 0 length
+      static_limit <- static_limit*sum(abs(get.vertex.attribute(balanced_blocks[[OriginBlock_number]], force)))/total_force
+    }
+    
+    #calculate the parameters of the largest block
+    if(verbose){print("Calculating Origin Block")}
+    
+    
+    
+    #do special case solution for two nodes only
+    if(ecount(balanced_blocks[[OriginBlock_number]])==1){
+      
+      Prep <- SETSe_data_prep(g = balanced_blocks[[OriginBlock_number]], 
+                              force = force, 
+                              distance = distance, 
+                              mass = ifelse(is.null(mass), mass_adjuster(balanced_blocks[[OriginBlock_number]], 
+                                                                         force = "force", resolution_limit = TRUE), mass), 
+                              k = k,
+                              edge_name = edge_name,
+                              sparse = sparse)
+      
+      OriginBlock <- two_node_solution(g, Prep = Prep, auto_setse_mode = TRUE)
+      
+    } else {
+      
+      start_time_origin <- Sys.time()
+      OriginBlock <- auto_SETSe(g = balanced_blocks[[OriginBlock_number]],
+                                force = force,
+                                distance = distance, 
+                                edge_name = edge_name,
+                                k = k,
+                                tstep = tstep, 
+                                tol = tol*sum(abs(get.vertex.attribute(balanced_blocks[[OriginBlock_number]], force)))/total_force, #the force has to be scaled to the component 
+                                max_iter =  max_iter, 
+                                mass =  ifelse(is.null(mass), mass_adjuster(balanced_blocks[[OriginBlock_number]], 
+                                                                            force = "force", resolution_limit = TRUE), mass), 
+                                sparse = sparse,
+                                sample = sample,
+                                static_limit = static_limit,
+                                hyper_iters = hyper_iters,
+                                hyper_tol = hyper_tol,
+                                hyper_max = hyper_max,
+                                drag_min = drag_min,
+                                drag_max = drag_max,
+                                tstep_change = tstep_change,
+                                verbose = verbose,
+                                include_edges = FALSE,
+                                noisey_termination = noisey_termination)
+      
+    }
+    
+    
+    if(verbose){print(paste("Origin block complete, time taken", 
+                            round(as.numeric( difftime(Sys.time(), start_time_origin, units = "mins")), 1), 
+                            "minutes. beginning remaining blocks"))}
+    
+    
+    #Calculate the height embeddings using the Orgin block as a base
+    embeddings_data <- Create_stabilised_blocks(g = g,
+                                                OriginBlock = OriginBlock,
+                                                OriginBlock_number = OriginBlock_number,
+                                                force = force,
+                                                k = "k",
+                                                distance = distance,
+                                                edge_name = edge_name,
+                                                tstep = tstep,
+                                                tol = tol,
+                                                max_iter = max_iter,
+                                                mass = mass,
+                                                sparse = sparse,
+                                                hyper_iters = hyper_iters,
+                                                hyper_tol = hyper_tol,
+                                                hyper_max = hyper_max,
+                                                drag_min = drag_min,
+                                                drag_max = drag_max,
+                                                tstep_change = tstep_change,
+                                                sample = sample,
+                                                static_limit = static_limit,
+                                                verbose = verbose,
+                                                bigraph = bigraph,
+                                                balanced_blocks = balanced_blocks,
+                                                noisey_termination = noisey_termination)
+    
   } 
   # print("Height embeddings complete")
   

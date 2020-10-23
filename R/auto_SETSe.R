@@ -92,7 +92,7 @@ auto_SETSe <- function(g,
                           sparse = sparse)
   
   if(is.null(static_limit)){
-    static_limit <- sum(abs(vertex_attr(g, force)))
+    static_limit <- sum(abs(igraph::vertex_attr(g, force)))
   }
   
   #This is a safety feature!
@@ -104,7 +104,7 @@ auto_SETSe <- function(g,
   #This print out can be deleted, it is only here for debugging reasons
   #print(paste("static_limit", res_stat_limit ))
   
-  memory_df<-tibble(iteration = 1:(2+hyper_iters),
+  memory_df<-tibble::tibble(iteration = 1:(2+hyper_iters),
                     error = NA,
                     perc_change = NA,
                     log_ratio = NA,
@@ -369,7 +369,7 @@ auto_SETSe <- function(g,
   
   #Keep only value that actually have a residual force
   memory_df <- memory_df %>%
-    filter(!is.na(res_stat))
+    dplyr::filter(!is.na(res_stat))
   
   
   #If the smallest residual force is not less than the tolerance even after the minimum point hase been found

@@ -22,20 +22,21 @@ calc_tension_strain <- function(g, height_embeddings_df, distance = "distance", 
   #convert the character strings to symbols
   #afterwords the symbols can be evaluated by curly curly {{}}
   #Really replacing the sym function with inline .data[[]] would be better but I'll have to leave that for another time
-  distance <- sym(distance)
-  edge_name <- sym(edge_name)
-  k <- sym(k)
+  distance <- rlang::sym(distance)
+  edge_name <- rlang::sym(edge_name)
+  k <- rlang::sym(k)
   
-  Out <- as_data_frame(g, what = "edges") %>% as_tibble %>%
-    left_join(., height_embeddings_df %>% select(node, elevation), by = c("from"= "node")) %>%
-    left_join(., height_embeddings_df %>% select(node, elevation), by = c("to"= "node")) %>%
-    mutate(de = abs(elevation.x-elevation.y), #change in elevation
+  Out <- igraph::as_data_frame(g, what = "edges") %>% 
+    tibble::as_tibble(.) %>%
+    dplyr::left_join(., height_embeddings_df %>% dplyr::select(node, elevation), by = c("from"= "node")) %>%
+    dplyr::left_join(., height_embeddings_df %>% dplyr::select(node, elevation), by = c("to"= "node")) %>%
+    dplyr::mutate(de = abs(elevation.x-elevation.y), #change in elevation
            mean_e = (elevation.x+elevation.y)/2, #mean elevation for the edge. simply the mean elevation for the nodes at both ends
            H = sqrt(de^2 +({{distance}})^2), #The total length of the edge. This is the hypotenuse of the triangle
            tension = {{k}}*(H-{{distance}}), #The tension in the edge following Hooks law
            strain = (H-{{distance}})/{{distance}} #The mechanical strain of the edge
     ) %>% 
-    select({{edge_name}},de, mean_e, H, k, tension, strain)
+    dplyr::select({{edge_name}},de, mean_e, H, k, tension, strain)
   
   return(Out)
   

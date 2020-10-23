@@ -12,5 +12,8 @@ Imports:
     Matrix,
     rlang,
     igraph,
-    minpack.lm
-RoxygenNote: 7.1.0
+    purrr,
+    tibble,
+    minpack.lm,
+    magrittr
+RoxygenNote: 7.1.1

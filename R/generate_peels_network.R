@@ -61,9 +61,10 @@ generate_peels_network <- function(type){
     #Convert the sampled matrix elements to TRUE, this will be used for the edges
     logic_matrix[sample(sample_vect, df$edges , replace = FALSE)] <- TRUE
     
+    #get the corner position of the block in the total matrix
     x.start <- dplyr::pull(df, position.x)
     y.start <- dplyr::pull(df, position.y)
-    
+    #place the block within the total matrix
     full_matrix[x.start:(x.start+ncol(logic_matrix)-1), y.start:(y.start+nrow(logic_matrix)-1)] <- logic_matrix
     
     #END LOOP
@@ -76,19 +77,22 @@ generate_peels_network <- function(type){
   #subclass
   rownames(full_matrix) <-  rep(c("A_1", "B_1", "A_2", "B_2"), c(10, 10, 10, 10))
   
+  #convert adjacency matrix to graph adding in the class and sub class names as row and edge names.
+  #this makes creating the node properties easier
   g <-igraph::graph_from_adjacency_matrix(full_matrix, 
                                                mode = "undirected", 
                                                diag = FALSE, 
                                                add.colnames ="class", 
                                                add.rownames = "sub_class")
+  #convert back into dataframes
+  g_df <- igraph::as_data_frame(g, what = "both")
   
-  g_df <- as_data_frame(g, what = "both")
-  
-  g <- graph_from_data_frame(g_df$edges, 
+  #make the node the name column of the data
+  g <- igraph::graph_from_data_frame(g_df$edges, 
                         directed = FALSE,
                         vertices =   g_df$vertices %>%
-                          mutate(node = 1:40) %>%
-                          select(node, everything()))
+                          dplyr::mutate(node = 1:40) %>%
+                          dplyr::select(node, everything()))
   
   return(g)
   

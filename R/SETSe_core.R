@@ -92,8 +92,8 @@ SETSe_core <- function(node_embeddings,
   #Although it would be faster to use vectors, the matrix is used only a fraction of the iteration, so has
   #very little impact on speed.
   network_dynamics <- matrix(data = NA, nrow = max_iter/sample, ncol = 6) %>%
-    as_tibble(.name_repair = "minimal") %>%
-    set_names(c("Iter","t", "static_force", "kinetic_force", "potential_energy", "kinetic_energy")) %>%
+    tibble::as_tibble(.name_repair = "minimal") %>%
+    purrr::set_names(c("Iter","t", "static_force", "kinetic_force", "potential_energy", "kinetic_energy")) %>%
     as.matrix()
   
   network_dynamics_initial_value <- network_dynamics[1:2, ,drop = FALSE]
@@ -194,18 +194,18 @@ SETSe_core <- function(node_embeddings,
   }
   stop_time <- Sys.time()
   
-  time_taken_df <- tibble(time_diff = stop_time-start_time,
+  time_taken_df <- tibble::tibble(time_diff = stop_time-start_time,
                           nodes = nrow(node_embeddings),
                           edges = length(kvect))
   
   #Early termination causes NA values. These are removed by the below code
   #
   network_dynamics <- as.data.frame(network_dynamics) %>%
-    filter(complete.cases(.))
+    dplyr::filter(complete.cases(.))
   #combine all the vectors together again into a tibble
-  Out <- list(network_dynamics = bind_rows(as.data.frame(network_dynamics_initial_value), network_dynamics), 
-              node_embeddings = bind_cols(node_embeddings[,"node",drop=FALSE] , 
-                                          tibble(  force = force,
+  Out <- list(network_dynamics = dplyr::bind_rows(as.data.frame(network_dynamics_initial_value), network_dynamics), 
+              node_embeddings = dplyr::bind_cols(node_embeddings[,"node",drop=FALSE] , 
+                                          tibble::tibble(  force = force,
                                                    elevation = as.vector(elevation),
                                                    net_tension = as.vector(net_tension),
                                                    velocity = as.vector(velocity),
