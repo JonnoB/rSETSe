@@ -39,7 +39,7 @@
 #' @return A dataframe with the height embeddings of the network
 #' 
 #' 
-#' @export
+#' @noRd
 Create_stabilised_blocks <- function(g, 
                                      OriginBlock, 
                                      OriginBlock_number, 

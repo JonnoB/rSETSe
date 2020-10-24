@@ -9,7 +9,7 @@
 #' @details When a network is broken into bi-connected components the elevation of the nodes is relative to the
 #' local origin. This means all bi-connected components have there own "center of gravity". This function makes sure
 #' all nodes are relative to a fixed point
-#' 
+#' @noRd
 
 fix_elevation_to_origin <- function(relative_blocks, ArticulationVect){
   

@@ -34,7 +34,7 @@ Returns a list that contains all the parts needed to allow the SETSe family of f
 function to produce embeddings.
 }
 \description{
-This is a helper function that makes the `SETSe` function code easier to read.
+This is a helper function that makes the `SETSe` function code easier to read. Seldom used otherwise
 }
 \details{
 The file outputs a named list containing

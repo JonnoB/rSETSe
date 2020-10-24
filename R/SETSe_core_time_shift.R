@@ -41,7 +41,7 @@
 #'   For example if SETSe_bicomp is used then some simulations may contain as little as two nodes and 1 edge
 #' }
 #' 
-#' @export
+#' @noRd
 # Strips out all pre processing to make it as efficient and simple as possible
 
 SETSe_core_time_shift <- function(node_embeddings, 

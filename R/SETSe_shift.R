@@ -1,7 +1,6 @@
-#' SETSe algorith with time shift
-#'  
-#' The basic SETSe function with added tie shift. The time shift functionality automatically adjusts 
-#' the timestep if the convergence process is noisey
+#' SETSe algorithm with time shift
+#' 
+#' The basic SETSe function with added tie shift. The time shift functionality automatically adjusts the timestep if the convergence process is noisey
 #'  
 #' @param g An igraph object
 #' @param force A character string. This is the node attribute that contains the force the nodes exert on the network.
@@ -22,6 +21,7 @@
 #' If left blank the static limit is twice the system absolute mean force.
 #' @param tstep_change a numeric scaler. A value between 0 and one, the fraction the new timestep will be relative to the previous one
 #' this can stop the momentum of the nodes forcing a divergence, but also can slow down the process. default is TRUE.
+#' 
 #' @details This is the basic SETS embeddings algorithm, it outputs all elements of the embeddings as well as convergence dynamics. It is a
 #' wrapper around the core SETS algorithm which requires data preparation and only produces node embeddings and entwork dynamics. 
 #' There is little reason to use this function as \code{\link{auto_SETSe}} and \code{\link{SETSe_bicomp}} 
@@ -31,6 +31,7 @@
 #' as well as the convergence dynamics dataframe for the network.
 #' 
 #' @examples
+#' \dontrun{
 #' set.seed(234) #set the random see for generating the network
 #' g <- generate_peels_network(type = "E")
 #' embeddings <- g %>%
@@ -40,6 +41,7 @@
 #'                      positive_value = "A") %>%
 #' #embed the network using SETSe
 #'   SETSe_shift()
+#'   }
 #' @seealso \code{\link{auto_SETSe}} \code{\link{SETSe_bicomp}}
 #' @export
 

@@ -92,6 +92,7 @@ greatly speeds up the search for good parameter values. It increases the chance 
 More detail on auto-SETSe can be found in the paper "The spring bounces back" (Bourne 2020).
 }
 \examples{
+
 set.seed(234) #set the random see for generating the network
 
 g <- generate_peels_network(type = "E")
@@ -103,7 +104,7 @@ prepare_SETSe_binary(., node_names = "name", k = 1000,
                      positive_value = "A")
                      
 #embed the network using auto setse with default settings
-embeddings <- auto_SETSe(g)
+embeddings <- auto_SETSe(g_prep)
 
 }
 \seealso{

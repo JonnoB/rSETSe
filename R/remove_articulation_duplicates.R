@@ -9,7 +9,7 @@
 #' 
 #' @return A dataframe with with articulation nodes aggregated so that the dataframe has the same number of rows
 #' as nodes
-#' 
+#' @noRd
 
 
 remove_articulation_duplicates <- function(node_embeddings, ArticulationVect) {

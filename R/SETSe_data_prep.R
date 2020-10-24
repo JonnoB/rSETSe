@@ -1,6 +1,6 @@
 #'Preapre data for the `SETSe_core` function
 #'
-#'This is a helper function that makes the `SETSe` function code easier to read.
+#'This is a helper function that makes the `SETSe` function code easier to read. Seldom used otherwise
 #'
 #'The file outputs a named list containing 
 #'
@@ -36,24 +36,30 @@ SETSe_data_prep  <-function(g, force, distance, mass, edge_name = edge_name, k =
   #
   # These commmented out chunks are me trying to remove compilation errors that show up when I am using pkgdown
   #
-  
-  total_nodes <- igraph::vcount(g)
-
-  node_embeddings <-  data.frame(node = igraph::get.vertex.attribute(g, "name"),
-                                 force =  igraph::get.vertex.attribute(g, force),
-                                 elevation = rep(0, total_nodes),
-                                 net_tension = rep(0, total_nodes),
-                                 velocity = rep(0, total_nodes),
-                                 friction = rep(0, total_nodes),
-                                 stringsAsFactors = rep(FALSE, total_nodes))
+  # 
+  # total_nodes <- igraph::vcount(g)
+  # 
+  # node_embeddings <-  data.frame(node = igraph::get.vertex.attribute(g, "name"),
+  #                                force =  igraph::get.vertex.attribute(g, force),
+  #                                elevation = rep(0, total_nodes),
+  #                                net_tension = rep(0, total_nodes),
+  #                                velocity = rep(0, total_nodes),
+  #                                friction = rep(0, total_nodes))
     
   # node_embeddings <-  data.frame(node = igraph::get.vertex.attribute(g, "name"),
   #                                force =  igraph::get.vertex.attribute(g, force),
   #                                elevation = 0,
   #                                net_tension = 0,
   #                                velocity = 0,
-  #                                friction = 0,
-  #                                stringsAsFactors = FALSE)
+  #                                friction = 0)
+  node_embeddings <-  data.frame(node = igraph::get.vertex.attribute(g, name = "name"))
+  
+  node_embeddings$force <- igraph::get.vertex.attribute(g, name = force)
+  node_embeddings$elevation <-0
+  node_embeddings$net_tension <-0
+  node_embeddings$velocity <-0
+  node_embeddings$friction <-0
+
   
   node_embeddings$static_force <- node_embeddings$force
   node_embeddings$net_force <- node_embeddings$static_force

@@ -20,10 +20,9 @@
 #' @details The non_empty matrixhe row column position absolute index and transpose index of the edges in the matrix
 #' This means vectors can be used for most operation greatly reducing the amount of memory required and 
 #' providing a modest speed increase. The non_empty_matrix is propduced by the 'Prepare_data_for_find_network_balance' function.
-#'
+#' 
+#' @export
 # Strips out all pre processing to make it as efficient and simple as possible
-
-#caoacity, edge_name and flow are no longer used. If the preprocessing is all done in prep then distance can also be removed
 
 SETSe_core_expanded <- function(node_embeddings, ten_mat, non_empty_matrix, kvect, dvect, mass,
                              tstep, max_iter = 1000, coef_drag = 1, 

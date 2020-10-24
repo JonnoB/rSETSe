@@ -18,7 +18,7 @@ A list of two elements node_embeddings and network_dynamics. if `auto_setse_mode
 then a third element is returned the memory_df dataframe
 }
 \description{
-Uses a newton-raphson to solve the two node solution.
+Uses a newton-raphson to solve the two node solution. Seldom used outside of a 'SETSe' function
 }
 \details{
 a helper function inside the main SETSe suite of functions. However it can be used to solve two node graphs

@@ -2,10 +2,7 @@
 % Please edit documentation in R/SETSe_shift.R
 \name{SETSe_shift}
 \alias{SETSe_shift}
-\title{SETSe algorith with time shift
- 
-The basic SETSe function with added tie shift. The time shift functionality automatically adjusts 
-the timestep if the convergence process is noisey}
+\title{SETSe algorithm with time shift}
 \usage{
 SETSe_shift(
   g,
@@ -65,10 +62,7 @@ A list of three elements. A data frame with the height embeddings of the network
 as well as the convergence dynamics dataframe for the network.
 }
 \description{
-SETSe algorith with time shift
- 
-The basic SETSe function with added tie shift. The time shift functionality automatically adjusts 
-the timestep if the convergence process is noisey
+The basic SETSe function with added tie shift. The time shift functionality automatically adjusts the timestep if the convergence process is noisey
 }
 \details{
 This is the basic SETS embeddings algorithm, it outputs all elements of the embeddings as well as convergence dynamics. It is a
@@ -77,6 +71,7 @@ There is little reason to use this function as \code{\link{auto_SETSe}} and \cod
 are faster and easier to use.
 }
 \examples{
+\dontrun{
 set.seed(234) #set the random see for generating the network
 g <- generate_peels_network(type = "E")
 embeddings <- g \%>\%
@@ -86,6 +81,7 @@ prepare_SETSe_binary(., node_names = "name", k = 1000,
                      positive_value = "A") \%>\%
 #embed the network using SETSe
   SETSe_shift()
+  }
 }
 \seealso{
 \code{\link{auto_SETSe}} \code{\link{SETSe_bicomp}}

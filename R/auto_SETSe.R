@@ -41,6 +41,7 @@
 #' 
 #' @seealso \code{\link{SETSe}} \code{\link{SETSe_bicomp}}
 #' @examples
+#' 
 #' set.seed(234) #set the random see for generating the network
 #' 
 #' g <- generate_peels_network(type = "E")
@@ -52,7 +53,7 @@
 #'                      positive_value = "A")
 #'                      
 #' #embed the network using auto setse with default settings
-#' embeddings <- auto_SETSe(g)
+#' embeddings <- auto_SETSe(g_prep)
 #' 
 #' @export
 

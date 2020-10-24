@@ -10,7 +10,7 @@
 #' @details This function is used by the two_node_solution function to calculate the correct vertical distance between two nodes.
 #' It has very little functionality outside small networks or bi-connected components.
 #' 
-#' @export
+#' @noRd
 
 ForceV_from_angle <- function(target_angle = 5*pi/12, k, d=temp$d){
   

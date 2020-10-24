@@ -20,6 +20,7 @@ A list containing all the bi connected component where each component is balance
 \description{
 Separates the network into a series of bi-connected components that can be solved separately. 
 Solving smaller subgraphs using the bi-connected component method reduces the risk of network divergence.
+This function is seldom called independently of SETSe_bicomp
 }
 \details{
 When networks are separated into the bi-connected subgraphs or blocks. The overall network balance needs to be maintained. 
