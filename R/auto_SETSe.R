@@ -23,7 +23,8 @@
 #' @param static_limit Numeric. The maximum value the static force can reach before the algorithm terminates early. This
 #' prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
 #' If left blank the static limit is the system absolute mean force.
-#' @param inlcude_edges logical. An optional variable on wehther to calculate the edge tension and strain. Default is TRUE.
+#' @param verbose Logical. This value sets whether messages generated during the process are supressed or not.
+#' @param include_edges logical. An optional variable on wehther to calculate the edge tension and strain. Default is TRUE.
 #'  included for ease of integration into the bicomponent functions.
 #' @param noisey_termination Stop the process if the static force does not monotonically decrease.
 #' 

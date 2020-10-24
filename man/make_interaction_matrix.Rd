@@ -6,10 +6,16 @@
 \usage{
 make_interaction_matrix(target_df, node_component_df)
 }
+\arguments{
+\item{target_df}{A dataframe... I need to check what of}
+
+\item{node_component_df}{A dataframe representing the embedded nodes of a bi-conneceted component}
+}
 \description{
-This is a helper function for the recombine function used by stabilised block, It creates a sparse adjacency matrix
-that has the interaction between nodes and the floor/ceiling nodes of the articulation nodes on the shortest path
-between the origin node in the origin component and all the other nodes in the network.
+This is a helper function and is called by 'adjust_components' which is itself called by 'Create_stabilised_blocks_expanded' 
+used by stabilised block, It creates a sparse adjacency matrix that has the interaction between nodes and the 
+floor/ceiling nodes of the articulation nodes on the shortest path between the origin node in the origin 
+component and all the other nodes in the network.
 }
 \details{
 The networks created are bipartite

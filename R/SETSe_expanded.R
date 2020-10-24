@@ -11,9 +11,10 @@
 #' @param k A character string. This is k for the moment don't change it.
 #' @param mass A numeric. The mass in kg of the nodes, this is arbitrary and commonly 1 is used. 
 #' @param max_iter An interger. The maximum nuber of iterations before terminating the simulation
-#' @param frctmultiplier A numeric. A multplier used to tune the damping. Generally no need to twiddle
+#' @param coef_drag A numeric. A multplier used to tune the damping. Generally no need to twiddle
 #' @param tol A numeric. Early termination. If the dynamics of the nodes fall below this value the algortihm will be classed as 
 #' "converged" and the simulation terminates.
+#' @param sparse Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated
 #' @param verbose Logical value. Whether the function should output messages or run quietly.
 #' @param two_node_solution Logical. The newton-raphson algo is used to find the correct angle
 #' 
@@ -64,16 +65,16 @@ SETSe_expanded <- function(g,
       
     } else {
       #uses the non-linear optimiser from minpack.lm to find the solution to the two node special case, this is much faster
-      solution_angle <- nlsLM(Force ~ ForceV_from_angle(target_angle, k = k, d = d), 
+      solution_angle <- minpack.lm::nlsLM(Force ~ ForceV_from_angle(target_angle, k = k, d = d), 
                               start = c(target_angle = pi/4), 
                               data = list(Force = abs(Prep$node_embeddings$force[1]), k = Prep$Link$k, d = Prep$Link$distance), 
                               upper = pi/2,
-                              lower = 0) %>% coefficients()      
+                              lower = 0) %>% stats::coefficients()      
       
     }
     
     Out <- Prep$node_embeddings %>%
-      mutate(elevation = ifelse(force>0, 
+      dplyr::mutate(elevation = ifelse(force>0, 
                                 tan(solution_angle)/2, #height above mid point
                                 -tan(solution_angle)/2 ), #height below mid-point
              net_force = 0,
@@ -83,12 +84,12 @@ SETSe_expanded <- function(g,
                                   -abs(Prep$node_embeddings$force[1]), #height above mid point
                                   abs(Prep$node_embeddings$force[1]))
       )  %>%
-      slice(rep(1:n(), max_iter)) %>% #repeats the rows max_iter times so that
-      group_by(node) %>%
-      mutate(Iter = 1:max_iter,
+      dplyr::slice(rep(1:dplyr::n(), max_iter)) %>% #repeats the rows max_iter times so that
+      dplyr::group_by(node) %>%
+      dplyr::mutate(Iter = 1:max_iter,
              t = (tstep*Iter)) %>%
-      ungroup %>%
-      bind_rows(Prep$node_embeddings, .)
+      dplyr::ungroup %>%
+      dplyr::bind_rows(Prep$node_embeddings, .)
     
   } else{
     #Solves using the iterative method.   

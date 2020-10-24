@@ -12,7 +12,6 @@
 #' @param tol A numeric. The tolerance factor for early stopping.
 #' @param max_iter An integer. The maximum number of iterations before stopping. Larger networks usually need more iterations.
 #' @param mass A numeric. This is the mass constant of the nodes in normalised networks this is set to 1.
-#' @param verbose Logical. This value sets whether messages generated during the process are supressed or not.
 #' @param sparse Logical. Whether sparse matrices will be used. This becomes valubale for larger networks
 #' 
 #' @return A list containing 3 dataframes, the dataframe of the node embeddings, edge embeddings, and network dynamics
@@ -20,7 +19,6 @@
 SETSe_bicomp_expanded <- function(g, 
                           force = "force", 
                           distance = "distance", 
-                          capacity = "capacity", 
                           edge_name = "edge_name",
                           k = "k",
                           tstep,

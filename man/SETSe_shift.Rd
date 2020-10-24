@@ -57,9 +57,7 @@ This can greatly reduce the size of the results file for large numbers of iterat
 prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
 If left blank the static limit is twice the system absolute mean force.}
 
-\item{tstep_change}{a numeric scaler. A value between 0 and one, the fraction the new timestep will be relative to the previous one}
-
-\item{dynamic_reset}{Logical. Whether the dynamic portion of the emebeddings is reset to zero when the timestep is changed
+\item{tstep_change}{a numeric scaler. A value between 0 and one, the fraction the new timestep will be relative to the previous one
 this can stop the momentum of the nodes forcing a divergence, but also can slow down the process. default is TRUE.}
 }
 \value{

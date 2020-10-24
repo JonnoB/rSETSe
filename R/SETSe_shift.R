@@ -21,7 +21,6 @@
 #' prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
 #' If left blank the static limit is twice the system absolute mean force.
 #' @param tstep_change a numeric scaler. A value between 0 and one, the fraction the new timestep will be relative to the previous one
-#' @param dynamic_reset Logical. Whether the dynamic portion of the emebeddings is reset to zero when the timestep is changed
 #' this can stop the momentum of the nodes forcing a divergence, but also can slow down the process. default is TRUE.
 #' @details This is the basic SETS embeddings algorithm, it outputs all elements of the embeddings as well as convergence dynamics. It is a
 #' wrapper around the core SETS algorithm which requires data preparation and only produces node embeddings and entwork dynamics. 

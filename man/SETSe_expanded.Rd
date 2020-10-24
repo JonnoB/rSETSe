@@ -37,14 +37,16 @@ SETSe_expanded(
 
 \item{max_iter}{An interger. The maximum nuber of iterations before terminating the simulation}
 
+\item{coef_drag}{A numeric. A multplier used to tune the damping. Generally no need to twiddle}
+
 \item{tol}{A numeric. Early termination. If the dynamics of the nodes fall below this value the algortihm will be classed as 
 "converged" and the simulation terminates.}
+
+\item{sparse}{Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated}
 
 \item{verbose}{Logical value. Whether the function should output messages or run quietly.}
 
 \item{two_node_solution}{Logical. The newton-raphson algo is used to find the correct angle}
-
-\item{frctmultiplier}{A numeric. A multplier used to tune the damping. Generally no need to twiddle}
 }
 \description{
 This is a special case function which keeps the history of the network dynamics. It is useful for demonstrations. 

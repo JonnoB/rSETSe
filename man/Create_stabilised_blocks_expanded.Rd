@@ -23,6 +23,8 @@ Create_stabilised_blocks_expanded(
 \arguments{
 \item{g}{An igraph object}
 
+\item{OriginBlock}{An Igraph object. This is created by Create_balanced_blocks function}
+
 \item{OriginBlock_number}{An integer. this is the origin block chosen from the
 create_stable_blocks function. Usually this will be the largest block.}
 
@@ -44,7 +46,8 @@ create_stable_blocks function. Usually this will be the largest block.}
 
 \item{verbose}{Logical. This value sets whether messages generated during the process are supressed or not.}
 
-\item{Origin}{block}
+\item{sparse}{Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, 
+this could prob be automated}
 }
 \value{
 A dataframe with the height embeddings of the network

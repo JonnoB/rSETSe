@@ -32,7 +32,7 @@ two_node_solution <- function(g, Prep = Prep, auto_setse_mode = FALSE){
     solution_angle <- minpack.lm::nlsLM(Force ~ ForceV_from_angle(target_angle, k = k, d = d), 
                             start = c(target_angle = pi/4), 
                             data = list(Force = abs(Prep$node_embeddings$force[1]), k = Prep$Link$k, d = Prep$Link$distance), 
-                            upper = pi/2) %>% coefficients()      
+                            upper = pi/2) %>% stats::coefficients()      
     
 
     
@@ -67,7 +67,7 @@ two_node_solution <- function(g, Prep = Prep, auto_setse_mode = FALSE){
                                         static_force = 0, 
                                         kinetic_force = 0), 
               node_embeddings = temp,
-              time_taken = tibble(time_diff = stop_time - start_time, nodes = 2, edges = 1)
+              time_taken = tibble::tibble(time_diff = stop_time - start_time, nodes = 2, edges = 1)
   )
   
   if(auto_setse_mode){

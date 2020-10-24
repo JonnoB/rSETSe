@@ -38,7 +38,7 @@ generate_peels_network <- function(type){
   numeric_submatrix  <- matrix(1:submatrix_size, nrow = 10)  
   
   
-  peel_connection_2 <- peel_connection %>% dplyr::rename(edges = all_of(type))
+  peel_connection_2 <- peel_connection %>% dplyr::rename(edges = dplyr::all_of(type))
   
   
   #The loop that randomly samples the adjacency matrix of peels quintet 
@@ -92,7 +92,7 @@ generate_peels_network <- function(type){
                         directed = FALSE,
                         vertices =   g_df$vertices %>%
                           dplyr::mutate(node = 1:40) %>%
-                          dplyr::select(node, everything()))
+                          dplyr::select(node, dplyr::everything()))
   
   return(g)
   

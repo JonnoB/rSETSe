@@ -68,10 +68,12 @@ This can greatly reduce the size of the results file for large numbers of iterat
 prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
 If left blank the static limit is the system absolute mean force.}
 
-\item{noisey_termination}{Stop the process if the static force does not monotonically decrease.}
+\item{verbose}{Logical. This value sets whether messages generated during the process are supressed or not.}
 
-\item{inlcude_edges}{logical. An optional variable on wehther to calculate the edge tension and strain. Default is TRUE.
+\item{include_edges}{logical. An optional variable on wehther to calculate the edge tension and strain. Default is TRUE.
 included for ease of integration into the bicomponent functions.}
+
+\item{noisey_termination}{Stop the process if the static force does not monotonically decrease.}
 }
 \value{
 A list of four elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings, 

@@ -6,6 +6,14 @@
 \usage{
 adjust_components(g, max_iter, force)
 }
+\arguments{
+\item{g}{An igraph object of the network}
+
+\item{max_iter}{The maximum number of iterations used in the SETSe process}
+
+\item{force}{A character string  of the variable containing the network force}
+}
 \description{
-this is a fiendish internal function that I wish I had described in greater detail
+This function is only used by Create_stabilised_blocks_expanded. A much more efficient version is used by 
+'Create_stabilised_blocks'. If possible this function should be removed and replaced
 }

@@ -69,36 +69,36 @@ Create_stabilised_blocks <- function(g,
   BlockNumbers <-(1:length(balanced_blocks))[-OriginBlock_number]
   
   #total in network
-  total_force <- sum(abs(get.vertex.attribute(g, force)))
+  total_force <- sum(abs(igraph::get.vertex.attribute(g, force)))
   
   #Get timing for rest of process
   start_time_all_other_blocks <- Sys.time()
   
   StabilModels <- BlockNumbers %>% 
-    map(~{
+    purrr::map(~{
 
       #sub tol can be extremely small. if it is then I say that it is zero and effectively the nodes are left unconverged
       #again, it is worth considering the magnitude of force in the network
-      sub_tol <- tol*sum(abs(get.vertex.attribute(balanced_blocks[[.x]], force)))/total_force
+      sub_tol <- tol*sum(abs(igraph::get.vertex.attribute(balanced_blocks[[.x]], force)))/total_force
       sub_tol_larger_than_limit <- sub_tol> .Machine$double.eps^0.5
       sub_tol <- ifelse(sub_tol_larger_than_limit, sub_tol, tol)
       
       if(!is.null(static_limit)){
         
-      sub_static_limit <- static_limit*sum(abs(get.vertex.attribute(balanced_blocks[[.x]], force)))/total_force
+      sub_static_limit <- static_limit*sum(abs(igraph::get.vertex.attribute(balanced_blocks[[.x]], force)))/total_force
 
       } else {
         
-        sub_static_limit <- sum(abs(vertex_attr(g, force))) #NULL
+        sub_static_limit <- sum(abs(igraph::vertex_attr(g, force))) #NULL
         
       }
       
       #makes sure the static limit is not smaller than the machine precision. if it is bad things happen
-      sub_static_larger_than_limit <- sub_static_limit> .Machine$double.eps^0.5
+      sub_static_larger_than_limit <- sub_static_limit > .Machine$double.eps^0.5
       sub_static_limit <- ifelse(sub_static_larger_than_limit, sub_static_limit, static_limit)
       
       #do special case solution for two nodes only
-      if(ecount(balanced_blocks[[.x]])==1){
+      if(igraph::ecount(balanced_blocks[[.x]])==1){
         
         Prep <- SETSe_data_prep(g = balanced_blocks[[.x]], 
                                 force = force, 
@@ -146,7 +146,7 @@ Create_stabilised_blocks <- function(g,
         #This is not done for biconns of size 2 they are so fast and numerous
         print(paste("Block", .x, "of", max(BlockNumbers), 
                     "complete. bicomp has", 
-                    vcount(balanced_blocks[[.x]]), "nodes.",
+                    igraph::vcount(balanced_blocks[[.x]]), "nodes.",
                     " Time taken",
                     round(as.numeric( difftime(Sys.time(), start_time_block, units = "mins")), 1),
                     " minutes"))
@@ -167,16 +167,16 @@ Create_stabilised_blocks <- function(g,
                                 sparse = sparse)
         
         
-        Out <- list(network_dynamics = tibble(t = 0, 
+        Out <- list(network_dynamics = tibble::tibble(t = 0, 
                                               Iter = 0,
                                               static_force = 0, 
                                               kinetic_force = 0), 
                     node_embeddings = Prep$node_embeddings,
                     #NA value is included as the timing is not applicable.
                     #It also indicates that the forces were so small as to not rquire convergence
-                    time_taken = tibble(time_diff = NA, nodes = vcount(balanced_blocks[[.x]]), 
-                                        edges =  ecount(balanced_blocks[[.x]])),
-                    memory_df = tibble(iteration = 1,
+                    time_taken = tibble::tibble(time_diff = NA, nodes = igraph::vcount(balanced_blocks[[.x]]), 
+                                        edges =  igraph::ecount(balanced_blocks[[.x]])),
+                    memory_df = tibble::tibble(iteration = 1,
                                        error = NA,
                                        perc_change = NA,
                                        log_ratio = NA,
@@ -206,11 +206,11 @@ Create_stabilised_blocks <- function(g,
   
   start_reassembly <- Sys.time()
   #extract the articulation nodes
-  ArticulationVect <- get.vertex.attribute(g, "name", bigraph$articulation_points)
+  ArticulationVect <- igraph::get.vertex.attribute(g, "name", bigraph$articulation_points)
   
   #place all nodes relative to the origin
   relative_blocks <- 1:length(StabilModels) %>% 
-    map_df(~{
+    purrr::map_df(~{
       #print(.x) #It is a bit annoying and pointless now
       temp <- StabilModels[[.x]]$node_embeddings
       temp$Reference_ID <- .x
@@ -218,20 +218,20 @@ Create_stabilised_blocks <- function(g,
       return(temp)
       
     }) %>%
-    bind_rows(OriginBlock$node_embeddings %>% 
-                mutate(Reference_ID = 0)) %>%
-    mutate(Articulation_node = (node %in% ArticulationVect ))
+    dplyr::bind_rows(OriginBlock$node_embeddings %>% 
+                dplyr::mutate(Reference_ID = 0)) %>%
+    dplyr::mutate(Articulation_node = (node %in% ArticulationVect ))
   
   #get the network_dynamics dataframe for the total calculation
   network_dynamics <- 1:length(StabilModels) %>% 
-    map_df(~{
+    purrr::map_df(~{
       temp <- StabilModels[[.x]]$network_dynamics
       temp$component <-  BlockNumbers[.x]
       
       return(temp)
       
     }) %>%
-    bind_rows(OriginBlock$network_dynamics %>% mutate(component = OriginBlock_number))  #%>%
+    dplyr::bind_rows(OriginBlock$network_dynamics %>% dplyr::mutate(component = OriginBlock_number))  #%>%
     #It can also be useful to get the individual component values out.
     # group_by(Iter) %>%
     # summarise_all(sum) %>%
@@ -242,22 +242,22 @@ Create_stabilised_blocks <- function(g,
   #gets back the memory of the convergence process.
   #This is useful for knowing what logratio works for various network families
   memory_df <- 1:length(StabilModels) %>% 
-    map_df(~{
+    purrr::map_df(~{
       temp <- StabilModels[[.x]]$memory_df 
       temp$component <-  BlockNumbers[.x] #puts in the original block ordering so we can know which block was which
       return(temp)
     }) %>%
-    bind_rows(OriginBlock$memory_df %>% mutate(component = OriginBlock_number)) 
+    dplyr::bind_rows(OriginBlock$memory_df %>% dplyr::mutate(component = OriginBlock_number)) 
   
   
   time_taken_df <- 1:length(StabilModels) %>% 
-    map_df(~{
+    purrr::map_df(~{
       temp <- StabilModels[[.x]]$time_taken
       temp$component <-  BlockNumbers[.x] #puts in the original block ordering so we can know which block was which
       return(temp)
     }) %>%
-    bind_rows( OriginBlock$time_taken %>%
-                 mutate(component = OriginBlock_number)) 
+    dplyr::bind_rows( OriginBlock$time_taken %>%
+                 dplyr::mutate(component = OriginBlock_number)) 
   
   #The biconnected components are converted to absolute values from relative ones
   node_embeddings <- fix_elevation_to_origin(relative_blocks, ArticulationVect) 
@@ -266,11 +266,11 @@ Create_stabilised_blocks <- function(g,
   #this bind rows takes place as, there are vastly more non-articulation nodes than 
   #articulation nodes, this can mean and absolutely massive number of groups which is very slow to summarise
   #by aggregating only the necessary nodes it will be much faster
-  node_embeddings <- bind_rows(node_embeddings[!(node_embeddings$node %in% ArticulationVect),],
+  node_embeddings <- dplyr::bind_rows(node_embeddings[!(node_embeddings$node %in% ArticulationVect),],
                                remove_articulation_duplicates(node_embeddings, ArticulationVect))  %>%
     #friction is different depending on the biconnected component so is meaningless in the overall analysis
     #Poissibly could use the drag for the major biconn
-    mutate(
+    dplyr::mutate(
       friction = NA,#coef_drag * velocity,
       static_force = force + net_tension,
       net_force = NA,#static_force - friction,
@@ -278,7 +278,7 @@ Create_stabilised_blocks <- function(g,
                                                                    force = "force", resolution_limit = TRUE), mass),
       t = 1,
       t = tstep * Iter) %>%
-    arrange(node)
+    dplyr::arrange(node)
   
   if(verbose){print(paste("Re-assembly complete, time taken", 
                           round(as.numeric( difftime(Sys.time(), start_reassembly, units = "mins")), 1), 
