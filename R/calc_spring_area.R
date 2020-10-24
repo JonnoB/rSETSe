@@ -10,17 +10,17 @@
 #' 
 calc_spring_area <- function(g, value, minimum_value, range){
 
-  temp <- as_data_frame(g) %>% as_tibble %>%
-    rename(value_2 = !!value) %>%
-    mutate(
+  temp <- igraph::as_data_frame(g) %>% tibble::as_tibble %>%
+    dplyr::rename(value_2 = !!value) %>%
+    dplyr::mutate(
       value_2 = abs(value_2),
-           A = case_when(
+           A = dplyr::case_when(
              is.finite(value_2) ~  range*(value_2 - min(value_2))/(max(value_2)-min(value_2)) + minimum_value,
              TRUE ~range + minimum_value
            ),
             
            A = ifelse(is.finite(A), A, minimum_value)) #prevents NaNs from 0 values or other such annoying stuff
   
-  g2 <- set.edge.attribute(g, "Area", value = temp$A)
+  g2 <- igraph::set.edge.attribute(g, "Area", value = temp$A)
   return(g2)
 }

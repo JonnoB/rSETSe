@@ -37,23 +37,23 @@ SETSe_data_prep  <-function(g, force, distance, mass, edge_name = edge_name, k =
   # These commmented out chunks are me trying to remove compilation errors that show up when I am using pkgdown
   #
   
-  #  total_nodes <- igraph::vcount(g)
+  total_nodes <- igraph::vcount(g)
 
-  # node_embeddings <-  data.frame(node = igraph::get.vertex.attribute(g, "name"), 
-  #                                force =  igraph::get.vertex.attribute(g, force),
-  #                                elevation = rep(0, total_nodes),
-  #                                net_tension = rep(0, total_nodes), 
-  #                                velocity = rep(0, total_nodes), 
-  #                                friction = rep(0, total_nodes),
-  #                                stringsAsFactors = rep(FALSE, total_nodes))
-    
   node_embeddings <-  data.frame(node = igraph::get.vertex.attribute(g, "name"),
                                  force =  igraph::get.vertex.attribute(g, force),
-                                 elevation = 0,
-                                 net_tension = 0,
-                                 velocity = 0,
-                                 friction = 0,
-                                 stringsAsFactors = FALSE)
+                                 elevation = rep(0, total_nodes),
+                                 net_tension = rep(0, total_nodes),
+                                 velocity = rep(0, total_nodes),
+                                 friction = rep(0, total_nodes),
+                                 stringsAsFactors = rep(FALSE, total_nodes))
+    
+  # node_embeddings <-  data.frame(node = igraph::get.vertex.attribute(g, "name"),
+  #                                force =  igraph::get.vertex.attribute(g, force),
+  #                                elevation = 0,
+  #                                net_tension = 0,
+  #                                velocity = 0,
+  #                                friction = 0,
+  #                                stringsAsFactors = FALSE)
   
   node_embeddings$static_force <- node_embeddings$force
   node_embeddings$net_force <- node_embeddings$static_force
@@ -88,7 +88,7 @@ SETSe_data_prep  <-function(g, force, distance, mass, edge_name = edge_name, k =
     #This means vectors can be used for most operation greatly reducing the amount of memory required and 
     #providing a modest speed increase.
     
-    Adj2 <- as(Adj, "dgTMatrix")
+    Adj2 <- methods::as(Adj, "dgTMatrix")
     
     non_empty_matrix <-cbind(i = Adj2@i + 1, j = Adj2@j + 1) %>% 
       tibble::tibble(#names = rownames(.), 
@@ -109,7 +109,7 @@ SETSe_data_prep  <-function(g, force, distance, mass, edge_name = edge_name, k =
       Adj  <- as.matrix(Adj)} else 
       {
         #converts from sparse matrix of form  dgCMatrix to dsCMatrix 
-        Adj <- as(Adj, "symmetricMatrix") 
+        Adj <- methods::as(Adj, "symmetricMatrix") 
       }
     
     #The outlist of the variables needed for find_stabil_system

@@ -131,14 +131,14 @@ SETSe_core_expanded <- function(node_embeddings, ten_mat, non_empty_matrix, kvec
   Iter_vect <- rep(1:max_iter, each = total_nodes)# The vector cannot be directly generated in mutate I don't know why.
   #Iter vect needs the iteration number to be repeated x times then the next iteration repeated x times. This is
   #different to the node name repetition
-  results <- as_tibble(results) %>%
-    mutate(node = node_embeddings[rep(1:total_nodes, times = nrow(results)/total_nodes),"node"], #the nodename sequence needs to be repeated x times
+  results <- tibble::as_tibble(results) %>%
+    dplyr::mutate(node = node_embeddings[rep(1:total_nodes, times = nrow(results)/total_nodes),"node"], #the nodename sequence needs to be repeated x times
            Iter = Iter_vect,
            t = tstep*Iter) %>%
-    filter(complete.cases(.))
+    dplyr::filter(stats::complete.cases(.))
   
 
-  Out <-bind_rows(node_embeddings,
+  Out <- dplyr::bind_rows(node_embeddings,
                   results )   #list(as_tibble(network_dynamics), )
   #names(Out) <- c("network_dynamics", "node_embeddings")
   

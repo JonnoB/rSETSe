@@ -75,7 +75,7 @@ SETSe_core_time_shift <- function(node_embeddings,
   acceleration <- acceleration_saved <- NodeList[,8]
   
   if(sparse){
-    ten_mat <- as(ten_mat, "dgTMatrix") # this is done as Dgt alllows direct insertion of tension without indexing. It 
+    ten_mat <- methods::as(ten_mat, "dgTMatrix") # this is done as Dgt alllows direct insertion of tension without indexing. It 
     #is much faster than the standard format which does require indexing. This is despite dgt being slower to sum the columns
   }
   
@@ -248,7 +248,7 @@ SETSe_core_time_shift <- function(node_embeddings,
   #Early termination causes NA values. These are removed by the below code
   #
   network_dynamics <- as.data.frame(network_dynamics) %>%
-    dplyr::filter(complete.cases(.))
+    dplyr::filter(stats::complete.cases(.))
   #combine all the vectors together again into a tibble
   Out <- list(network_dynamics = dplyr::bind_rows(as.data.frame(network_dynamics_initial_value), network_dynamics), 
               node_embeddings = dplyr::bind_cols(node_embeddings[,"node",drop=FALSE] , 

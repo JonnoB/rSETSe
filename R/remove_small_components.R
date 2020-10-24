@@ -14,10 +14,10 @@
 
 remove_small_components <- function(g){
   
-  components_info <- components(g)
+  components_info <- igraph::components(g)
   max_comp <- which.max(components_info$csize)
   
-  g <- delete.vertices(g, components_info$membership != max_comp)
+  g <- igraph::delete.vertices(g, components_info$membership != max_comp)
   
   return(g)
   

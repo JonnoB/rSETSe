@@ -23,10 +23,10 @@
 #' 
 calc_spring_constant <- function(g, E = "E", A = "A", distance = "distance"){
 
-  temp <- as_data_frame(g) %>% as.tibble %>%
-    mutate(k = .data[[E]]*.data[[A]]/.data[[distance]])
+  temp <- igraph::as_data_frame(g) %>% tibble::as.tibble %>%
+    dplyr::mutate(k = rlang::.data[[E]]*rlang::.data[[A]]/rlang::.data[[distance]])
 
   
-  g2 <- set.edge.attribute(g, "k", value = temp$k)
+  g2 <- igraph::set.edge.attribute(g, "k", value = temp$k)
   return(g2)
 }

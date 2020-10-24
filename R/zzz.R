@@ -1,3 +1,7 @@
+#This file contains the global variables.
+#These variables are usually values that are created by functions and then referenced by other functions
+#This leads R to think there might be an error when the R CMD checks are being performed.
+#By adding these variables to the global functions this becomes clear there is no error
 utils::globalVariables(c("from", 
                          "to", 
                          "node",
@@ -19,4 +23,8 @@ utils::globalVariables(c("from",
                          "strain",
                          "position.x",
                          "position.y",
+                         "rows", #in SETSe_data_prep
+                         "cols", #in SETSe_data_prep
+                         "A", #the area variable in calc_spring_area
+                         "value_2", #calc_spring_area
                          "."))
