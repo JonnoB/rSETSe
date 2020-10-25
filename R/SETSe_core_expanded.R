@@ -15,13 +15,12 @@
 #' @param coef_drag A numeric value. Used to set a multiplier on the friction value. Generally leave this alone..s.
 #' @param tol A numeric. The tolerance factor for early stopping.
 #' @param sparse Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated
-#' @export
 #' 
 #' @details The non_empty matrixhe row column position absolute index and transpose index of the edges in the matrix
 #' This means vectors can be used for most operation greatly reducing the amount of memory required and 
 #' providing a modest speed increase. The non_empty_matrix is propduced by the 'Prepare_data_for_find_network_balance' function.
 #' 
-#' @export
+#' @noRd
 # Strips out all pre processing to make it as efficient and simple as possible
 
 SETSe_core_expanded <- function(node_embeddings, ten_mat, non_empty_matrix, kvect, dvect, mass,

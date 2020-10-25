@@ -12,7 +12,7 @@
 #' A list of two elements node_embeddings and network_dynamics. if `auto_setse_mode==TRUE` 
 #' then a third element is returned the memory_df dataframe
 #' 
-#' @export
+#' @noRd
 #' 
 two_node_solution <- function(g, Prep = Prep, auto_setse_mode = FALSE){
   

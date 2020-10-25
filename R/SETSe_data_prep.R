@@ -21,7 +21,7 @@
 #' @return Returns a list that contains all the parts needed to allow the SETSe family of functions and the two_node_solution
 #' function to produce embeddings.
 #' 
-#' @export
+#' @noRd
 
 SETSe_data_prep  <-function(g, force, distance, mass, edge_name = edge_name, k = "k", sparse = FALSE){
   #this is a helper function that goes inside the the find network balance function to help make the code easier to read

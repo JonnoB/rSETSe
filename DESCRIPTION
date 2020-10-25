@@ -1,9 +1,20 @@
 Package: rSETSe
-Title: Calculating the Strain Elevation Tension Spring embeddings for a network
+Title: Strain Elevation Tension Spring embedding
 Version: 0.3
-Authors@R: person("Jonathan", "Bourne", email = "jonathan.bourne.15@ucl.ac.uk.com", role = c("aut", "cre"))
-Description: This package is used to calculate the Strain Elevation and Tension embeddings produced by the SETSe algorithm.
-Depends: R (>= 3.4.2)
+Authors@R: 
+    c(person(given = "Jonathan",
+           family = "Bourne",
+           role = c("aut", "cre"),
+           email = "jonathan.s.bourne@gmail.com",
+           comment = c(ORCID = "0000-0003-2616-3716"))
+           )
+Description: An R implementation for the Strain Elevation and Tension embedding algorithm. The package embeds graph and networks using the Strain Elevation and Tension 
+	embeddings produced by the SETSe algorithm. This SETSe represents the network as a physical system, where edges are elastic and nodes exert a force either up 
+	or down based on node features. SETSe positions the nodes vertically such that the tension in the edges of a node is equal and opposite to the force it exerts 
+	for all nodes in the network. The resultant structure can then be analysed by looking at the node elevation and the edge strain and tension. This algorithm works 
+	on weighted and unweighted networks as well as networks with or without explicit node features. Edge elasticity can be created from existing edge weights or kept 
+	as a constant.
+Depends: R (>= 3.4.0)
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
