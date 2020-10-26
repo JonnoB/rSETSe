@@ -28,8 +28,20 @@
 #' }
 #' 
 #' @return A network with the correct edge and node attributes for the embeddings process.
-#'  
+#'
 #' @seealso \code{\link{SETSe}}, \code{\link{SETSe_auto}}, \code{\link{prepare_SETSe_binary}}
+#' @examples 
+#' \dontrun{
+#' library(dplyr)
+#' embeddings <- two_bicomponents %>%
+#' #prepare the network for a binary embedding
+#' #k is already present in the data so is left null in the preparation function
+#' prepare_SETSe_continuous(., node_names = "name", k = NULL, 
+#'                         force_var = "force") %>%
+#' #embed the network using auto setse
+#' #in the two_bicomponents dataset the edge weights are used directly as k values
+#' SETSe_auto(k = "weight")
+#'  }
 #' @export
 
 prepare_SETSe_continuous <- function(g, node_names, k = NULL, force_var, sum_to_one = TRUE, distance = 1){
@@ -40,7 +52,7 @@ prepare_SETSe_continuous <- function(g, node_names, k = NULL, force_var, sum_to_
   
   edges_df <- g_list$edges %>%
     dplyr::mutate(distance = distance,
-           edge_name = paste(from, to, sep ="-"))
+                  edge_name = paste(from, to, sep ="-"))
   
   if(!is.null(k)){
     edges_df <- edges_df %>% 
@@ -51,7 +63,7 @@ prepare_SETSe_continuous <- function(g, node_names, k = NULL, force_var, sum_to_
   
   vertices_df <- vertices_df %>%
     dplyr::mutate(force = {{force_var_sym}},
-           force = force - mean(force))
+                  force = force - mean(force))
   
   if(sum_to_one){
     

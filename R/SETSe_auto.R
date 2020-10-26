@@ -1,4 +1,4 @@
-#' Auto SETSe
+#' SETSe embedding with automatic drag and timestep selection
 #'
 #' Uses a grid search and a binary search to find appropriate convergence conditions.
 #' 

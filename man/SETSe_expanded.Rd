@@ -2,11 +2,11 @@
 % Please edit documentation in R/SETSe_expanded.R
 \name{SETSe_expanded}
 \alias{SETSe_expanded}
-\title{Calculate SETSe expanded version}
+\title{SETSe embedding showing full convergence history}
 \usage{
 SETSe_expanded(
   g,
-  force = "net_generation",
+  force = "force",
   distance = "distance",
   edge_name = "edge_name",
   k = "k",
@@ -48,7 +48,34 @@ SETSe_expanded(
 
 \item{two_node_solution}{Logical. The newton-raphson algo is used to find the correct angle}
 }
+\value{
+A list of four elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings, 
+the convergence dynamics dataframe for the network as well as the search history for convergence criteria of the network
+}
 \description{
 This is a special case function which keeps the history of the network dynamics. It is useful for demonstrations. 
 or Parametrizing difficult networks
+}
+\examples{
+
+\dontrun{
+ library(ggplot)
+ set.seed(234)
+ g_prep <- generate_peels_network("E") \%>\%
+   prepare_SETSe_binary(., node_names = "name", k = 1000, 
+                        force_var = "class", 
+                        positive_value = "A")
+ 
+ #the base configuration does not work
+ divergent_result <- SETSe_expanded(g_prep)
+ 
+ #with a smaller timestep the algorithm converges
+ convergent_result <- SETSe_expanded(g_prep, tstep = 0.002)
+ 
+ #plot the results for a given node
+ convergent_result \%>\%
+   filter(node \%in\% c(1, 5, 18)) \%>\%
+   ggplot(aes(x = t, y = net_force, colour = node)) + geom_line()
+ 
+} 
 }

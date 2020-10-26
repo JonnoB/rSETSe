@@ -2,7 +2,7 @@
 % Please edit documentation in R/calc_tension_strain.R
 \name{calc_tension_strain}
 \alias{calc_tension_strain}
-\title{Calculate line tension and strain}
+\title{Calculate line tension and strain from the topology and node embeddings}
 \usage{
 calc_tension_strain(
   g,
@@ -29,10 +29,28 @@ the change in elevation, The final distance between the two nodes (the hypotenus
 the spring constant k, the edge tension, the edge strain, and the mean elevation.
 }
 \description{
-This function calculates the line  tension and strain characteristics for the edges in a graph
+This function calculates the line tension and strain characteristics for the edges in a graph.
+It is called by default by all the embedding functions (SETSe_*) but is included here for completness.
 }
 \details{
-Whilst the nodet_embeddings dataframe contains the elevation of the SETSe alogirthm this function produces a data frame that contains the Tension
+Whilst the node embeddings dataframe contains the elevation of the SETSe alogirthm this function produces a data frame that contains the Tension
 and Strain. The dataframe that is returned contains a substantial amount of line information so reducing the number of variables may be
 necessary if the data frame will be merged with previously generated data as there could be multiple columns of the same value.
+This function is called by default at the end of all SETSe functions
+}
+\examples{
+\dontrun{
+set.seed(234) #set the random see for generating the network
+g <- generate_peels_network(type = "E") \%>\%
+#prepare the network for a binary embedding
+prepare_SETSe_binary(., node_names = "name", k = 1000, 
+                     force_var = "class", 
+                     positive_value = "A") 
+#embed the network using auto setse
+ embeddings <- SETSe_auto()
+  
+ edge_embeddings_df <- calc_tension_strain(g, embeddings$node_embeddings)
+ all_equal(embeddings$edge_embeddings, edge_embeddings_df) 
+ 
+ }
 }

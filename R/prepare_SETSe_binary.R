@@ -26,7 +26,9 @@
 #' 
 #' @return A network with the correct edge and node attributes for the embeddings process.
 #' 
+#' @seealso \code{\link{SETSe}}, \code{\link{SETSe_auto}}, \code{\link{SETSe_bicomp}}, \code{\link{prepare_SETSe_continuous}}
 #' @examples
+#' \dontrun{
 #' set.seed(234) #set the random see for generating the network
 #' g <- generate_peels_network(type = "E")
 #' embeddings <- g %>%
@@ -36,7 +38,7 @@
 #'                      positive_value = "A") %>%
 #' #embed the network using auto setse
 #'   SETSe_auto()
-#' @seealso \code{\link{SETSe}}, \code{\link{SETSe_auto}}, \code{\link{SETSe_bicomp}}, \code{\link{prepare_SETSe_continuous}}
+#'  }
 #' @export
 
 prepare_SETSe_binary <- function(g, node_names, k = NULL, force_var, positive_value, sum_to_one = TRUE, distance = 1){

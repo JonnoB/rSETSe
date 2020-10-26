@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Calculate line tension and strain — calc_tension_strain • rSETSe</title>
+<title>Calculate line tension and strain from the topology and node embeddings — calc_tension_strain • rSETSe</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -46,8 +46,9 @@
 
 
 
-<meta property="og:title" content="Calculate line tension and strain — calc_tension_strain" />
-<meta property="og:description" content="This function calculates the line  tension and strain characteristics for the edges in a graph" />
+<meta property="og:title" content="Calculate line tension and strain from the topology and node embeddings — calc_tension_strain" />
+<meta property="og:description" content="This function calculates the line tension and strain characteristics for the edges in a graph.
+It is called by default by all the embedding functions (SETSe_*) but is included here for completness." />
 <meta property="og:image" content="/logo.png" />
 
 
@@ -111,13 +112,14 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Calculate line tension and strain</h1>
+    <h1>Calculate line tension and strain from the topology and node embeddings</h1>
     
     <div class="hidden name"><code>calc_tension_strain.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>This function calculates the line  tension and strain characteristics for the edges in a graph</p>
+    <p>This function calculates the line tension and strain characteristics for the edges in a graph.
+It is called by default by all the embedding functions (SETSe_*) but is included here for completness.</p>
     </div>
 
     <pre class="usage"><span class='fu'>calc_tension_strain</span><span class='op'>(</span>
@@ -160,10 +162,27 @@ the change in elevation, The final distance between the two nodes (the hypotenus
 the spring constant k, the edge tension, the edge strain, and the mean elevation.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>Whilst the nodet_embeddings dataframe contains the elevation of the SETSe alogirthm this function produces a data frame that contains the Tension
+    <p>Whilst the node embeddings dataframe contains the elevation of the SETSe alogirthm this function produces a data frame that contains the Tension
 and Strain. The dataframe that is returned contains a substantial amount of line information so reducing the number of variables may be
-necessary if the data frame will be merged with previously generated data as there could be multiple columns of the same value.</p>
+necessary if the data frame will be merged with previously generated data as there could be multiple columns of the same value.
+This function is called by default at the end of all SETSe functions</p>
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
+<span class='fu'><a href='https://rdrr.io/r/base/Random.html'>set.seed</a></span><span class='op'>(</span><span class='fl'>234</span><span class='op'>)</span> <span class='co'>#set the random see for generating the network</span>
+<span class='va'>g</span> <span class='op'>&lt;-</span> <span class='fu'><a href='generate_peels_network.html'>generate_peels_network</a></span><span class='op'>(</span>type <span class='op'>=</span> <span class='st'>"E"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+<span class='co'>#prepare the network for a binary embedding</span>
+<span class='fu'><a href='prepare_SETSe_binary.html'>prepare_SETSe_binary</a></span><span class='op'>(</span><span class='va'>.</span>, node_names <span class='op'>=</span> <span class='st'>"name"</span>, k <span class='op'>=</span> <span class='fl'>1000</span>, 
+                     force_var <span class='op'>=</span> <span class='st'>"class"</span>, 
+                     positive_value <span class='op'>=</span> <span class='st'>"A"</span><span class='op'>)</span> 
+<span class='co'>#embed the network using auto setse</span>
+ <span class='va'>embeddings</span> <span class='op'>&lt;-</span> <span class='fu'><a href='SETSe_auto.html'>SETSe_auto</a></span><span class='op'>(</span><span class='op'>)</span>
+  
+ <span class='va'>edge_embeddings_df</span> <span class='op'>&lt;-</span> <span class='fu'>calc_tension_strain</span><span class='op'>(</span><span class='va'>g</span>, <span class='va'>embeddings</span><span class='op'>$</span><span class='va'>node_embeddings</span><span class='op'>)</span>
+ <span class='fu'>all_equal</span><span class='op'>(</span><span class='va'>embeddings</span><span class='op'>$</span><span class='va'>edge_embeddings</span>, <span class='va'>edge_embeddings_df</span><span class='op'>)</span> 
+ 
+ <span class='op'>}</span>
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

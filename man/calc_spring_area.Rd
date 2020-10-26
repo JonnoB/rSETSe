@@ -2,19 +2,41 @@
 % Please edit documentation in R/calc_spring_area.R
 \name{calc_spring_area}
 \alias{calc_spring_area}
-\title{Calculate the youngs modulus of the spring}
+\title{Calculate the cross sectional area of the edge}
 \usage{
 calc_spring_area(g, value, minimum_value, range)
 }
 \arguments{
 \item{g}{an igraph object. The graph representing the network}
 
-\item{value}{a character string. The name of the edge atribute that is used as value}
+\item{value}{a character string. The name of the edge attribute that is used as value from which Area will be calculated}
 
-\item{minimum_value}{a numeric value. Indicating the most stretchy value of youngs modulus}
+\item{minimum_value}{a numeric value. Indicating the most thinnest edge}
 
-\item{range}{a numeric value. This gives the range of A values above the minimum, the maximum value value.}
+\item{range}{a numeric value. This gives the range of A values above the minimum.}
+}
+\value{
+a igraph object with the new edge attribute "Area" for each edge
 }
 \description{
-This function adds the graph characteristic A which is the cross sectional area of the springy.
+This function adds the graph characteristic A which is the cross sectional area of the edge.
+}
+\details{
+This function is pretty niche but calculates a cross sectional area of an edge.
+This is useful when you wish to calculate the spring coefficient k using Young's modulus. 
+The function coerces and edge characteristic to be within a certain range of values preventing
+negative/zero/infinate values.
+}
+\examples{
+ 
+\dontrun{
+library(igraph)
+set.seed(234)
+g_prep <- generate_peels_network("A") \%>\%
+ set.edge.attribute(., name = "edge_characteristic", value = rep(1:16, each = 10))
+
+g <- calc_spring_area(g_prep, value = "edge_characteristic", minimum_value = 10, range = 20)
+
+get.edge.attribute(g, "Area")
+}
 }

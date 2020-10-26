@@ -1,6 +1,7 @@
-#' SETSe algorithm with time shift
+#' SETSe algorithm with automatic timestep adjustment
 #' 
-#' The basic SETSe function with added tie shift. The time shift functionality automatically adjusts the timestep if the convergence process is noisey
+#' The basic SETSe function with added timestep adjustment. 
+#' The time shift functionality automatically adjusts the timestep if the convergence process is noisey
 #'  
 #' @param g An igraph object
 #' @param force A character string. This is the node attribute that contains the force the nodes exert on the network.
@@ -40,7 +41,7 @@
 #'                      force_var = "class", 
 #'                      positive_value = "A") %>%
 #' #embed the network using SETSe
-#'   SETSe_shift()
+#'   SETSe_shift(., tstep = 0.002)
 #'   }
 #' @seealso \code{\link{SETSe_auto}} \code{\link{SETSe_bicomp}}
 #' @export

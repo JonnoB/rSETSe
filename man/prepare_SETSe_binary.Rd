@@ -51,6 +51,7 @@ The function adds the node attribute 'force' and the edge attribute 'k' unless k
 }
 }
 \examples{
+\dontrun{
 set.seed(234) #set the random see for generating the network
 g <- generate_peels_network(type = "E")
 embeddings <- g \%>\%
@@ -60,6 +61,7 @@ prepare_SETSe_binary(., node_names = "name", k = 1000,
                      positive_value = "A") \%>\%
 #embed the network using auto setse
   SETSe_auto()
+ }
 }
 \seealso{
 \code{\link{SETSe}}, \code{\link{SETSe_auto}}, \code{\link{SETSe_bicomp}}, \code{\link{prepare_SETSe_continuous}}

@@ -1,4 +1,4 @@
-#' Bi-component SETSe embedding
+#' SETSe embedding on each bi-connected component using SETSe_auto
 #' 
 #' Performs the SETS embedding on a network using the bi-connected component/block-tree method. This is the most reliable method to 
 #' perform SETSe embeddings and can be substantially quicker on unsual networks.

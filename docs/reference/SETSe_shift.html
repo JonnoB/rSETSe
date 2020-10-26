@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>SETSe algorithm with time shift — SETSe_shift • rSETSe</title>
+<title>SETSe algorithm with automatic timestep adjustment — SETSe_shift • rSETSe</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -46,8 +46,9 @@
 
 
 
-<meta property="og:title" content="SETSe algorithm with time shift — SETSe_shift" />
-<meta property="og:description" content="The basic SETSe function with added tie shift. The time shift functionality automatically adjusts the timestep if the convergence process is noisey" />
+<meta property="og:title" content="SETSe algorithm with automatic timestep adjustment — SETSe_shift" />
+<meta property="og:description" content="The basic SETSe function with added timestep adjustment. 
+The time shift functionality automatically adjusts the timestep if the convergence process is noisey" />
 <meta property="og:image" content="/logo.png" />
 
 
@@ -111,13 +112,14 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>SETSe algorithm with time shift</h1>
+    <h1>SETSe algorithm with automatic timestep adjustment</h1>
     
     <div class="hidden name"><code>SETSe_shift.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>The basic SETSe function with added tie shift. The time shift functionality automatically adjusts the timestep if the convergence process is noisey</p>
+    <p>The basic SETSe function with added timestep adjustment. 
+The time shift functionality automatically adjusts the timestep if the convergence process is noisey</p>
     </div>
 
     <pre class="usage"><span class='fu'>SETSe_shift</span><span class='op'>(</span>
@@ -231,7 +233,7 @@ are faster and easier to use.</p>
                      force_var <span class='op'>=</span> <span class='st'>"class"</span>, 
                      positive_value <span class='op'>=</span> <span class='st'>"A"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
 <span class='co'>#embed the network using SETSe</span>
-  <span class='fu'>SETSe_shift</span><span class='op'>(</span><span class='op'>)</span>
+  <span class='fu'>SETSe_shift</span><span class='op'>(</span><span class='va'>.</span>, tstep <span class='op'>=</span> <span class='fl'>0.002</span><span class='op'>)</span>
   <span class='op'>}</span>
 </div></pre>
   </div>

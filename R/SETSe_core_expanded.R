@@ -23,9 +23,17 @@
 #' @noRd
 # Strips out all pre processing to make it as efficient and simple as possible
 
-SETSe_core_expanded <- function(node_embeddings, ten_mat, non_empty_matrix, kvect, dvect, mass,
-                             tstep, max_iter = 1000, coef_drag = 1, 
-                             tol = 1e-10, sparse = FALSE){
+SETSe_core_expanded <- function(node_embeddings, 
+                                ten_mat, 
+                                non_empty_matrix, 
+                                kvect, 
+                                dvect, 
+                                mass,
+                                tstep, 
+                                max_iter = 1000, 
+                                coef_drag = 1,
+                                tol = 1e-10, 
+                                sparse = FALSE){
   #Runs the physics model to find the convergence of the system.
   
   #vectors are used throughout instead of a single matrix as it turns out they are faster due to less indexing and use much less RAM.

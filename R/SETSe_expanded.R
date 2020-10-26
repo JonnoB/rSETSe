@@ -1,4 +1,4 @@
-#' Calculate SETSe expanded version
+#' SETSe embedding showing full convergence history
 #' 
 #' This is a special case function which keeps the history of the network dynamics. It is useful for demonstrations. 
 #' or Parametrizing difficult networks
@@ -18,10 +18,35 @@
 #' @param verbose Logical value. Whether the function should output messages or run quietly.
 #' @param two_node_solution Logical. The newton-raphson algo is used to find the correct angle
 #' 
+#' @return A list of four elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings, 
+#' the convergence dynamics dataframe for the network as well as the search history for convergence criteria of the network
+#' 
+#' @examples
+#' 
+#'\dontrun{
+#'  library(ggplot)
+#'  set.seed(234)
+#'  g_prep <- generate_peels_network("E") %>%
+#'    prepare_SETSe_binary(., node_names = "name", k = 1000, 
+#'                         force_var = "class", 
+#'                         positive_value = "A")
+#'  
+#'  #the base configuration does not work
+#'  divergent_result <- SETSe_expanded(g_prep)
+#'  
+#'  #with a smaller timestep the algorithm converges
+#'  convergent_result <- SETSe_expanded(g_prep, tstep = 0.002)
+#'  
+#'  #plot the results for a given node
+#'  convergent_result %>%
+#'    filter(node %in% c(1, 5, 18)) %>%
+#'    ggplot(aes(x = t, y = net_force, colour = node)) + geom_line()
+#'  
+#'} 
 #' @export
 
 SETSe_expanded <- function(g, 
-                           force ="net_generation", 
+                           force ="force", 
                            distance = "distance", 
                            edge_name = "edge_name",
                            k = "k",
@@ -57,7 +82,7 @@ SETSe_expanded <- function(g,
                           sparse = sparse)
   
   #do special case solution I should change this to a standalone function for ease of reading but it isn't important
-  if(nrow(Prep$Link)==1 & two_node_solution){
+  if(igraph::ecount(g)==1 & two_node_solution){
     
     if(Prep$node_embeddings$force[1]==0 &Prep$node_embeddings$force[2]==0){
       

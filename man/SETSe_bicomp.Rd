@@ -2,7 +2,7 @@
 % Please edit documentation in R/SETSe_bicomp.R
 \name{SETSe_bicomp}
 \alias{SETSe_bicomp}
-\title{Bi-component SETSe embedding}
+\title{SETSe embedding on each bi-connected component using SETSe_auto}
 \usage{
 SETSe_bicomp(
   g,

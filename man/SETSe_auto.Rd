@@ -2,7 +2,7 @@
 % Please edit documentation in R/SETSe_auto.R
 \name{SETSe_auto}
 \alias{SETSe_auto}
-\title{Auto SETSe}
+\title{SETSe embedding with automatic drag and timestep selection}
 \usage{
 SETSe_auto(
   g,
