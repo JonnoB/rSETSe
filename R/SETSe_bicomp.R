@@ -49,7 +49,7 @@
 #'   For example if SETSe_bicomp is used then some simulations may contain as little as two nodes and 1 edge
 #'   \item time taken. the amount of time taken per component, includes the edge and nodes of each component
 #' }
-#' @seealso \code{\link{auto_SETSe}} \code{\link{SETSe}}
+#' @seealso \code{\link{SETSe_auto}} \code{\link{SETSe}}
 #' @examples
 #' set.seed(234) #set the random see for generating the network
 #' g <- generate_peels_network(type = "E")
@@ -96,7 +96,7 @@ SETSe_bicomp <- function(g,
   #This prevents that
   if(bigraph$no==1){
     if(verbose){print("Network has no bi-connected components, running auto-SETSe instead")}
-    embeddings_data <- auto_SETSe(g = g,
+    embeddings_data <- SETSe_auto(g = g,
                                   force = force,
                                   distance = distance, 
                                   edge_name = edge_name,
@@ -168,7 +168,7 @@ SETSe_bicomp <- function(g,
     } else {
       
       start_time_origin <- Sys.time()
-      OriginBlock <- auto_SETSe(g = balanced_blocks[[OriginBlock_number]],
+      OriginBlock <- SETSe_auto(g = balanced_blocks[[OriginBlock_number]],
                                 force = force,
                                 distance = distance, 
                                 edge_name = edge_name,

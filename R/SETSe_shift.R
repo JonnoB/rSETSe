@@ -24,7 +24,7 @@
 #' 
 #' @details This is the basic SETS embeddings algorithm, it outputs all elements of the embeddings as well as convergence dynamics. It is a
 #' wrapper around the core SETS algorithm which requires data preparation and only produces node embeddings and entwork dynamics. 
-#' There is little reason to use this function as \code{\link{auto_SETSe}} and \code{\link{SETSe_bicomp}} 
+#' There is little reason to use this function as \code{\link{SETSe_auto}} and \code{\link{SETSe_bicomp}} 
 #' are faster and easier to use.
 #' 
 #' @return A list of three elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings
@@ -42,7 +42,7 @@
 #' #embed the network using SETSe
 #'   SETSe_shift()
 #'   }
-#' @seealso \code{\link{auto_SETSe}} \code{\link{SETSe_bicomp}}
+#' @seealso \code{\link{SETSe_auto}} \code{\link{SETSe_bicomp}}
 #' @export
 
 SETSe_shift <- function(g, 

@@ -53,11 +53,11 @@
 #'                      positive_value = "A")
 #'                      
 #' #embed the network using auto setse with default settings
-#' embeddings <- auto_SETSe(g_prep)
+#' embeddings <- SETSe_auto(g_prep)
 #' 
 #' @export
 
-auto_SETSe <- function(g, 
+SETSe_auto <- function(g, 
                        force ="force", 
                        distance = "distance", 
                        edge_name = "edge_name",

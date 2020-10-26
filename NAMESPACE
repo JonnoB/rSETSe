@@ -2,10 +2,10 @@
 
 export("%>%")
 export(SETSe)
+export(SETSe_auto)
 export(SETSe_bicomp)
 export(SETSe_expanded)
 export(SETSe_shift)
-export(auto_SETSe)
 export(calc_spring_area)
 export(calc_spring_constant)
 export(calc_tension_strain)

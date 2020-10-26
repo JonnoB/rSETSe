@@ -11,7 +11,7 @@
 #' @param mass A numeric. This is the mass constant of the nodes in normalised networks this is set to 1.
 #' @param tstep A numeric value. The time step, measured in seconds, that will be used to calculate the new dynamic state
 #' @param max_iter An integer. The maximum number of iterations before stopping. Larger networks usually need more iterations.
-#' @param coef_drag A numeric value. Used to set a multiplier on the friction value. This is usualy determined by auto_SETSe
+#' @param coef_drag A numeric value. Used to set a multiplier on the friction value. This is usualy determined by SETSe_auto
 #' @param tol A numeric. The tolerance factor for early stopping.
 #' @param sparse Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated
 #' @param sample Integer. The dynamics will be stored only if the iteration number is a multiple of the sample. 
@@ -24,7 +24,7 @@
 #' this can stop the momentum of the nodes forcing a divergence, but also can slow down the process. default is TRUE.
 #' 
 #' @details 
-#' This function is usally run inside a more easy to use function such as The SETSe function, SETse_bicomp or auto_SETSe. These
+#' This function is usally run inside a more easy to use function such as The SETSe function, SETse_bicomp or SETSe_auto. These
 #' wrapper functions make the application of the SETse algorithm more straight foreword. However, this function is included
 #' for completeness and to allow ground up experiments
 #' 

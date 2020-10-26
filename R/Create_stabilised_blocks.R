@@ -1,6 +1,6 @@
 #' Create stabilised blocks
 #' 
-#' An internal function. This function is called by SETSe_bicomp and performs auto_SETSe on all the bi-connected components
+#' An internal function. This function is called by SETSe_bicomp and performs SETSe_auto on all the bi-connected components
 #' of the network. This function is rarely called directly.
 #' 
 #' @param g An igraph object
@@ -119,7 +119,7 @@ Create_stabilised_blocks <- function(g,
         
         start_time_block <- Sys.time()
         
-        Out <- auto_SETSe(balanced_blocks[[.x]],
+        Out <- SETSe_auto(balanced_blocks[[.x]],
                           force = force,
                           distance = distance, 
                           edge_name = edge_name,

@@ -37,7 +37,7 @@ A network with the correct edge and node attributes for the embeddings process.
 This function prepares a binary network for SETSe projection.
 }
 \details{
-The network takes in an igraph object and produces an undirected igraph object that can be used with SETSe/auto_SETSe/SETse_bicomp for embedding.
+The network takes in an igraph object and produces an undirected igraph object that can be used with SETSe/SETSe_auto/SETse_bicomp for embedding.
 
 The function adds the node attribute 'force' and the edge attribute 'k' unless k=NULL. The purpose of the function is to easily be able to 
  project binary networks using SETSe. 
@@ -59,8 +59,8 @@ prepare_SETSe_binary(., node_names = "name", k = 1000,
                      force_var = "class", 
                      positive_value = "A") \%>\%
 #embed the network using auto setse
-  auto_SETSe()
+  SETSe_auto()
 }
 \seealso{
-\code{\link{SETSe}}, \code{\link{auto_SETSe}}, \code{\link{SETSe_bicomp}}, \code{\link{prepare_SETSe_continuous}}
+\code{\link{SETSe}}, \code{\link{SETSe_auto}}, \code{\link{SETSe_bicomp}}, \code{\link{prepare_SETSe_continuous}}
 }

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>SETSe algorithm with time shift — SETSe_shift • rSETSe</title>
+<title>Auto SETSe — SETSe_auto • rSETSe</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -46,8 +46,8 @@
 
 
 
-<meta property="og:title" content="SETSe algorithm with time shift — SETSe_shift" />
-<meta property="og:description" content="The basic SETSe function with added tie shift. The time shift functionality automatically adjusts the timestep if the convergence process is noisey" />
+<meta property="og:title" content="Auto SETSe — SETSe_auto" />
+<meta property="og:description" content="Uses a grid search and a binary search to find appropriate convergence conditions." />
 <meta property="og:image" content="/logo.png" />
 
 
@@ -111,16 +111,16 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>SETSe algorithm with time shift</h1>
+    <h1>Auto SETSe</h1>
     
-    <div class="hidden name"><code>SETSe_shift.Rd</code></div>
+    <div class="hidden name"><code>SETSe_auto.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>The basic SETSe function with added tie shift. The time shift functionality automatically adjusts the timestep if the convergence process is noisey</p>
+    <p>Uses a grid search and a binary search to find appropriate convergence conditions.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>SETSe_shift</span><span class='op'>(</span>
+    <pre class="usage"><span class='fu'>SETSe_auto</span><span class='op'>(</span>
   <span class='va'>g</span>,
   force <span class='op'>=</span> <span class='st'>"force"</span>,
   distance <span class='op'>=</span> <span class='st'>"distance"</span>,
@@ -128,14 +128,20 @@
   k <span class='op'>=</span> <span class='st'>"k"</span>,
   tstep <span class='op'>=</span> <span class='fl'>0.02</span>,
   mass <span class='op'>=</span> <span class='fl'>1</span>,
-  max_iter <span class='op'>=</span> <span class='fl'>20000</span>,
-  coef_drag <span class='op'>=</span> <span class='fl'>1</span>,
-  tol <span class='op'>=</span> <span class='fl'>1e-06</span>,
+  max_iter <span class='op'>=</span> <span class='fl'>1e+05</span>,
+  tol <span class='op'>=</span> <span class='fl'>0.002</span>,
   sparse <span class='op'>=</span> <span class='cn'>FALSE</span>,
-  two_node_solution <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  sample <span class='op'>=</span> <span class='fl'>1</span>,
+  hyper_iters <span class='op'>=</span> <span class='fl'>100</span>,
+  hyper_tol <span class='op'>=</span> <span class='fl'>0.01</span>,
+  hyper_max <span class='op'>=</span> <span class='fl'>30000</span>,
+  drag_min <span class='op'>=</span> <span class='fl'>0.01</span>,
+  drag_max <span class='op'>=</span> <span class='fl'>100</span>,
+  tstep_change <span class='op'>=</span> <span class='fl'>0.2</span>,
+  sample <span class='op'>=</span> <span class='fl'>100</span>,
   static_limit <span class='op'>=</span> <span class='cn'>NULL</span>,
-  tstep_change <span class='op'>=</span> <span class='fl'>0.5</span>
+  verbose <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  include_edges <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  noisey_termination <span class='op'>=</span> <span class='cn'>TRUE</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -174,10 +180,6 @@
       <td><p>An integer. The maximum number of iterations before stopping. Larger networks usually need more iterations.</p></td>
     </tr>
     <tr>
-      <th>coef_drag</th>
-      <td><p>A numeric.</p></td>
-    </tr>
-    <tr>
       <th>tol</th>
       <td><p>A numeric. The tolerance factor for early stopping.</p></td>
     </tr>
@@ -186,8 +188,28 @@
       <td><p>Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated</p></td>
     </tr>
     <tr>
-      <th>two_node_solution</th>
-      <td><p>Logical. The newton-raphson algo is used to find the correct angle</p></td>
+      <th>hyper_iters</th>
+      <td><p>integer. The hyper parameter that determines the number of iterations allowed to find an acceptable convergence value.</p></td>
+    </tr>
+    <tr>
+      <th>hyper_tol</th>
+      <td><p>numeric. The convergence tolerance when trying to find the minimum value</p></td>
+    </tr>
+    <tr>
+      <th>hyper_max</th>
+      <td><p>integer. The maximum number of iterations that the setse will go through whilst searching for the minimum.</p></td>
+    </tr>
+    <tr>
+      <th>drag_min</th>
+      <td><p>integer. A power of ten. The lowest drag value to be used in the search</p></td>
+    </tr>
+    <tr>
+      <th>drag_max</th>
+      <td><p>integer. A power of ten. if the drag exceeds this value the tstep is reduced</p></td>
+    </tr>
+    <tr>
+      <th>tstep_change</th>
+      <td><p>numeric. A value between 0 and 1 that determines how much the time step will be reduced by default value is 0.5</p></td>
     </tr>
     <tr>
       <th>sample</th>
@@ -198,41 +220,54 @@ This can greatly reduce the size of the results file for large numbers of iterat
       <th>static_limit</th>
       <td><p>Numeric. The maximum value the static force can reach before the algorithm terminates early. This
 prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
-If left blank the static limit is twice the system absolute mean force.</p></td>
+If left blank the static limit is the system absolute mean force.</p></td>
     </tr>
     <tr>
-      <th>tstep_change</th>
-      <td><p>a numeric scaler. A value between 0 and one, the fraction the new timestep will be relative to the previous one
-this can stop the momentum of the nodes forcing a divergence, but also can slow down the process. default is TRUE.</p></td>
+      <th>verbose</th>
+      <td><p>Logical. This value sets whether messages generated during the process are supressed or not.</p></td>
+    </tr>
+    <tr>
+      <th>include_edges</th>
+      <td><p>logical. An optional variable on wehther to calculate the edge tension and strain. Default is TRUE.
+included for ease of integration into the bicomponent functions.</p></td>
+    </tr>
+    <tr>
+      <th>noisey_termination</th>
+      <td><p>Stop the process if the static force does not monotonically decrease.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A list of three elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings
-as well as the convergence dynamics dataframe for the network.</p>
+    <p>A list of four elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings, 
+the convergence dynamics dataframe for the network as well as the search history for convergence criteria of the network</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>This is the basic SETS embeddings algorithm, it outputs all elements of the embeddings as well as convergence dynamics. It is a
-wrapper around the core SETS algorithm which requires data preparation and only produces node embeddings and entwork dynamics. 
-There is little reason to use this function as <code><a href='SETSe_auto.html'>SETSe_auto</a></code> and <code><a href='SETSe_bicomp.html'>SETSe_bicomp</a></code> 
-are faster and easier to use.</p>
+    <p>This is one of the most commonly used SETSe functions. It automatically selects the convergence time-step and drag values
+to ensure efficient convergence.</p>
+<p>The noisey_termination parameter is used as in some cases the convergenve process can get stuck in the noisey zone of SETSe space.
+To prevent this the process is stopped early if the static force does not monotonically decrease.  On large networks this 
+greatly speeds up the search for good parameter values. It increases the chance of successful convergence. 
+More detail on auto-SETSe can be found in the paper "The spring bounces back" (Bourne 2020).</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><code><a href='SETSe_auto.html'>SETSe_auto</a></code> <code><a href='SETSe_bicomp.html'>SETSe_bicomp</a></code></p></div>
+    <div class='dont-index'><p><code><a href='SETSe.html'>SETSe</a></code> <code><a href='SETSe_bicomp.html'>SETSe_bicomp</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
+    <pre class="examples"><div class='input'>
 <span class='fu'><a href='https://rdrr.io/r/base/Random.html'>set.seed</a></span><span class='op'>(</span><span class='fl'>234</span><span class='op'>)</span> <span class='co'>#set the random see for generating the network</span>
+
 <span class='va'>g</span> <span class='op'>&lt;-</span> <span class='fu'><a href='generate_peels_network.html'>generate_peels_network</a></span><span class='op'>(</span>type <span class='op'>=</span> <span class='st'>"E"</span><span class='op'>)</span>
-<span class='va'>embeddings</span> <span class='op'>&lt;-</span> <span class='va'>g</span> <span class='op'>%&gt;%</span>
+
+<span class='va'>g_prep</span> <span class='op'>&lt;-</span> <span class='va'>g</span> <span class='op'>%&gt;%</span>
 <span class='co'>#prepare the network for a binary embedding</span>
 <span class='fu'><a href='prepare_SETSe_binary.html'>prepare_SETSe_binary</a></span><span class='op'>(</span><span class='va'>.</span>, node_names <span class='op'>=</span> <span class='st'>"name"</span>, k <span class='op'>=</span> <span class='fl'>1000</span>, 
                      force_var <span class='op'>=</span> <span class='st'>"class"</span>, 
-                     positive_value <span class='op'>=</span> <span class='st'>"A"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-<span class='co'>#embed the network using SETSe</span>
-  <span class='fu'>SETSe_shift</span><span class='op'>(</span><span class='op'>)</span>
-  <span class='op'>}</span>
+                     positive_value <span class='op'>=</span> <span class='st'>"A"</span><span class='op'>)</span>
+                     
+<span class='co'>#embed the network using auto setse with default settings</span>
+<span class='va'>embeddings</span> <span class='op'>&lt;-</span> <span class='fu'>SETSe_auto</span><span class='op'>(</span><span class='va'>g_prep</span><span class='op'>)</span>
+
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

@@ -2,7 +2,7 @@
 #' 
 #' This function prepares a continuous network for SETSe projection.
 #' 
-#' The network takes in an igraph object and produces an undirected igraph object that can be used with SETSe/auto_SETSe for embedding.
+#' The network takes in an igraph object and produces an undirected igraph object that can be used with SETSe/SETSe_auto for embedding.
 #'  
 #' @param g an igraph object
 #' @param node_names a character string. A vertex attribute which contains the node names.
@@ -29,7 +29,7 @@
 #' 
 #' @return A network with the correct edge and node attributes for the embeddings process.
 #'  
-#' @seealso \code{\link{SETSe}}, \code{\link{auto_SETSe}}, \code{\link{prepare_SETSe_binary}}
+#' @seealso \code{\link{SETSe}}, \code{\link{SETSe_auto}}, \code{\link{prepare_SETSe_binary}}
 #' @export
 
 prepare_SETSe_continuous <- function(g, node_names, k = NULL, force_var, sum_to_one = TRUE, distance = 1){

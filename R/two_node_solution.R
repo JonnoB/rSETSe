@@ -6,7 +6,7 @@
 #' 
 #' @param g the graph must be two nodes connected by a single edge
 #' @param Prep The output of SETSe_data_prep. provides the inputs needed to do the two node solution
-#' @param auto_setse_mode outputs an additional list element "memory_df" to make it compatible with the auto_SETSe function
+#' @param auto_setse_mode outputs an additional list element "memory_df" to make it compatible with the SETSe_auto function
 #' 
 #' @return 
 #' A list of two elements node_embeddings and network_dynamics. if `auto_setse_mode==TRUE` 

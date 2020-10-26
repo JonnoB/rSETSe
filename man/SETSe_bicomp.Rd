@@ -111,5 +111,5 @@ prepare_SETSe_binary(., node_names = "name", k = 1000,
   SETSe_bicomp(tol = 0.02)
 }
 \seealso{
-\code{\link{auto_SETSe}} \code{\link{SETSe}}
+\code{\link{SETSe_auto}} \code{\link{SETSe}}
 }

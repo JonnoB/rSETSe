@@ -34,7 +34,7 @@ A network with the correct edge and node attributes for the embeddings process.
 This function prepares a continuous network for SETSe projection.
 }
 \details{
-The network takes in an igraph object and produces an undirected igraph object that can be used with SETSe/auto_SETSe for embedding.
+The network takes in an igraph object and produces an undirected igraph object that can be used with SETSe/SETSe_auto for embedding.
 
 
  The function subtracts the mean from all the values so that the system is balanced. If sum_to_one is true then everything is divided by
@@ -52,5 +52,5 @@ The network takes in an igraph object and produces an undirected igraph object t
 }
 }
 \seealso{
-\code{\link{SETSe}}, \code{\link{auto_SETSe}}, \code{\link{prepare_SETSe_binary}}
+\code{\link{SETSe}}, \code{\link{SETSe_auto}}, \code{\link{prepare_SETSe_binary}}
 }
