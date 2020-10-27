@@ -44,9 +44,6 @@ The code used in this package is part of my PhD and a fundemental component of t
 * The spring bounces back ([code](https://github.com/JonnoB/SETSe_assortativity_and_clusters))
 * Power grid robusteness ([code](https://github.com/JonnoB/setse_and_network_robustness/edit/master/README.md))
 
-# N.B
-
-Currently only the main functions have example code available see the links above for more indepth code examples.
 
 # Cite
 
