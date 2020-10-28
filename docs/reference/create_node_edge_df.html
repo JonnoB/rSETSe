@@ -6,9 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>SETSe algorithm
- 
-The basic SETSe function. — SETSe • rSETSe</title>
+<title>Create dataframe of node and aggregated edge embeddings — create_node_edge_df • rSETSe</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -48,11 +46,8 @@ The basic SETSe function. — SETSe • rSETSe</title>
 
 
 
-<meta property="og:title" content="SETSe algorithm
- 
-The basic SETSe function. — SETSe" />
-<meta property="og:description" content="SETSe algorithm 
-The basic SETSe function." />
+<meta property="og:title" content="Create dataframe of node and aggregated edge embeddings — create_node_edge_df" />
+<meta property="og:description" content="Aggregates edge strain and tension to node level" />
 <meta property="og:image" content="/logo.png" />
 
 
@@ -131,128 +126,50 @@ The basic SETSe function." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>SETSe algorithm
- 
-The basic SETSe function.</h1>
+    <h1>Create dataframe of node and aggregated edge embeddings</h1>
     
-    <div class="hidden name"><code>SETSe.Rd</code></div>
+    <div class="hidden name"><code>create_node_edge_df.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>SETSe algorithm</p> 
-<p>The basic SETSe function.</p>
+    <p>Aggregates edge strain and tension to node level</p>
     </div>
 
-    <pre class="usage"><span class='fu'>SETSe</span><span class='op'>(</span>
-  <span class='va'>g</span>,
-  force <span class='op'>=</span> <span class='st'>"force"</span>,
-  distance <span class='op'>=</span> <span class='st'>"distance"</span>,
-  edge_name <span class='op'>=</span> <span class='st'>"edge_name"</span>,
-  k <span class='op'>=</span> <span class='st'>"k"</span>,
-  tstep <span class='op'>=</span> <span class='fl'>0.02</span>,
-  mass <span class='op'>=</span> <span class='fl'>1</span>,
-  max_iter <span class='op'>=</span> <span class='fl'>20000</span>,
-  coef_drag <span class='op'>=</span> <span class='fl'>1</span>,
-  tol <span class='op'>=</span> <span class='fl'>1e-06</span>,
-  sparse <span class='op'>=</span> <span class='cn'>FALSE</span>,
-  two_node_solution <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  sample <span class='op'>=</span> <span class='fl'>1</span>,
-  static_limit <span class='op'>=</span> <span class='cn'>NULL</span>,
-  noisey_termination <span class='op'>=</span> <span class='cn'>TRUE</span>
-<span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>create_node_edge_df</span><span class='op'>(</span><span class='va'>embeddings_data</span>, function_names <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"mean"</span>, <span class='st'>"median"</span><span class='op'>)</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>g</th>
-      <td><p>An igraph object</p></td>
+      <th>embeddings_data</th>
+      <td><p>A list. The output of any of the SETSe embedding functions</p></td>
     </tr>
     <tr>
-      <th>force</th>
-      <td><p>A character string. This is the node attribute that contains the force the nodes exert on the network.</p></td>
-    </tr>
-    <tr>
-      <th>distance</th>
-      <td><p>A character string. The edge attribute that contains the original/horizontal distance between nodes.</p></td>
-    </tr>
-    <tr>
-      <th>edge_name</th>
-      <td><p>A character string. This is the edge attribute that contains the edge_name of the edges.</p></td>
-    </tr>
-    <tr>
-      <th>k</th>
-      <td><p>A character string. This is k for the moment don't change it.</p></td>
-    </tr>
-    <tr>
-      <th>tstep</th>
-      <td><p>A numeric. The time interval used to iterate through the network dynamics.</p></td>
-    </tr>
-    <tr>
-      <th>mass</th>
-      <td><p>A numeric. This is the mass constant of the nodes in normalised networks this is set to 1.</p></td>
-    </tr>
-    <tr>
-      <th>max_iter</th>
-      <td><p>An integer. The maximum number of iterations before stopping. Larger networks usually need more iterations.</p></td>
-    </tr>
-    <tr>
-      <th>coef_drag</th>
-      <td><p>A numeric.</p></td>
-    </tr>
-    <tr>
-      <th>tol</th>
-      <td><p>A numeric. The tolerance factor for early stopping.</p></td>
-    </tr>
-    <tr>
-      <th>sparse</th>
-      <td><p>Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated</p></td>
-    </tr>
-    <tr>
-      <th>two_node_solution</th>
-      <td><p>Logical. The newton-raphson algo is used to find the correct angle</p></td>
-    </tr>
-    <tr>
-      <th>sample</th>
-      <td><p>Integer. The dynamics will be stored only if the iteration number is a multiple of the sample. 
-This can greatly reduce the size of the results file for large numbers of iterations. Must be a multiple of the max_iter</p></td>
-    </tr>
-    <tr>
-      <th>static_limit</th>
-      <td><p>Numeric. The maximum value the static force can reach before the algorithm terminates early. This
-prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
-If left blank the static limit is twice the system absolute mean force.</p></td>
-    </tr>
-    <tr>
-      <th>noisey_termination</th>
-      <td><p>Stop the process if the static force does not monotonically decrease.</p></td>
+      <th>function_names</th>
+      <td><p>A string vector. the names of the aggregation methods to be used</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A list of three elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings
-as well as the convergence dynamics dataframe for the network.</p>
+    <p>A dataframe with node names, node force, node elevation and strain and tension aggregated useing the named functions.
+The strain and tension columns are returned with names in the form "strain_x" where "x" is the name of the function used 
+to aggregate. The total number of columns is dependent on the number of aggregation functions.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>This is the basic SETS embeddings algorithm, it outputs all elements of the embeddings as well as convergence dynamics. It is a
-wrapper around the core SETS algorithm which requires data preparation and only produces node embeddings and entwork dynamics. 
-There is little reason to use this function as <code><a href='SETSe_auto.html'>SETSe_auto</a></code> and <code><a href='SETSe_bicomp.html'>SETSe_bicomp</a></code> 
-are faster and easier to use.</p>
-    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
-
-    <div class='dont-index'><p><code><a href='SETSe_auto.html'>SETSe_auto</a></code> <code><a href='SETSe_bicomp.html'>SETSe_bicomp</a></code></p></div>
+    <p>Often if can be useful to have edge data at node level, an example of this would be plotting
+the node and tension or strain. To do this requires that the edge embeddings are aggregated somehow to node level
+and joined to the appropriate node. This function takes as an argument the output of the SETSe embedding functions
+and any number of aggregation functions to produce a dataframe that is convenient to use.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/Random.html'>set.seed</a></span><span class='op'>(</span><span class='fl'>234</span><span class='op'>)</span> <span class='co'>#set the random see for generating the network</span>
-<span class='va'>g</span> <span class='op'>&lt;-</span> <span class='fu'><a href='generate_peels_network.html'>generate_peels_network</a></span><span class='op'>(</span>type <span class='op'>=</span> <span class='st'>"E"</span><span class='op'>)</span>
-<span class='va'>embeddings</span> <span class='op'>&lt;-</span> <span class='va'>g</span> <span class='op'>%&gt;%</span>
-<span class='co'>#prepare the network for a binary embedding</span>
-<span class='fu'><a href='prepare_SETSe_binary.html'>prepare_SETSe_binary</a></span><span class='op'>(</span><span class='va'>.</span>, node_names <span class='op'>=</span> <span class='st'>"name"</span>, k <span class='op'>=</span> <span class='fl'>1000</span>, 
-                     force_var <span class='op'>=</span> <span class='st'>"class"</span>, 
-                     positive_value <span class='op'>=</span> <span class='st'>"A"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-<span class='co'>#embed the network using SETSe</span>
-  <span class='fu'>SETSe</span><span class='op'>(</span><span class='op'>)</span>
+    <pre class="examples"><div class='input'>
+<span class='va'>embeddings_data</span> <span class='op'>&lt;-</span> <span class='va'>two_bicomponents</span> <span class='op'>%&gt;%</span>
+<span class='fu'><a href='prepare_SETSe_continuous.html'>prepare_SETSe_continuous</a></span><span class='op'>(</span><span class='va'>.</span>, node_names <span class='op'>=</span> <span class='st'>"name"</span>, force_var <span class='op'>=</span> <span class='st'>"force"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+ <span class='fu'><a href='SETSe_auto.html'>SETSe_auto</a></span><span class='op'>(</span><span class='va'>.</span>, k <span class='op'>=</span> <span class='st'>"weight"</span><span class='op'>)</span>
+
+<span class='va'>out</span> <span class='op'>&lt;-</span> <span class='fu'>create_node_edge_df</span><span class='op'>(</span><span class='va'>embeddings_data</span>, function_names <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"mean"</span>, <span class='st'>"mode"</span>, <span class='st'>"sum"</span><span class='op'>)</span><span class='op'>)</span>
+
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

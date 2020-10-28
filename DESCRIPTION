@@ -30,3 +30,10 @@ Imports:
     methods,
     stats
 RoxygenNote: 7.1.1
+Suggests: 
+    knitr,
+    rmarkdown,
+    tidyr,
+    ggplot2,
+    ggraph
+VignetteBuilder: knitr

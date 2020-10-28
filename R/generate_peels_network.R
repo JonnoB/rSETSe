@@ -3,19 +3,24 @@
 #' Creates an example of a network from Peel's quintet of the specified type.
 #' 
 #' @param type A character which is any of the capital letters A-E
+#' @param k_values An interger vector. The spring constant for the edge types within sub class, within class but not sub-class,
+#' between classes. The default value is 1000, 500, 100. This means the strongest connection is for nodes in the same
+#' sub-class and the weakest connection is for nodes in different classes
 #'  
 #' @details  This function generates networks matching the 5 types described in Peel et al 2019(\url{https://doi.org/10.1073/pnas.1713019115}). All networks have 40 nodes,
 #'  160 edges, two node classes and four node sub-classes. The connections between the are equal across all 5 types.
 #'  As a result all networks generated have identical assortativity. However, as the sub-classes have different connection
 #'  probability the structures produced by the networks are very different. When projected into SETSe space the network types
 #'  occupy there own area, see Bourne 2020 for details
-#' @return An igraph object that matches one of the 5 Peel's quintet types
+#'  
+#' @return An igraph object that matches one of the 5 Peel's quintet types. The nodes are labelled with class and sub class.
+#' The edges have attribute k which is the spring constant of the edge given relationship between the nodes the edge connects to
 #' @examples
 #' set.seed(234)
 #' g <- generate_peels_network(type = "E")
 #' plot(g)
 #' @export
-generate_peels_network <- function(type){
+generate_peels_network <- function(type, k_values = c(1000, 500, 100)){
   
   #number of connections between classes and sub-classes for each of the types in Peel's quintet
   #There may be a faster way of loading this data than a dataframe
@@ -87,12 +92,29 @@ generate_peels_network <- function(type){
   #convert back into dataframes
   g_df <- igraph::as_data_frame(g, what = "both")
   
+  g_node_df <- g_df$vertices %>%
+    dplyr::mutate(node = 1:40) %>%
+    dplyr::select(node, dplyr::everything())
+  
+  
+  g_edge_df <- g_df$edges
+  #match the order of edges to the order of nodes. This allows the calculation of 
+  #whether edges are sub_class, class or other
+  from_order <-match(g_edge_df$from, g_node_df$node)
+  to_order <- match(g_edge_df$to, g_node_df$node)
+  
+  g_edge_df <- g_edge_df %>% 
+    dplyr::mutate(k = dplyr::case_when(
+    g_node_df$sub_class[from_order] == g_node_df$sub_class[to_order] ~ k_values[1],
+  g_node_df$class[from_order] == g_node_df$class[to_order] ~ k_values[2],
+    TRUE ~ k_values[3])
+  )
+  
   #make the node the name column of the data
-  g <- igraph::graph_from_data_frame(g_df$edges, 
+  g <- igraph::graph_from_data_frame(g_edge_df, 
                         directed = FALSE,
-                        vertices =   g_df$vertices %>%
-                          dplyr::mutate(node = 1:40) %>%
-                          dplyr::select(node, dplyr::everything()))
+                        vertices = g_node_df) %>%
+    igraph::set.graph.attribute(., name = "type", value = type)
   
   return(g)
   

@@ -1,0 +1,133 @@
+---
+title: "Binary and continuous feature embedding"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Binary and continuous feature embedding}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Necessary packages
+
+```{r setup, results = 'hide', message=FALSE}
+library(rSETSe)
+library(igraph)
+library(dplyr)
+library(ggraph)
+```
+
+
+#Plot the data
+
+The two_bicomponents is a simple network constructed of two groups of nodes that are linked by a single edge. This means the network is made of 3 bi-connected components hence the name. For more information type `?two_bicomponents`
+```{r message=FALSE}
+two_bicomponents %>%
+  ggraph() + 
+  geom_edge_link() +
+  geom_node_point(aes(colour = group), size = 3) 
+```
+
+
+# Continuous embeddings
+
+Creating the embeddings using this dataset is very simple as it already has a force variable and the edge weights can be used as the spring constant.
+```{r message=FALSE}
+embeddings_cont <- two_bicomponents %>%
+  prepare_SETSe_continuous(., node_names = "name", force_var = "force") %>%
+  SETSe_auto(., k = "weight")
+
+
+embeddings_data <- two_bicomponents %>%
+  prepare_SETSe_continuous(., node_names = "name", force_var = "force") %>%
+  SETSe_auto(., k = "weight")
+
+out <- create_node_edge_df(embeddings_data, function_names = c("mean", "mode", "sum"))
+
+```
+
+However, for some reason we may want to reset the spring constant to something else, below we perform the embedding using a fixed k of 500.
+
+```{r message=FALSE}
+
+embeddings_cont_fixed <- two_bicomponents %>%
+  prepare_SETSe_continuous(., node_names = "name", force_var = "force", k = 500) %>%
+  SETSe_auto(., k = "k")
+
+```
+
+## plot the resulting embeddings
+
+By aggregating the tension in each edge to node level using `create_node_edge_df()` for both the embeddings methods we can see how the different node are embedded. What we see is that the two most central node experience much more tension and also have a substantially higher elevation than the other nodes. This is expected as on the two_bicomponents network the node force is the centrality of the nodes.
+
+We can also see that the embeddings are similar but having fixed or variable k-strength has a clear impact on the final embeddings.
+
+```{r message=FALSE}
+
+continuous_results <- bind_rows(create_node_edge_df(embeddings_cont) %>% mutate(type = "variable k"),
+          create_node_edge_df(embeddings_cont_fixed) %>% mutate(type = "fixed k")
+ ) 
+
+continuous_results %>% 
+  ggplot(aes(x = tension_mean, y = elevation, colour = node)) + geom_jitter() +
+  facet_wrap(~type)  +
+  facet_wrap(~type) +
+  labs(title = "Continuous embeddings",
+       x = "mean tension")
+
+```
+
+# Binary embeddings
+
+Now we will use the group identity as binary force variable. The network is made up of two groups A and B. We arbitrarily set A to be the positive force.
+
+As can be seen embeddings using the groups as force variables create very different embedded results, this is despite the fact that the networks are identical. 
+
+```{r message=FALSE}
+
+embeddings_binary <- two_bicomponents %>%
+  prepare_SETSe_binary(., node_names = "name", force_var = "group", positive_value = "A") %>%
+  SETSe_auto(., k = "weight")
+
+
+embeddings_binary_fixed <- two_bicomponents %>%
+  prepare_SETSe_binary(., node_names = "name", force_var = "group", positive_value = "A", k = 500) %>%
+  SETSe_auto(., k = "k")
+
+
+binary_results <- bind_rows(create_node_edge_df(embeddings_binary) %>% mutate(type = "variable k"),
+          create_node_edge_df(embeddings_binary_fixed) %>% mutate(type = "fixed k")
+ ) 
+
+binary_results %>% 
+  ggplot(aes(x = tension_mean, y = elevation, colour = node)) + geom_jitter() +
+  facet_wrap(~type) +
+  labs(title = "Binary embeddings",
+       x = "mean tension")
+
+```
+
+# Using both embeddings
+
+Because this network has two features both of them can be embedded. Currently the SETSe package only does single feature embedding. However we can combine these two different 1 dimensional feature embeddings and plot the results
+
+What we see is that there is very little relationship between the elevation of a node when it is embedded using different features.
+
+```{r message=FALSE}
+
+left_join(continuous_results, binary_results, by = c("node", "type")) %>%
+  ggplot(aes(x = elevation.x, y = elevation.y, colour = node)) + geom_jitter() +
+  facet_wrap(~type) +
+  labs(title = "Node elevation for two different features",
+       x = "elevation with continuous embedding",
+       y = "elevation with binary embedding")
+
+
+```
+
