@@ -46,15 +46,15 @@ the `rSETSe` package has a function that generates each of the 5 types of Peels 
 #igraph::union does not also merge attributes
 set.seed(1263)
 peels_networks <- 1:5 %>%
-  map(~generate_peels_network(LETTERS[.x]) %>% 
-        #The nodes in all the networks are numbered 1:40, this line ensures 
+  map(~generate_peels_network(LETTERS[.x]) %>%
+        #The nodes in all the networks are numbered 1:40, this line ensures
         #each class has distinct node names
         set.vertex.attribute(., "type", value = paste("type", LETTERS[.x])) %>%
-        set.vertex.attribute(., "name", 
+        set.vertex.attribute(., "name",
                              value = as.numeric(get.vertex.attribute(., "name"))+(.x-1)*40) %>%
       #The networks are going to be joined into a single network so need to be converted into a
       #list of dataframes
-      as_data_frame(., what = "both")
+      igraph::as_data_frame(., what = "both")
       ) %>%
   #the list is now two elements long and made up of a edge and vertex part
   transpose() %>%

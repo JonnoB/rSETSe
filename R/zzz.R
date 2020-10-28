@@ -27,4 +27,5 @@ utils::globalVariables(c("from",
                          "cols", #in SETSe_data_prep
                          "A", #the area variable in calc_spring_area
                          "value_2", #calc_spring_area
+                         "edge_name", #create_node_edge_df
                          "."))
