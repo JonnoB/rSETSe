@@ -4,6 +4,10 @@
 </p>
 
   <!-- badges: start -->
+  [![R build status](https://github.com/JonnoB/rSETSe/workflows/R-CMD-check/badge.svg)](https://github.com/JonnoB/rSETSe/actions)
+  <!-- badges: end -->
+
+  <!-- badges: start -->
   [![Travis build status](https://travis-ci.com/JonnoB/rSETSe.svg?branch=master)](https://travis-ci.com/JonnoB/rSETSe)
   <!-- badges: end -->
 

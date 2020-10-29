@@ -4,7 +4,11 @@
 \alias{generate_peels_network}
 \title{Create a random Peel network}
 \usage{
-generate_peels_network(type, k_values = c(1000, 500, 100))
+generate_peels_network(
+  type,
+  k_values = c(1000, 500, 100),
+  single_component = TRUE
+)
 }
 \arguments{
 \item{type}{A character which is any of the capital letters A-E}
@@ -12,6 +16,8 @@ generate_peels_network(type, k_values = c(1000, 500, 100))
 \item{k_values}{An interger vector. The spring constant for the edge types within sub class, within class but not sub-class,
 between classes. The default value is 1000, 500, 100. This means the strongest connection is for nodes in the same
 sub-class and the weakest connection is for nodes in different classes}
+
+\item{single_component}{Logical. Guarentees a single component network. Set to TRUE as default}
 }
 \value{
 An igraph object that matches one of the 5 Peel's quintet types. The nodes are labelled with class and sub class.

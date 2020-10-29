@@ -77,21 +77,16 @@ ggraph(peels_networks) +
 First we will generate 10 examples of each class of the Peel's quintet. 
 
 ```{r}
+set.seed(4563)
 all_peels <- LETTERS[1:5] %>% map(~{
   
   peel_type <- .x
   
   out <- 1:10 %>% map(~{
-    #Common with other node embeddings methods SETSe only works on a single connected component
-    #The below code ensures that the network created has a single component
-    num_components <- 2
     
-    while(num_components >1){
-      g <- generate_peels_network(peel_type)
-      num_components <- components(g)$no
-    }
-    return(g)
-  })
+    generate_peels_network(peel_type)
+    
+    })
   
 })
 
@@ -121,6 +116,8 @@ out <- 1:10 %>%
       prepare_SETSe_binary(., node_names = "name", k = NULL, 
                      force_var = "class", 
                      positive_value = "A") %>%
+      #The system is considered converged when the static force is 1/10000 of 
+      #absolute sum of the force exerted by all the nodes
     SETSe_auto(tol = sum(abs(vertex_attr(., "force")))/10000) 
     #create the aggregated node details
     #embeddings_data$node_details <- create_node_details(g, embeddings_data)
