@@ -1,15 +1,11 @@
-<p align="center">
-<!-- <img src='man/figures/SETSe_logo.png' align="right" height="120" /> -->
-<img src='man/figures/SETSe_logo.png' width="300"/>
-</p>
+# rSETSE <img src='man/figures/SETSe_logo.png' align="right" height="300" />
 
-  <!-- badges: start -->
-  [![R build status](https://github.com/JonnoB/rSETSe/workflows/R-CMD-check/badge.svg)](https://github.com/JonnoB/rSETSe/actions)
-  <!-- badges: end -->
 
-  <!-- badges: start -->
-  [![Travis build status](https://travis-ci.com/JonnoB/rSETSe.svg?branch=master)](https://travis-ci.com/JonnoB/rSETSe)
-  <!-- badges: end -->
+<!-- badges: start -->
+[![R build status](https://github.com/JonnoB/rSETSe/workflows/R-CMD-check/badge.svg)](https://github.com/JonnoB/rSETSe/actions)
+[![Travis build status](https://travis-ci.com/JonnoB/rSETSe.svg?branch=master)](https://travis-ci.com/JonnoB/rSETSe)
+<!-- badges: end -->
+
 
 ## An R package for embedding graphs using the SETSe algorithm
 

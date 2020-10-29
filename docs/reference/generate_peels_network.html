@@ -140,7 +140,11 @@
     <p>Creates an example of a network from Peel's quintet of the specified type.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>generate_peels_network</span><span class='op'>(</span><span class='va'>type</span>, k_values <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1000</span>, <span class='fl'>500</span>, <span class='fl'>100</span><span class='op'>)</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>generate_peels_network</span><span class='op'>(</span>
+  <span class='va'>type</span>,
+  k_values <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1000</span>, <span class='fl'>500</span>, <span class='fl'>100</span><span class='op'>)</span>,
+  single_component <span class='op'>=</span> <span class='cn'>TRUE</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -154,6 +158,10 @@
       <td><p>An interger vector. The spring constant for the edge types within sub class, within class but not sub-class,
 between classes. The default value is 1000, 500, 100. This means the strongest connection is for nodes in the same
 sub-class and the weakest connection is for nodes in different classes</p></td>
+    </tr>
+    <tr>
+      <th>single_component</th>
+      <td><p>Logical. Guarentees a single component network. Set to TRUE as default</p></td>
     </tr>
     </table>
 

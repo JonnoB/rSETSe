@@ -155,21 +155,16 @@
 <p><img src="separate-peels-quintet_files/figure-html/unnamed-chunk-3-1.png" width="700"> # Creating lots of networks</p>
 <p>First we will generate 10 examples of each class of the Peel’s quintet.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit">
+<span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">4563</span><span class="op">)</span>
 <span class="va">all_peels</span> <span class="op">&lt;-</span> <span class="va">LETTERS</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span><span class="op">~</span><span class="op">{</span>
   
   <span class="va">peel_type</span> <span class="op">&lt;-</span> <span class="va">.x</span>
   
   <span class="va">out</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span><span class="op">~</span><span class="op">{</span>
-    <span class="co">#Common with other node embeddings methods SETSe only works on a single connected component</span>
-    <span class="co">#The below code ensures that the network created has a single component</span>
-    <span class="va">num_components</span> <span class="op">&lt;-</span> <span class="fl">2</span>
     
-    <span class="kw">while</span><span class="op">(</span><span class="va">num_components</span> <span class="op">&gt;</span><span class="fl">1</span><span class="op">)</span><span class="op">{</span>
-      <span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generate_peels_network.html">generate_peels_network</a></span><span class="op">(</span><span class="va">peel_type</span><span class="op">)</span>
-      <span class="va">num_components</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/igraph/man/components.html">components</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span><span class="op">$</span><span class="va">no</span>
-    <span class="op">}</span>
-    <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="va">g</span><span class="op">)</span>
-  <span class="op">}</span><span class="op">)</span>
+    <span class="fu"><a href="../reference/generate_peels_network.html">generate_peels_network</a></span><span class="op">(</span><span class="va">peel_type</span><span class="op">)</span>
+    
+    <span class="op">}</span><span class="op">)</span>
   
 <span class="op">}</span><span class="op">)</span></pre></div>
 <p>#Embedding lists of networks</p>
@@ -193,6 +188,8 @@
       <span class="fu"><a href="../reference/prepare_SETSe_binary.html">prepare_SETSe_binary</a></span><span class="op">(</span><span class="va">.</span>, node_names <span class="op">=</span> <span class="st">"name"</span>, k <span class="op">=</span> <span class="cn">NULL</span>, 
                      force_var <span class="op">=</span> <span class="st">"class"</span>, 
                      positive_value <span class="op">=</span> <span class="st">"A"</span><span class="op">)</span> <span class="op">%&gt;%</span>
+      <span class="co">#The system is considered converged when the static force is 1/10000 of </span>
+      <span class="co">#absolute sum of the force exerted by all the nodes</span>
     <span class="fu"><a href="../reference/SETSe_auto.html">SETSe_auto</a></span><span class="op">(</span>tol <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/igraph/man/vertex_attr.html">vertex_attr</a></span><span class="op">(</span><span class="va">.</span>, <span class="st">"force"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">/</span><span class="fl">10000</span><span class="op">)</span> 
     <span class="co">#create the aggregated node details</span>
     <span class="co">#embeddings_data$node_details &lt;- create_node_details(g, embeddings_data)</span>

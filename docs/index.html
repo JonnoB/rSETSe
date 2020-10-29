@@ -18,8 +18,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
 <script src="pkgdown.js"></script><meta property="og:title" content="Strain Elevation Tension Spring embedding">
-<meta property="og:description" content="An R implementation for the Strain Elevation and Tension embedding algorithm. The package embeds graph and networks using the Strain Elevation and Tension 
-	embeddings produced by the SETSe algorithm. This SETSe represents the network as a physical system, where edges are elastic and nodes exert a force either up 
+<meta property="og:description" content="An R implementation for the Strain Elevation and Tension embedding algorithm. The package embeds graphs and networks using the Strain Elevation and Tension 
+	embedding (SETSe) algorithm. SETSe represents the network as a physical system, where edges are elastic and nodes exert a force either up 
 	or down based on node features. SETSe positions the nodes vertically such that the tension in the edges of a node is equal and opposite to the force it exerts 
 	for all nodes in the network. The resultant structure can then be analysed by looking at the node elevation and the edge strain and tension. This algorithm works 
 	on weighted and unweighted networks as well as networks with or without explicit node features. Edge elasticity can be created from existing edge weights or kept 
@@ -94,17 +94,21 @@
       </header><div class="row">
   <div class="contents col-md-9">
 
-<p align="center">
-<!-- <img src='man/figures/SETSe_logo.png' align="right" height="120" /> -->
-<img src="reference/figures/SETSe_logo.png" width="300"></p>
+<div id="rsetse-" class="section level1">
+<div class="page-header"><h1 class="hasAnchor">
+<a href="#rsetse-" class="anchor"></a>rSETSE <img src="reference/figures/SETSe_logo.png" align="right" height="300">
+</h1></div>
+<!-- badges: start -->
+
 <div id="an-r-package-for-embedding-graphs-using-the-setse-algorithm" class="section level2">
 <h2 class="hasAnchor">
 <a href="#an-r-package-for-embedding-graphs-using-the-setse-algorithm" class="anchor"></a>An R package for embedding graphs using the SETSe algorithm</h2>
 <p>This is the R package for the Strain Elevation Tension Spring embeddgins (SETSe) algorithm. SETSe is a deterministic graph embeddings algorithm. It converts the node attributes of a graph into forces and the edge attributes into springs. The algorithm finds an equilibrium position when the forces of the nodes are balanced by the forces on the springs. A full description of the algorithm is given in my forthcoming paper “The spring bounces back: Introduction to Strain Elevation Tension Spring embedding for network representation” (<a href="https://arxiv.org/pdf/2007.09437.pdf">arxiv version here</a>). There is a website for the package at <a href="https://jonnob.github.io/rSETSe/index.html" class="uri">https://jonnob.github.io/rSETSe/index.html</a></p>
 </div>
+</div>
 <div id="installation-instructions" class="section level1">
-<div class="page-header"><h1 class="hasAnchor">
-<a href="#installation-instructions" class="anchor"></a>Installation instructions</h1></div>
+<h1 class="hasAnchor">
+<a href="#installation-instructions" class="anchor"></a>Installation instructions</h1>
 <ol>
 <li>Open R/Rstudio and ensure that devtools has been installed</li>
 <li>Run the following code library(devtools); install_github(“JonnoB/rSETSE”)</li>
@@ -172,7 +176,14 @@ embeddings &lt;- SETSe_bicomp(g,
 </ul>
 </div>
 
-  </div>
+  <div class="dev-status">
+<h2>Dev status</h2>
+<ul class="list-unstyled">
+<li><a href="https://github.com/JonnoB/rSETSe/actions"><img src="https://github.com/JonnoB/rSETSe/workflows/R-CMD-check/badge.svg" alt="R build status"></a></li>
+<li><a href="https://travis-ci.com/JonnoB/rSETSe"><img src="https://travis-ci.com/JonnoB/rSETSe.svg?branch=master" alt="Travis build status"></a></li>
+</ul>
+</div>
+</div>
 </div>
 
 
