@@ -3,3 +3,4 @@
 ^pkgdown$
 ^LICENSE\.md$
 ^data-raw$
+^\.travis\.yml$

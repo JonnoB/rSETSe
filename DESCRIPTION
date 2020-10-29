@@ -37,3 +37,5 @@ Suggests:
     ggplot2,
     ggraph
 VignetteBuilder: knitr
+URL: https://github.com/JonnoB/rSETSe
+BugReports: https://github.com/JonnoB/rSETSe/issues
