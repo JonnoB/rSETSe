@@ -8,8 +8,8 @@ Authors@R:
            email = "jonathan.s.bourne@gmail.com",
            comment = c(ORCID = "0000-0003-2616-3716"))
            )
-Description: An R implementation for the Strain Elevation and Tension embedding algorithm. The package embeds graph and networks using the Strain Elevation and Tension 
-	embeddings produced by the SETSe algorithm. This SETSe represents the network as a physical system, where edges are elastic and nodes exert a force either up 
+Description: An R implementation for the Strain Elevation and Tension embedding algorithm. The package embeds graphs and networks using the Strain Elevation and Tension 
+	embedding (SETSe) algorithm. SETSe represents the network as a physical system, where edges are elastic and nodes exert a force either up 
 	or down based on node features. SETSe positions the nodes vertically such that the tension in the edges of a node is equal and opposite to the force it exerts 
 	for all nodes in the network. The resultant structure can then be analysed by looking at the node elevation and the edge strain and tension. This algorithm works 
 	on weighted and unweighted networks as well as networks with or without explicit node features. Edge elasticity can be created from existing edge weights or kept 
