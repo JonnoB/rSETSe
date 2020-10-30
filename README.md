@@ -43,12 +43,6 @@ embeddings <- SETSe_bicomp(g,
 
 ```
 
-The code used in this package is part of my PhD and a fundemental component of the below projects
-
-* The spring bounces back ([code](https://github.com/JonnoB/SETSe_assortativity_and_clusters))
-* Power grid robusteness ([code](https://github.com/JonnoB/setse_and_network_robustness/edit/master/README.md))
-
-
 # Cite
 
 When using this package please cite the paper [The spring bounces back](https://export.arxiv.org/abs/2007.09437)
