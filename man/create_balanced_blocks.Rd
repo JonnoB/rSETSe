@@ -30,9 +30,9 @@ bi-connected component.
 }
 \examples{
 \dontrun{
-#create a list of balanced network using the two_bicomponents dataset
-balanced_list <-create_balanced_blocks(two_bicomponents, 
-bigraph = biconnected_components(two_bicomponents))
+#create a list of balanced network using the biconnected_network dataset
+balanced_list <-create_balanced_blocks(biconnected_network, 
+bigraph = biconnected_components(biconnected_network))
 
 #count the edges in each of the bi-components
 sapply(balanced_list,ecount )

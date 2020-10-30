@@ -16,7 +16,7 @@
 #' 
 #' @examples
 #' 
-#' embeddings_data <- two_bicomponents %>%
+#' embeddings_data <- biconnected_network %>%
 #'prepare_SETSe_continuous(., node_names = "name", force_var = "force") %>%
 #'  SETSe_auto(., k = "weight")
 #'

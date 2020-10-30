@@ -1,7 +1,7 @@
 ## code to prepare `two_bicomponents` dataset goes here
 library(igraph)
 library(dplyr)
-two_bicomponents <- bind_rows(expand.grid(LETTERS[1:4],LETTERS[1:4]),
+biconnected_network <- bind_rows(expand.grid(LETTERS[1:4],LETTERS[1:4]),
                               expand.grid(LETTERS[5:7],LETTERS[5:7]),
                               tibble(Var1 = "D", Var2 = "E")) %>%
   filter(Var1 != Var2) %>%
@@ -16,4 +16,4 @@ two_bicomponents <- bind_rows(expand.grid(LETTERS[1:4],LETTERS[1:4]),
   set.vertex.attribute(., "group", value = ifelse(get.vertex.attribute(., "name") %in% LETTERS[1:4], "A", "B"))
 
 
-usethis::use_data(two_bicomponents, overwrite = TRUE)
+usethis::use_data(biconnected_network, overwrite = TRUE)

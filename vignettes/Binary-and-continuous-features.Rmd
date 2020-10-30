@@ -26,9 +26,9 @@ library(ggraph)
 
 #Plot the data
 
-The two_bicomponents is a simple network constructed of two groups of nodes that are linked by a single edge. This means the network is made of 3 bi-connected components hence the name. For more information type `?two_bicomponents`
+The biconnected_network is a simple network constructed of two groups of nodes that are linked by a single edge. This means the network is made of 3 bi-connected components hence the name. For more information type `?biconnected_network`
 ```{r message=FALSE}
-two_bicomponents %>%
+biconnected_network %>%
   ggraph() + 
   geom_edge_link() +
   geom_node_point(aes(colour = group), size = 3) 
@@ -39,12 +39,12 @@ two_bicomponents %>%
 
 Creating the embeddings using this dataset is very simple as it already has a force variable and the edge weights can be used as the spring constant.
 ```{r message=FALSE}
-embeddings_cont <- two_bicomponents %>%
+embeddings_cont <- biconnected_network %>%
   prepare_SETSe_continuous(., node_names = "name", force_var = "force") %>%
   SETSe_auto(., k = "weight")
 
 
-embeddings_data <- two_bicomponents %>%
+embeddings_data <- biconnected_network %>%
   prepare_SETSe_continuous(., node_names = "name", force_var = "force") %>%
   SETSe_auto(., k = "weight")
 
@@ -56,7 +56,7 @@ However, for some reason we may want to reset the spring constant to something e
 
 ```{r message=FALSE}
 
-embeddings_cont_fixed <- two_bicomponents %>%
+embeddings_cont_fixed <- biconnected_network %>%
   prepare_SETSe_continuous(., node_names = "name", force_var = "force", k = 500) %>%
   SETSe_auto(., k = "k")
 
@@ -64,7 +64,7 @@ embeddings_cont_fixed <- two_bicomponents %>%
 
 ## plot the resulting embeddings
 
-By aggregating the tension in each edge to node level using `create_node_edge_df()` for both the embeddings methods we can see how the different node are embedded. What we see is that the two most central node experience much more tension and also have a substantially higher elevation than the other nodes. This is expected as on the two_bicomponents network the node force is the centrality of the nodes.
+By aggregating the tension in each edge to node level using `create_node_edge_df()` for both the embeddings methods we can see how the different node are embedded. What we see is that the two most central node experience much more tension and also have a substantially higher elevation than the other nodes. This is expected as on the biconnected_network network the node force is the centrality of the nodes.
 
 We can also see that the embeddings are similar but having fixed or variable k-strength has a clear impact on the final embeddings.
 
@@ -91,12 +91,12 @@ As can be seen embeddings using the groups as force variables create very differ
 
 ```{r message=FALSE}
 
-embeddings_binary <- two_bicomponents %>%
+embeddings_binary <- biconnected_network %>%
   prepare_SETSe_binary(., node_names = "name", force_var = "group", positive_value = "A") %>%
   SETSe_auto(., k = "weight")
 
 
-embeddings_binary_fixed <- two_bicomponents %>%
+embeddings_binary_fixed <- biconnected_network %>%
   prepare_SETSe_binary(., node_names = "name", force_var = "group", positive_value = "A", k = 500) %>%
   SETSe_auto(., k = "k")
 

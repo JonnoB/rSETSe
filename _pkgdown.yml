@@ -1,0 +1,26 @@
+reference:
+- title: Embedding
+  desc:  Perform the embedding using one of the SETSe function
+- contents:
+  - SETSe
+  - starts_with("SETSe_")
+- title: Pre-embedding
+  desc: Functions used before the network has been embedded
+- contents:
+  - prepare_SETSe_binary
+  - prepare_SETSe_continuous
+  - remove_small_components
+  - calc_spring_area
+  - calc_spring_constant
+  - create_balanced_blocks
+  - mass_adjuster
+- title: Post-embedding
+  desc: Functions used after the network has been embedded
+- contents:
+  - create_node_edge_df
+  - calc_tension_strain
+- title: Networks
+  desc: Data to use for embedding
+- contents:
+  - generate_peels_network
+  - biconnected_network

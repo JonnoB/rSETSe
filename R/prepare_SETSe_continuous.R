@@ -33,13 +33,13 @@
 #' @examples 
 #' \dontrun{
 #' library(dplyr)
-#' embeddings <- two_bicomponents %>%
+#' embeddings <- biconnected_network %>%
 #' #prepare the network for a binary embedding
 #' #k is already present in the data so is left null in the preparation function
 #' prepare_SETSe_continuous(., node_names = "name", k = NULL, 
 #'                         force_var = "force") %>%
 #' #embed the network using auto setse
-#' #in the two_bicomponents dataset the edge weights are used directly as k values
+#' #in the biconnected_network dataset the edge weights are used directly as k values
 #' SETSe_auto(k = "weight")
 #'  }
 #' @export

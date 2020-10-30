@@ -109,9 +109,9 @@
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggraph.data-imaginist.com">ggraph</a></span><span class="op">)</span></pre></div>
 <p>#Plot the data</p>
-<p>The two_bicomponents is a simple network constructed of two groups of nodes that are linked by a single edge. This means the network is made of 3 bi-connected components hence the name. For more information type <code><a href="../reference/two_bicomponents.html">?two_bicomponents</a></code></p>
+<p>The biconnected_network is a simple network constructed of two groups of nodes that are linked by a single edge. This means the network is made of 3 bi-connected components hence the name. For more information type <code><a href="../reference/biconnected_network.html">?biconnected_network</a></code></p>
 <div class="sourceCode" id="cb2"><pre class="downlit">
-<span class="va">two_bicomponents</span> <span class="op">%&gt;%</span>
+<span class="va">biconnected_network</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="https://ggraph.data-imaginist.com/reference/ggraph.html">ggraph</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> 
   <span class="fu"><a href="https://ggraph.data-imaginist.com/reference/geom_edge_link.html">geom_edge_link</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggraph.data-imaginist.com/reference/geom_node_point.html">geom_node_point</a></span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>colour <span class="op">=</span> <span class="va">group</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">3</span><span class="op">)</span> </pre></div>
@@ -122,12 +122,12 @@
 <a href="#continuous-embeddings" class="anchor"></a>Continuous embeddings</h1>
 <p>Creating the embeddings using this dataset is very simple as it already has a force variable and the edge weights can be used as the spring constant.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit">
-<span class="va">embeddings_cont</span> <span class="op">&lt;-</span> <span class="va">two_bicomponents</span> <span class="op">%&gt;%</span>
+<span class="va">embeddings_cont</span> <span class="op">&lt;-</span> <span class="va">biconnected_network</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/prepare_SETSe_continuous.html">prepare_SETSe_continuous</a></span><span class="op">(</span><span class="va">.</span>, node_names <span class="op">=</span> <span class="st">"name"</span>, force_var <span class="op">=</span> <span class="st">"force"</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/SETSe_auto.html">SETSe_auto</a></span><span class="op">(</span><span class="va">.</span>, k <span class="op">=</span> <span class="st">"weight"</span><span class="op">)</span>
 
 
-<span class="va">embeddings_data</span> <span class="op">&lt;-</span> <span class="va">two_bicomponents</span> <span class="op">%&gt;%</span>
+<span class="va">embeddings_data</span> <span class="op">&lt;-</span> <span class="va">biconnected_network</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/prepare_SETSe_continuous.html">prepare_SETSe_continuous</a></span><span class="op">(</span><span class="va">.</span>, node_names <span class="op">=</span> <span class="st">"name"</span>, force_var <span class="op">=</span> <span class="st">"force"</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/SETSe_auto.html">SETSe_auto</a></span><span class="op">(</span><span class="va">.</span>, k <span class="op">=</span> <span class="st">"weight"</span><span class="op">)</span>
 
@@ -135,13 +135,13 @@
 <p>However, for some reason we may want to reset the spring constant to something else, below we perform the embedding using a fixed k of 500.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit">
 
-<span class="va">embeddings_cont_fixed</span> <span class="op">&lt;-</span> <span class="va">two_bicomponents</span> <span class="op">%&gt;%</span>
+<span class="va">embeddings_cont_fixed</span> <span class="op">&lt;-</span> <span class="va">biconnected_network</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/prepare_SETSe_continuous.html">prepare_SETSe_continuous</a></span><span class="op">(</span><span class="va">.</span>, node_names <span class="op">=</span> <span class="st">"name"</span>, force_var <span class="op">=</span> <span class="st">"force"</span>, k <span class="op">=</span> <span class="fl">500</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/SETSe_auto.html">SETSe_auto</a></span><span class="op">(</span><span class="va">.</span>, k <span class="op">=</span> <span class="st">"k"</span><span class="op">)</span></pre></div>
 <div id="plot-the-resulting-embeddings" class="section level2">
 <h2 class="hasAnchor">
 <a href="#plot-the-resulting-embeddings" class="anchor"></a>plot the resulting embeddings</h2>
-<p>By aggregating the tension in each edge to node level using <code><a href="../reference/create_node_edge_df.html">create_node_edge_df()</a></code> for both the embeddings methods we can see how the different node are embedded. What we see is that the two most central node experience much more tension and also have a substantially higher elevation than the other nodes. This is expected as on the two_bicomponents network the node force is the centrality of the nodes.</p>
+<p>By aggregating the tension in each edge to node level using <code><a href="../reference/create_node_edge_df.html">create_node_edge_df()</a></code> for both the embeddings methods we can see how the different node are embedded. What we see is that the two most central node experience much more tension and also have a substantially higher elevation than the other nodes. This is expected as on the biconnected_network network the node force is the centrality of the nodes.</p>
 <p>We can also see that the embeddings are similar but having fixed or variable k-strength has a clear impact on the final embeddings.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit">
 
@@ -165,12 +165,12 @@
 <p>As can be seen embeddings using the groups as force variables create very different embedded results, this is despite the fact that the networks are identical.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit">
 
-<span class="va">embeddings_binary</span> <span class="op">&lt;-</span> <span class="va">two_bicomponents</span> <span class="op">%&gt;%</span>
+<span class="va">embeddings_binary</span> <span class="op">&lt;-</span> <span class="va">biconnected_network</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/prepare_SETSe_binary.html">prepare_SETSe_binary</a></span><span class="op">(</span><span class="va">.</span>, node_names <span class="op">=</span> <span class="st">"name"</span>, force_var <span class="op">=</span> <span class="st">"group"</span>, positive_value <span class="op">=</span> <span class="st">"A"</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/SETSe_auto.html">SETSe_auto</a></span><span class="op">(</span><span class="va">.</span>, k <span class="op">=</span> <span class="st">"weight"</span><span class="op">)</span>
 
 
-<span class="va">embeddings_binary_fixed</span> <span class="op">&lt;-</span> <span class="va">two_bicomponents</span> <span class="op">%&gt;%</span>
+<span class="va">embeddings_binary_fixed</span> <span class="op">&lt;-</span> <span class="va">biconnected_network</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/prepare_SETSe_binary.html">prepare_SETSe_binary</a></span><span class="op">(</span><span class="va">.</span>, node_names <span class="op">=</span> <span class="st">"name"</span>, force_var <span class="op">=</span> <span class="st">"group"</span>, positive_value <span class="op">=</span> <span class="st">"A"</span>, k <span class="op">=</span> <span class="fl">500</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/SETSe_auto.html">SETSe_auto</a></span><span class="op">(</span><span class="va">.</span>, k <span class="op">=</span> <span class="st">"k"</span><span class="op">)</span>
 
