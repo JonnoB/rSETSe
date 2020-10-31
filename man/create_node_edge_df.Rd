@@ -12,7 +12,7 @@ create_node_edge_df(embeddings_data, function_names = c("mean", "median"))
 \item{function_names}{A string vector. the names of the aggregation methods to be used}
 }
 \value{
-A dataframe with node names, node force, node elevation and strain and tension aggregated useing the named functions.
+A dataframe with node names, node force, node elevation and strain and tension aggregated using the named functions.
 The strain and tension columns are returned with names in the form "strain_x" where "x" is the name of the function used 
 to aggregate. The total number of columns is dependent on the number of aggregation functions.
 }

@@ -25,7 +25,7 @@ SETSe_auto(
   static_limit = NULL,
   verbose = FALSE,
   include_edges = TRUE,
-  noisey_termination = TRUE
+  noisy_termination = TRUE
 )
 }
 \arguments{
@@ -53,7 +53,7 @@ SETSe_auto(
 
 \item{hyper_tol}{numeric. The convergence tolerance when trying to find the minimum value}
 
-\item{hyper_max}{integer. The maximum number of iterations that the setse will go through whilst searching for the minimum.}
+\item{hyper_max}{integer. The maximum number of iterations that SETSe will go through whilst searching for the minimum.}
 
 \item{drag_min}{integer. A power of ten. The lowest drag value to be used in the search}
 
@@ -68,12 +68,12 @@ This can greatly reduce the size of the results file for large numbers of iterat
 prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
 If left blank the static limit is the system absolute mean force.}
 
-\item{verbose}{Logical. This value sets whether messages generated during the process are supressed or not.}
+\item{verbose}{Logical. This value sets whether messages generated during the process are suppressed or not.}
 
-\item{include_edges}{logical. An optional variable on wehther to calculate the edge tension and strain. Default is TRUE.
+\item{include_edges}{logical. An optional variable on whether to calculate the edge tension and strain. Default is TRUE.
 included for ease of integration into the bicomponent functions.}
 
-\item{noisey_termination}{Stop the process if the static force does not monotonically decrease.}
+\item{noisy_termination}{Stop the process if the static force does not monotonically decrease.}
 }
 \value{
 A list of four elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings, 
@@ -86,7 +86,7 @@ Uses a grid search and a binary search to find appropriate convergence condition
 This is one of the most commonly used SETSe functions. It automatically selects the convergence time-step and drag values
 to ensure efficient convergence.
 
-The noisey_termination parameter is used as in some cases the convergenve process can get stuck in the noisey zone of SETSe space.
+The noisy_termination parameter is used as in some cases the convergence process can get stuck in the noisy zone of SETSe space.
 To prevent this the process is stopped early if the static force does not monotonically decrease.  On large networks this 
 greatly speeds up the search for good parameter values. It increases the chance of successful convergence. 
 More detail on auto-SETSe can be found in the paper "The spring bounces back" (Bourne 2020).
@@ -103,7 +103,7 @@ prepare_SETSe_binary(., node_names = "name", k = 1000,
                      force_var = "class", 
                      positive_value = "A")
                      
-#embed the network using auto setse with default settings
+#embed the network using auto SETSe with default settings
 embeddings <- SETSe_auto(g_prep)
 
 }

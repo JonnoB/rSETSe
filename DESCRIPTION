@@ -1,6 +1,6 @@
-Package: rSETSe
+Package: rsetse
 Title: Strain Elevation Tension Spring embedding
-Version: 0.3
+Version: 0.4
 Authors@R: 
     c(person(given = "Jonathan",
            family = "Bourne",

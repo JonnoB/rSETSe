@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Binary network prepare — prepare_SETSe_binary • rSETSe</title>
+<title>Binary network prepare — prepare_SETSe_binary • rsetse</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -79,8 +79,8 @@
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">rSETSe</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3</span>
+        <a class="navbar-link" href="../index.html">rsetse</a>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4</span>
       </span>
     </div>
 
@@ -109,6 +109,9 @@
       <a href="../articles/separate-peels-quintet.html">Analysing multiple networks</a>
     </li>
   </ul>
+</li>
+<li>
+  <a href="../news/index.html">Changelog</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -163,8 +166,8 @@
     </tr>
     <tr>
       <th>k</th>
-      <td><p>The sping constant. This value is either a numeric value giving the spring constant for all edges or NULL. If NULL is used 
-the k value will not be added to the network. This is useful k is made through some other processs.</p></td>
+      <td><p>The spring constant. This value is either a numeric value giving the spring constant for all edges or NULL. If NULL is used 
+the k value will not be added to the network. This is useful k is made through some other process.</p></td>
     </tr>
     <tr>
       <th>force_var</th>
@@ -189,7 +192,7 @@ the k value will not be added to the network. This is useful k is made through s
     <p>A network with the correct edge and node attributes for the embeddings process.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>The network takes in an igraph object and produces an undirected igraph object that can be used with SETSe/SETSe_auto/SETse_bicomp for embedding.</p>
+    <p>The network takes in an igraph object and produces an undirected igraph object that can be used with SETSe/SETSe_auto/SETSe_bicomp for embedding.</p>
 <p>The function adds the node attribute 'force' and the edge attribute 'k' unless k=NULL. The purpose of the function is to easily be able to 
  project binary networks using SETSe.</p> 
 <p>The function creates several variables</p><ul>

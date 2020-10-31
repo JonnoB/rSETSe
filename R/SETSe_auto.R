@@ -17,21 +17,21 @@
 #' @param drag_max integer. A power of ten. if the drag exceeds this value the tstep is reduced
 #' @param tstep_change numeric. A value between 0 and 1 that determines how much the time step will be reduced by default value is 0.5
 #' @param hyper_tol numeric. The convergence tolerance when trying to find the minimum value
-#' @param hyper_max integer. The maximum number of iterations that the setse will go through whilst searching for the minimum.
+#' @param hyper_max integer. The maximum number of iterations that SETSe will go through whilst searching for the minimum.
 #' @param sample Integer. The dynamics will be stored only if the iteration number is a multiple of the sample. 
 #'  This can greatly reduce the size of the results file for large numbers of iterations. Must be a multiple of the max_iter
 #' @param static_limit Numeric. The maximum value the static force can reach before the algorithm terminates early. This
 #' prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
 #' If left blank the static limit is the system absolute mean force.
-#' @param verbose Logical. This value sets whether messages generated during the process are supressed or not.
-#' @param include_edges logical. An optional variable on wehther to calculate the edge tension and strain. Default is TRUE.
+#' @param verbose Logical. This value sets whether messages generated during the process are suppressed or not.
+#' @param include_edges logical. An optional variable on whether to calculate the edge tension and strain. Default is TRUE.
 #'  included for ease of integration into the bicomponent functions.
-#' @param noisey_termination Stop the process if the static force does not monotonically decrease.
+#' @param noisy_termination Stop the process if the static force does not monotonically decrease.
 #' 
 #' @details This is one of the most commonly used SETSe functions. It automatically selects the convergence time-step and drag values
 #' to ensure efficient convergence.
 #' 
-#' The noisey_termination parameter is used as in some cases the convergenve process can get stuck in the noisey zone of SETSe space.
+#' The noisy_termination parameter is used as in some cases the convergence process can get stuck in the noisy zone of SETSe space.
 #' To prevent this the process is stopped early if the static force does not monotonically decrease.  On large networks this 
 #' greatly speeds up the search for good parameter values. It increases the chance of successful convergence. 
 #' More detail on auto-SETSe can be found in the paper "The spring bounces back" (Bourne 2020).
@@ -52,7 +52,7 @@
 #'                      force_var = "class", 
 #'                      positive_value = "A")
 #'                      
-#' #embed the network using auto setse with default settings
+#' #embed the network using auto SETSe with default settings
 #' embeddings <- SETSe_auto(g_prep)
 #' 
 #' @export
@@ -77,7 +77,7 @@ SETSe_auto <- function(g,
                        static_limit = NULL,
                        verbose = FALSE,
                        include_edges = TRUE,
-                       noisey_termination = TRUE){
+                       noisy_termination = TRUE){
   
   #The more negative the log ratio becomes the larger the drag ratio becomes
   
@@ -211,7 +211,7 @@ SETSe_auto <- function(g,
       sparse = sparse,
       sample = sample,
       static_limit = static_limit,
-      noisey_termination = noisey_termination) 
+      noisy_termination = noisy_termination) 
     
     node_embeds <- embeddings_data$node_embeddings
     
@@ -227,10 +227,10 @@ SETSe_auto <- function(g,
                                             res_stat_limit ,
                                             memory_df$res_stat[drag_iter])
     
-    #when noisey_termination =TRUE. processes that terminate due to noisey behaviour are treated as if they had exceeded the
+    #when noisy_termination =TRUE. processes that terminate due to noisy behaviour are treated as if they had exceeded the
     #static limit
-    #note noisey behaviour is a system that does not have a monotonic reduction in static force
-    if(noisey_termination & nrow(embeddings_data$network_dynamics)>1){
+    #note noisy behaviour is a system that does not have a monotonic reduction in static force
+    if(noisy_termination & nrow(embeddings_data$network_dynamics)>1){
 
       monotonic_decrease <- all(embeddings_data$network_dynamics$static_force[2:nrow(embeddings_data$network_dynamics)]<
       embeddings_data$network_dynamics$static_force[1:(nrow(embeddings_data$network_dynamics)-1)])
@@ -376,7 +376,7 @@ SETSe_auto <- function(g,
   
   #If the smallest residual force is not less than the tolerance even after the minimum point hase been found
   #Then run the setse algo again using the best log ratio but for the maximum number of iterations
-  #Ten percent is added to the drag score as the found value is likely to be noisey. This will speed up the convergence
+  #Ten percent is added to the drag score as the found value is likely to be noisy. This will speed up the convergence
   #If it slows it down by over damping it won't be too bad... I am open to changing this!
   if(min(memory_df$res_stat)>tol){
     

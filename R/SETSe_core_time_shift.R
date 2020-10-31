@@ -1,7 +1,7 @@
 #' SETSe Core with time shift
 #' 
 #' Internal function. This is a variant of the SETse core algorithm. It runs the SETSe model to find the equilibrium position of the network,
-#' it changes the time step if the algo is in the noisey zone. The function is called by auto_setse
+#' it changes the time step if the algo is in the noisy zone. The function is called by auto_setse
 #' 
 #' @param node_embeddings A data frame The current dynamics and forces experienced by the node a data frame.
 #' @param ten_mat A data frame The current dynamics and forces experienced by the node a data frame.
@@ -108,7 +108,7 @@ SETSe_core_time_shift <- function(node_embeddings,
   
   Iter <- 1
   current_time <- 0
-  is_noisey <- FALSE 
+  is_noisy <- FALSE 
   system_stable <- FALSE
   
   #get the time the algo starts
@@ -163,29 +163,29 @@ SETSe_core_time_shift <- function(node_embeddings,
       ##This can be removed it is only for debugging
       ##
       # print(paste("Dyanmics row", Iter, 
-      #             "is noisey?", 
+      #             "is noisy?", 
       #             sum(abs(static_force)) > network_dynamics[dynamics_row-1,3],
       #             "current",  round(sum(abs(static_force))) ,
       #             "previous",round(network_dynamics[dynamics_row-1,3])
       #             ))
   
-      #checks to ensure that the reduction in static force is smooth and not in the noisey zone.
-      #This is important force most convergence processes as autoconvergence can get stuck in the noisey zone
+      #checks to ensure that the reduction in static force is smooth and not in the noisy zone.
+      #This is important force most convergence processes as autoconvergence can get stuck in the noisy zone
       #preventing the network from converging. However such a mode is not always desired.
-      #The option is implemented in the core algo as noisey convergence can take a long time so
+      #The option is implemented in the core algo as noisy convergence can take a long time so
       #automatic termination can greatly reduce the amount of time searching for optimal parameters.
       #The if statment has two conditions
       #1 Is this the second row or higher of the networks_dynamic matrix. Prevents NA values
-      #2 The convergence is noisey if the static force at time t is greater than the static force at t-1
+      #2 The convergence is noisy if the static force at time t is greater than the static force at t-1
       
       if(dynamics_row > 1){
-        #The convergence is noisey if the static force at time t is greater than the static force at t-1
-        is_noisey <- sum(abs(static_force))  > network_dynamics[dynamics_row-1,3]
+        #The convergence is noisy if the static force at time t is greater than the static force at t-1
+        is_noisy <- sum(abs(static_force))  > network_dynamics[dynamics_row-1,3]
         
       }
-      #If the convergnece is noisey then load the previous saved versions and change the timestep
+      #If the convergnece is noisy then load the previous saved versions and change the timestep
       #Otherwise overwrite the previous saved data and continue
-      if(is_noisey){
+      if(is_noisy){
         print("changing timestep")
         #change the tstep
         tstep <- tstep*tstep_change

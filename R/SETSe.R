@@ -13,16 +13,16 @@
 #' @param coef_drag A numeric. 
 #' @param tol A numeric. The tolerance factor for early stopping.
 #' @param sparse Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated
-#' @param two_node_solution Logical. The newton-raphson algo is used to find the correct angle
+#' @param two_node_solution Logical. The Newton-Raphson algo is used to find the correct angle
 #' @param sample Integer. The dynamics will be stored only if the iteration number is a multiple of the sample. 
 #'  This can greatly reduce the size of the results file for large numbers of iterations. Must be a multiple of the max_iter
 #' @param static_limit Numeric. The maximum value the static force can reach before the algorithm terminates early. This
 #' prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
 #' If left blank the static limit is twice the system absolute mean force.
-#' @param noisey_termination Stop the process if the static force does not monotonically decrease.
+#' @param noisy_termination Stop the process if the static force does not monotonically decrease.
 #' 
 #' @details This is the basic SETS embeddings algorithm, it outputs all elements of the embeddings as well as convergence dynamics. It is a
-#' wrapper around the core SETS algorithm which requires data preparation and only produces node embeddings and entwork dynamics. 
+#' wrapper around the core SETS algorithm which requires data preparation and only produces node embeddings and network dynamics. 
 #' There is little reason to use this function as \code{\link{SETSe_auto}} and \code{\link{SETSe_bicomp}} 
 #' are faster and easier to use.
 #' 
@@ -56,7 +56,7 @@ SETSe <- function(g,
                   two_node_solution = TRUE,
                   sample = 1,
                   static_limit = NULL,
-                  noisey_termination = TRUE){
+                  noisy_termination = TRUE){
   
   #helper function that prepares the data
   Prep <- SETSe_data_prep(g = g, 
@@ -90,7 +90,7 @@ SETSe <- function(g,
       sparse = sparse,
       sample = sample,
       static_limit = static_limit,
-      noisey_termination = noisey_termination) 
+      noisy_termination = noisy_termination) 
     
   }
   

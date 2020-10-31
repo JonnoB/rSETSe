@@ -25,7 +25,7 @@ This vignette walks through a simple analysis shown in the paper The spring boun
 The first block, shown below, loads all the necessary packages. use `install.packages()` if any of the packages are not installed on your machine.
 
 ```{r  results = 'hide', message=FALSE}
-library(rSETSe)
+library(rsetse)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
@@ -37,9 +37,9 @@ library(igraph)
 
 # Peel's quintet
 
-Anscombe's quartet which showed that figures that were visually very different could have almost identical corellation and other summary statistics. Peels quintet is the graph equivalent of Anscombes quartet but for graph/networks. The networks in Peel's quintet have two groups of nodes which are broken up into two subgroups. All the networks have the same number of node, edges, connections within and between groups. However, the connections between subgroups change producing very different networks even though they appear identical using traditional network metrics (for more information see the paper by Peel et al). 
+Anscombe's quartet which showed that figures that were visually very different could have almost identical correlation and other summary statistics. Peels quintet is the graph equivalent of Anscombe's quartet but for graph/networks. The networks in Peel's quintet have two groups of nodes which are broken up into two subgroups. All the networks have the same number of node, edges, connections within and between groups. However, the connections between subgroups change producing very different networks even though they appear identical using traditional network metrics (for more information see the paper by Peel et al). 
 
-the `rSETSe` package has a function that generates each of the 5 types of Peels network. The code chunk below shows 1 example of each class of the quintet starting with type A on the left and ending with thype E on the right. It is clear that networks 
+the `rSETSe` package has a function that generates each of the 5 types of Peels network. The code chunk below shows 1 example of each class of the quintet starting with type A on the left and ending with type E on the right. It is clear that networks 
 
 ```{r results = 'hide', message=FALSE}
 #This is a bit of a contorted way to get 5 networks into the same plot as 
@@ -151,7 +151,7 @@ all_embeddings <-all_embeddings %>%
 
 # Aggregate to graph level and plot
 
-aggregate the node level deatils up to whole graph level and plot the results
+aggregate the node level details up to whole graph level and plot the results
  
 ```{r message = FALSE}
 

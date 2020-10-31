@@ -10,7 +10,7 @@
 #' @details This function is pretty niche but calculates a cross sectional area of an edge.
 #' This is useful when you wish to calculate the spring coefficient k using Young's modulus. 
 #' The function coerces and edge characteristic to be within a certain range of values preventing
-#' negative/zero/infinate values.
+#' negative/zero/infinite values.
 #' 
 #' @return a igraph object with the new edge attribute "Area" for each edge
 #' 

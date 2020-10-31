@@ -1,7 +1,7 @@
 #' SETSe algorithm with automatic timestep adjustment
 #' 
 #' The basic SETSe function with added timestep adjustment. 
-#' The time shift functionality automatically adjusts the timestep if the convergence process is noisey
+#' The time shift functionality automatically adjusts the timestep if the convergence process is noisy
 #'  
 #' @param g An igraph object
 #' @param force A character string. This is the node attribute that contains the force the nodes exert on the network.
@@ -14,7 +14,7 @@
 #' @param coef_drag A numeric. 
 #' @param tol A numeric. The tolerance factor for early stopping.
 #' @param sparse Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated
-#' @param two_node_solution Logical. The newton-raphson algo is used to find the correct angle
+#' @param two_node_solution Logical. The Newton-Raphson algo is used to find the correct angle
 #' @param sample Integer. The dynamics will be stored only if the iteration number is a multiple of the sample. 
 #'  This can greatly reduce the size of the results file for large numbers of iterations. Must be a multiple of the max_iter
 #' @param static_limit Numeric. The maximum value the static force can reach before the algorithm terminates early. This
@@ -24,7 +24,7 @@
 #' this can stop the momentum of the nodes forcing a divergence, but also can slow down the process. default is TRUE.
 #' 
 #' @details This is the basic SETS embeddings algorithm, it outputs all elements of the embeddings as well as convergence dynamics. It is a
-#' wrapper around the core SETS algorithm which requires data preparation and only produces node embeddings and entwork dynamics. 
+#' wrapper around the core SETS algorithm which requires data preparation and only produces node embeddings and network dynamics. 
 #' There is little reason to use this function as \code{\link{SETSe_auto}} and \code{\link{SETSe_bicomp}} 
 #' are faster and easier to use.
 #' 

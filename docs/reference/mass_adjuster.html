@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Mass adjuster — mass_adjuster • rSETSe</title>
+<title>Mass adjuster — mass_adjuster • rsetse</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -80,8 +80,8 @@ produces an acceleration of 1." />
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">rSETSe</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3</span>
+        <a class="navbar-link" href="../index.html">rsetse</a>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4</span>
       </span>
     </div>
 
@@ -110,6 +110,9 @@ produces an acceleration of 1." />
       <a href="../articles/separate-peels-quintet.html">Analysing multiple networks</a>
     </li>
   </ul>
+</li>
+<li>
+  <a href="../news/index.html">Changelog</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -167,12 +170,12 @@ then the mass is set to one. default is true</p></td>
     <p>A numeric value giving the adjusted mass of the nodes in the network.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>This function can help stabilise the convergence of networks by preventing major imbalanes between the force in the network
+    <p>This function can help stabilise the convergence of networks by preventing major imbalances between the force in the network
 and the mass of the nodes. in certain cases acceleration can become very large or very small in 
 if force and mass are not well parametrised.</p>
 <p>This function means that if the network were reduced to two nodes where each node contained all the mass and all the force of
 one of the two directions, then each node would have an acceleration of 1ms^-2</p>
-<p>The function can become important when using setset_bicomp as the force mass ratio of biconnection components can vary widely from
+<p>The function can become important when using SETSe_bicomp as the force mass ratio of biconnection components can vary widely from
 the total force mass ratio of the network.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>

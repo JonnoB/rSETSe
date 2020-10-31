@@ -9,7 +9,7 @@ calc_spring_constant(g, youngs_mod = "E", A = "Area", distance = "distance")
 \arguments{
 \item{g}{an igraph object. The graph representing the network}
 
-\item{youngs_mod}{a character string. The Youngs modulus of the edge. The default is E}
+\item{youngs_mod}{a character string. The Young's modulus of the edge. The default is E}
 
 \item{A}{a character string. The cross sectional area of the line. The default is A. see details on values of A}
 
@@ -20,7 +20,7 @@ and edge attribute called k with value \code{EA/distance}
 }
 \description{
 This function adds the graph characteristic k which is the spring constant. When A and distance are both set to 1
-\code{k=E} and the spring constant is equivalent to youngs modulus.
+\code{k=E} and the spring constant is equivalent to Young's modulus.
 }
 \details{
 The values A and distance are edge attributes referring to the cross-sectional area of the edge and the horizontal distance of the edge,
@@ -39,7 +39,7 @@ library(igraph)
 set.seed(234)
 g_prep <- generate_peels_network("A") \%>\%
  set.edge.attribute(., name = "edge_characteristic", value = rep(1:16, each = 10)) \%>\%
- #set some pretend youngs modulus value
+ #set some pretend Young's modulus value
  set.edge.attribute(., name = "E", value = rep(c(1e5, 5e5, 2e5, 3e5), each = 40)) \%>\%
  #calculate the spring area from another edge characteristic
  calc_spring_area(., value = "edge_characteristic", minimum_value = 10, range = 20) \%>\%

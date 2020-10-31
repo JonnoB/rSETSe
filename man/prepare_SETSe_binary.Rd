@@ -19,8 +19,8 @@ prepare_SETSe_binary(
 
 \item{node_names}{a character string. A vertex attribute which contains the node names.}
 
-\item{k}{The sping constant. This value is either a numeric value giving the spring constant for all edges or NULL. If NULL is used 
-the k value will not be added to the network. This is useful k is made through some other processs.}
+\item{k}{The spring constant. This value is either a numeric value giving the spring constant for all edges or NULL. If NULL is used 
+the k value will not be added to the network. This is useful k is made through some other process.}
 
 \item{force_var}{A node attribute. This is used as the force variable, it must be a character of factor}
 
@@ -37,7 +37,7 @@ A network with the correct edge and node attributes for the embeddings process.
 This function prepares a binary network for SETSe projection.
 }
 \details{
-The network takes in an igraph object and produces an undirected igraph object that can be used with SETSe/SETSe_auto/SETse_bicomp for embedding.
+The network takes in an igraph object and produces an undirected igraph object that can be used with SETSe/SETSe_auto/SETSe_bicomp for embedding.
 
 The function adds the node attribute 'force' and the edge attribute 'k' unless k=NULL. The purpose of the function is to easily be able to 
  project binary networks using SETSe. 

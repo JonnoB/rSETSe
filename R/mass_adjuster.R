@@ -8,14 +8,14 @@
 #' @param resolution_limit logical. If the forces in the network are smaller than the square root of the machine floating point limit
 #' then the mass is set to one. default is true
 #' 
-#' @details This function can help stabilise the convergence of networks by preventing major imbalanes between the force in the network
+#' @details This function can help stabilise the convergence of networks by preventing major imbalances between the force in the network
 #' and the mass of the nodes. in certain cases acceleration can become very large or very small in 
 #' if force and mass are not well parametrised. 
 #' 
 #' This function means that if the network were reduced to two nodes where each node contained all the mass and all the force of
 #' one of the two directions, then each node would have an acceleration of 1ms^-2
 #' 
-#' The function can become important when using setset_bicomp as the force mass ratio of biconnection components can vary widely from
+#' The function can become important when using SETSe_bicomp as the force mass ratio of biconnection components can vary widely from
 #' the total force mass ratio of the network.
 #' 
 #' @return A numeric value giving the adjusted mass of the nodes in the network.

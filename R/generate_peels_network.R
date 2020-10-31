@@ -3,10 +3,10 @@
 #' Creates an example of a network from Peel's quintet of the specified type.
 #' 
 #' @param type A character which is any of the capital letters A-E
-#' @param k_values An interger vector. The spring constant for the edge types within sub class, within class but not sub-class,
+#' @param k_values An integer vector. The spring constant for the edge types within sub class, within class but not sub-class,
 #' between classes. The default value is 1000, 500, 100. This means the strongest connection is for nodes in the same
 #' sub-class and the weakest connection is for nodes in different classes
-#' @param single_component Logical. Guarentees a single component network. Set to TRUE as default
+#' @param single_component Logical. Guarantees a single component network. Set to TRUE as default
 #'  
 #' @details  This function generates networks matching the 5 types described in Peel et al 2019(\url{https://doi.org/10.1073/pnas.1713019115}). All networks have 40 nodes,
 #'  160 edges, two node classes and four node sub-classes. The connections between the are equal across all 5 types.
@@ -14,7 +14,7 @@
 #'  probability the structures produced by the networks are very different. When projected into SETSe space the network types
 #'  occupy there own area, see Bourne 2020 for details
 #'  
-#' @return An igraph object that matches one of the 5 Peel's quintet types. The nodes are labelled with class and sub class.
+#' @return An igraph object that matches one of the 5 Peel's quintet types. The nodes are labeled with class and sub class.
 #' The edges have attribute k which is the spring constant of the edge given relationship between the nodes the edge connects to
 #' @examples
 #' set.seed(234)

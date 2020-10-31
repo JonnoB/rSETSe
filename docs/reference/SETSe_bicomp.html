@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>SETSe embedding on each bi-connected component using SETSe_auto — SETSe_bicomp • rSETSe</title>
+<title>SETSe embedding on each bi-connected component using SETSe_auto — SETSe_bicomp • rsetse</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -48,7 +48,7 @@
 
 <meta property="og:title" content="SETSe embedding on each bi-connected component using SETSe_auto — SETSe_bicomp" />
 <meta property="og:description" content="Performs the SETS embedding on a network using the bi-connected component/block-tree method. This is the most reliable method to 
-perform SETSe embeddings and can be substantially quicker on unsual networks." />
+perform SETSe embeddings and can be substantially quicker on certain network topologies." />
 <meta property="og:image" content="/logo.png" />
 
 
@@ -80,8 +80,8 @@ perform SETSe embeddings and can be substantially quicker on unsual networks." /
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">rSETSe</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3</span>
+        <a class="navbar-link" href="../index.html">rsetse</a>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4</span>
       </span>
     </div>
 
@@ -111,6 +111,9 @@ perform SETSe embeddings and can be substantially quicker on unsual networks." /
     </li>
   </ul>
 </li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
@@ -139,7 +142,7 @@ perform SETSe embeddings and can be substantially quicker on unsual networks." /
 
     <div class="ref-description">
     <p>Performs the SETS embedding on a network using the bi-connected component/block-tree method. This is the most reliable method to 
-perform SETSe embeddings and can be substantially quicker on unsual networks.</p>
+perform SETSe embeddings and can be substantially quicker on certain network topologies.</p>
     </div>
 
     <pre class="usage"><span class='fu'>SETSe_bicomp</span><span class='op'>(</span>
@@ -162,7 +165,7 @@ perform SETSe embeddings and can be substantially quicker on unsual networks.</p
   drag_max <span class='op'>=</span> <span class='fl'>100</span>,
   tstep_change <span class='op'>=</span> <span class='fl'>0.2</span>,
   verbose <span class='op'>=</span> <span class='cn'>FALSE</span>,
-  noisey_termination <span class='op'>=</span> <span class='cn'>TRUE</span>
+  noisy_termination <span class='op'>=</span> <span class='cn'>TRUE</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -207,7 +210,7 @@ Default is set to NULL and call mass_adjuster to set the mass for each biconnect
     </tr>
     <tr>
       <th>sparse</th>
-      <td><p>Logical. Whether sparse matrices will be used. This becomes valubale for larger networks</p></td>
+      <td><p>Logical. Whether sparse matrices will be used. This becomes valuable for larger networks</p></td>
     </tr>
     <tr>
       <th>sample</th>
@@ -230,7 +233,7 @@ If left blank the static limit is the system absolute mean force.</p></td>
     </tr>
     <tr>
       <th>hyper_max</th>
-      <td><p>integer. The maximum number of iterations that the setse will go through whilst searching for the minimum.</p></td>
+      <td><p>integer. The maximum number of iterations that SETSe will go through whilst searching for the minimum.</p></td>
     </tr>
     <tr>
       <th>drag_min</th>
@@ -246,10 +249,10 @@ If left blank the static limit is the system absolute mean force.</p></td>
     </tr>
     <tr>
       <th>verbose</th>
-      <td><p>Logical. This value sets whether messages generated during the process are supressed or not.</p></td>
+      <td><p>Logical. This value sets whether messages generated during the process are suppressed or not.</p></td>
     </tr>
     <tr>
-      <th>noisey_termination</th>
+      <th>noisy_termination</th>
       <td><p>Stop the process if the static force does not monotonically decrease.</p></td>
     </tr>
     </table>
@@ -259,9 +262,9 @@ If left blank the static limit is the system absolute mean force.</p></td>
     <p>A list containing 5 dataframes.</p><ol>
 <li><p>The node embeddings. Includes all data on the nodes the forces exerted on them position and dynamics at simulation termination</p></li>
 <li><p>The network dynamics describing several key figures of the network during the convergence process, this includes the static_force</p></li>
-<li><p>memory_df A datframe recording ethe iteration history of the convergence of each component.</p></li>
+<li><p>memory_df A dataframe recording the iteration history of the convergence of each component.</p></li>
 <li><p>A data frame giving the time taken for the simulation as well as the number of nodes and edges. Node and edge data is given
-  as this may differ from the total number of nodes and edges in the network depending on the method used for convergnence.
+  as this may differ from the total number of nodes and edges in the network depending on the method used for convergence.
   For example if SETSe_bicomp is used then some simulations may contain as little as two nodes and 1 edge</p></li>
 <li><p>time taken. the amount of time taken per component, includes the edge and nodes of each component</p></li>
 </ol>
@@ -269,10 +272,10 @@ If left blank the static limit is the system absolute mean force.</p></td>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>This approach can be faster for larger graphs or graphs with many nodes of degree 2, or networks with a low clustering coefficient.
-This is becuase although the algorithm is very efficient the topology of larger graphs make them more difficult to converge.
+This is because although the algorithm is very efficient the topology of larger graphs make them more difficult to converge.
 Large graph tend to be made of 1 very large biconnected component and many very small biconnected components. As the mass of the 
 system is concentrated in the major biconnected component the small ones can be knocked around by minor movements of the major. This
-leads to long convergence times. By solving all biconnected components seperately and then resassmbling the block tree at the end,
+leads to long convergence times. By solving all biconnected components separately and then reassembling the block tree at the end,
 the system can be converged considerably faster. In addition the smaller biconnected components iterate faster than a single large one.</p>
 <p>Setting mass to the absolute system force divided by the total nodes, often leads to faster convergence. As such
 When mass is left to the default of NULL, the mean force value is used.</p>

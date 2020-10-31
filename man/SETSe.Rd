@@ -21,7 +21,7 @@ SETSe(
   two_node_solution = TRUE,
   sample = 1,
   static_limit = NULL,
-  noisey_termination = TRUE
+  noisy_termination = TRUE
 )
 }
 \arguments{
@@ -47,7 +47,7 @@ SETSe(
 
 \item{sparse}{Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated}
 
-\item{two_node_solution}{Logical. The newton-raphson algo is used to find the correct angle}
+\item{two_node_solution}{Logical. The Newton-Raphson algo is used to find the correct angle}
 
 \item{sample}{Integer. The dynamics will be stored only if the iteration number is a multiple of the sample. 
 This can greatly reduce the size of the results file for large numbers of iterations. Must be a multiple of the max_iter}
@@ -56,7 +56,7 @@ This can greatly reduce the size of the results file for large numbers of iterat
 prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
 If left blank the static limit is twice the system absolute mean force.}
 
-\item{noisey_termination}{Stop the process if the static force does not monotonically decrease.}
+\item{noisy_termination}{Stop the process if the static force does not monotonically decrease.}
 }
 \value{
 A list of three elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings
@@ -69,7 +69,7 @@ The basic SETSe function.
 }
 \details{
 This is the basic SETS embeddings algorithm, it outputs all elements of the embeddings as well as convergence dynamics. It is a
-wrapper around the core SETS algorithm which requires data preparation and only produces node embeddings and entwork dynamics. 
+wrapper around the core SETS algorithm which requires data preparation and only produces node embeddings and network dynamics. 
 There is little reason to use this function as \code{\link{SETSe_auto}} and \code{\link{SETSe_bicomp}} 
 are faster and easier to use.
 }

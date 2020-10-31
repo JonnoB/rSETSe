@@ -7,7 +7,7 @@
 #' @param g an igraph object
 #' @param node_names a character string. A vertex attribute which contains the node names.
 #' @param k The spring constant. This value is either a numeric value giving the spring constant for all edges or NULL. If NULL is used 
-#'  the k value will not be added to the network. This is useful k is made through some other processs.
+#'  the k value will not be added to the network. This is useful k is made through some other process.
 #' @param force_var A node attribute. This is used as the force variable, it must be a numeric or integer value, it cannot have NA's
 #' @param sum_to_one Logical. whether the total positive force sums to 1, if FALSE the total is the sum of the positive cases
 #' @param distance a positive numeric value. The default is 1

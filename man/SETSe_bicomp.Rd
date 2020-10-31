@@ -24,7 +24,7 @@ SETSe_bicomp(
   drag_max = 100,
   tstep_change = 0.2,
   verbose = FALSE,
-  noisey_termination = TRUE
+  noisy_termination = TRUE
 )
 }
 \arguments{
@@ -47,7 +47,7 @@ SETSe_bicomp(
 \item{mass}{A numeric. This is the mass constant of the nodes in normalised networks. 
 Default is set to NULL and call mass_adjuster to set the mass for each biconnected component}
 
-\item{sparse}{Logical. Whether sparse matrices will be used. This becomes valubale for larger networks}
+\item{sparse}{Logical. Whether sparse matrices will be used. This becomes valuable for larger networks}
 
 \item{sample}{Integer. The dynamics will be stored only if the iteration number is a multiple of the sample. 
 This can greatly reduce the size of the results file for large numbers of iterations. Must be a multiple of the max_iter}
@@ -60,7 +60,7 @@ If left blank the static limit is the system absolute mean force.}
 
 \item{hyper_tol}{numeric. The convergence tolerance when trying to find the minimum value}
 
-\item{hyper_max}{integer. The maximum number of iterations that the setse will go through whilst searching for the minimum.}
+\item{hyper_max}{integer. The maximum number of iterations that SETSe will go through whilst searching for the minimum.}
 
 \item{drag_min}{integer. A power of ten. The lowest drag value to be used in the search}
 
@@ -68,32 +68,32 @@ If left blank the static limit is the system absolute mean force.}
 
 \item{tstep_change}{numeric. A value between 0 and 1 that determines how much the time step will be reduced by default value is 0.5}
 
-\item{verbose}{Logical. This value sets whether messages generated during the process are supressed or not.}
+\item{verbose}{Logical. This value sets whether messages generated during the process are suppressed or not.}
 
-\item{noisey_termination}{Stop the process if the static force does not monotonically decrease.}
+\item{noisy_termination}{Stop the process if the static force does not monotonically decrease.}
 }
 \value{
 A list containing 5 dataframes.
 \enumerate{
   \item The node embeddings. Includes all data on the nodes the forces exerted on them position and dynamics at simulation termination
   \item The network dynamics describing several key figures of the network during the convergence process, this includes the static_force
-  \item memory_df A datframe recording ethe iteration history of the convergence of each component.
+  \item memory_df A dataframe recording the iteration history of the convergence of each component.
   \item A data frame giving the time taken for the simulation as well as the number of nodes and edges. Node and edge data is given
-  as this may differ from the total number of nodes and edges in the network depending on the method used for convergnence.
+  as this may differ from the total number of nodes and edges in the network depending on the method used for convergence.
   For example if SETSe_bicomp is used then some simulations may contain as little as two nodes and 1 edge
   \item time taken. the amount of time taken per component, includes the edge and nodes of each component
 }
 }
 \description{
 Performs the SETS embedding on a network using the bi-connected component/block-tree method. This is the most reliable method to 
-perform SETSe embeddings and can be substantially quicker on unsual networks.
+perform SETSe embeddings and can be substantially quicker on certain network topologies.
 }
 \details{
 This approach can be faster for larger graphs or graphs with many nodes of degree 2, or networks with a low clustering coefficient.
-This is becuase although the algorithm is very efficient the topology of larger graphs make them more difficult to converge.
+This is because although the algorithm is very efficient the topology of larger graphs make them more difficult to converge.
 Large graph tend to be made of 1 very large biconnected component and many very small biconnected components. As the mass of the 
 system is concentrated in the major biconnected component the small ones can be knocked around by minor movements of the major. This
-leads to long convergence times. By solving all biconnected components seperately and then resassmbling the block tree at the end,
+leads to long convergence times. By solving all biconnected components separately and then reassembling the block tree at the end,
 the system can be converged considerably faster. In addition the smaller biconnected components iterate faster than a single large one.
 
 Setting mass to the absolute system force divided by the total nodes, often leads to faster convergence. As such

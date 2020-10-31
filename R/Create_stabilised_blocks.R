@@ -31,7 +31,7 @@
 #' @param hyper_tol numeric. The convergence tolerance when trying to find the minimum value
 #' @param hyper_max integer. The maximum number of iterations that the setse will go through whilst searching for the minimum.
 #' @param balanced_blocks A list 
-#' @param noisey_termination Stop the process if the static force does not monotonically decrease.
+#' @param noisy_termination Stop the process if the static force does not monotonically decrease.
 #' 
 #' @details This function isn't really supposed to be used apart from as a sub-routine of the SETSe biconnected component method.
 #' 
@@ -63,7 +63,7 @@ Create_stabilised_blocks <- function(g,
                                      verbose = FALSE,
                                      bigraph = bigraph,
                                      balanced_blocks = balanced_blocks,
-                                     noisey_termination = TRUE){
+                                     noisy_termination = TRUE){
 
   #remove the Origin block so it doesn't have to be calculated again
   BlockNumbers <-(1:length(balanced_blocks))[-OriginBlock_number]
@@ -139,7 +139,7 @@ Create_stabilised_blocks <- function(g,
                           tstep_change = tstep_change,
                           verbose = verbose,
                           include_edges = FALSE,
-                          noisey_termination = noisey_termination
+                          noisy_termination = noisy_termination
         )
         
         #Print the details of the completed block

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Create a random Peel network — generate_peels_network • rSETSe</title>
+<title>Create a random Peel network — generate_peels_network • rsetse</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -79,8 +79,8 @@
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">rSETSe</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3</span>
+        <a class="navbar-link" href="../index.html">rsetse</a>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4</span>
       </span>
     </div>
 
@@ -109,6 +109,9 @@
       <a href="../articles/separate-peels-quintet.html">Analysing multiple networks</a>
     </li>
   </ul>
+</li>
+<li>
+  <a href="../news/index.html">Changelog</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -155,19 +158,19 @@
     </tr>
     <tr>
       <th>k_values</th>
-      <td><p>An interger vector. The spring constant for the edge types within sub class, within class but not sub-class,
+      <td><p>An integer vector. The spring constant for the edge types within sub class, within class but not sub-class,
 between classes. The default value is 1000, 500, 100. This means the strongest connection is for nodes in the same
 sub-class and the weakest connection is for nodes in different classes</p></td>
     </tr>
     <tr>
       <th>single_component</th>
-      <td><p>Logical. Guarentees a single component network. Set to TRUE as default</p></td>
+      <td><p>Logical. Guarantees a single component network. Set to TRUE as default</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>An igraph object that matches one of the 5 Peel's quintet types. The nodes are labelled with class and sub class.
+    <p>An igraph object that matches one of the 5 Peel's quintet types. The nodes are labeled with class and sub class.
 The edges have attribute k which is the spring constant of the edge given relationship between the nodes the edge connects to</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 

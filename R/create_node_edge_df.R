@@ -10,7 +10,7 @@
 #' and joined to the appropriate node. This function takes as an argument the output of the SETSe embedding functions
 #' and any number of aggregation functions to produce a dataframe that is convenient to use.
 #' 
-#' @return A dataframe with node names, node force, node elevation and strain and tension aggregated useing the named functions.
+#' @return A dataframe with node names, node force, node elevation and strain and tension aggregated using the named functions.
 #' The strain and tension columns are returned with names in the form "strain_x" where "x" is the name of the function used 
 #' to aggregate. The total number of columns is dependent on the number of aggregation functions.
 #' 

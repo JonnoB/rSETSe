@@ -18,7 +18,7 @@
 #' @param static_limit Numeric. The maximum value the static force can reach before the algorithm terminates early. This
 #' prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
 #' If left blank the static limit is the system absolute mean force.
-#' @param noisey_termination Stop the process if the static force does not monotonically decrease.
+#' @param noisy_termination Stop the process if the static force does not monotonically decrease.
 #' 
 #' @details 
 #' This function is usally run inside a more easy to use function such as The SETSe function, SETse_bicomp or SETSe_auto. These
@@ -54,7 +54,7 @@ SETSe_core <- function(node_embeddings,
                        sparse = FALSE,
                        sample = 1,
                        static_limit = NULL,
-                       noisey_termination = FALSE){
+                       noisy_termination = FALSE){
   #Runs the physics model to find the convergence of the system.
   
   #vectors are used throughout instead of a single matrix as it turns out they are faster due to less indexing and use much less RAM.
@@ -103,7 +103,7 @@ SETSe_core <- function(node_embeddings,
   one_vect <- rep(1, nrow(NodeList))
   
   Iter <- 1
-  is_noisey <- FALSE 
+  is_noisy <- FALSE 
   system_stable <- FALSE
   
   #get the time the algo starts
@@ -163,28 +163,28 @@ SETSe_core <- function(node_embeddings,
                                            sum(0.5*mass*velocity^2)    #kinetic_energy
       ) 
       
-      #checks to ensure that the reduction in static force is smooth and not in the noisey zone.
-      #This is important force most convergence processes as autoconvergence can get stuck in the noisey zone
+      #checks to ensure that the reduction in static force is smooth and not in the noisy zone.
+      #This is important force most convergence processes as autoconvergence can get stuck in the noisy zone
       #preventing the network from converging. However such a mode is not always desired.
-      #The option is implemented in the core algo as noisey convergence can take a long time so
+      #The option is implemented in the core algo as noisy convergence can take a long time so
       #automatic termination can greatly reduce the amount of time searching for optimal parameters.
       #The if statment has two conditions
-      #1 is the noisey_termmination option on?
+      #1 is the noisy_termmination option on?
       #2 Is this the second row or higher of the networks_dynamic matrix. Prevents NA values
-      if(noisey_termination & dynamics_row > 1){
-        #The convergence is noisey if the static force at time t is greater than the static force at t-1
-        is_noisey <- network_dynamics[dynamics_row,3] > network_dynamics[dynamics_row-1,3]
+      if(noisy_termination & dynamics_row > 1){
+        #The convergence is noisy if the static force at time t is greater than the static force at t-1
+        is_noisy <- network_dynamics[dynamics_row,3] > network_dynamics[dynamics_row-1,3]
         
       }
       
       #Checks for early termination conditions. There are three or conditions
       #1 If the static force is not a finite value, this covers NA, NaN and infinite.
       #2 The static force exceeds the static limit
-      #3 The system is in the noisey zone
+      #3 The system is in the noisy zone
       #4 If the static force is less than the required tolerance then the system is stable and the process can terminate
       system_stable <- !is.finite(network_dynamics[dynamics_row,3])| 
         (network_dynamics[dynamics_row,3]>static_limit) |
-        is_noisey |
+        is_noisy |
         (network_dynamics[dynamics_row,3] < tol)
 
     }

@@ -1,6 +1,6 @@
 #' two node solution
 #' 
-#' Uses a newton-raphson to solve the two node solution. Seldom used outside of a 'SETSe' function
+#' Uses a newton-Raphson to solve the two node solution. Seldom used outside of a 'SETSe' function
 #' 
 #' @details a helper function inside the main SETSe suite of functions. However it can be used to solve two node graphs
 #' 

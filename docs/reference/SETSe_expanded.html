@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>SETSe embedding showing full convergence history — SETSe_expanded • rSETSe</title>
+<title>SETSe embedding showing full convergence history — SETSe_expanded • rsetse</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -48,7 +48,7 @@
 
 <meta property="og:title" content="SETSe embedding showing full convergence history — SETSe_expanded" />
 <meta property="og:description" content="This is a special case function which keeps the history of the network dynamics. It is useful for demonstrations. 
-or Parametrizing difficult networks" />
+or parametrising difficult networks" />
 <meta property="og:image" content="/logo.png" />
 
 
@@ -80,8 +80,8 @@ or Parametrizing difficult networks" />
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">rSETSe</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3</span>
+        <a class="navbar-link" href="../index.html">rsetse</a>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4</span>
       </span>
     </div>
 
@@ -111,6 +111,9 @@ or Parametrizing difficult networks" />
     </li>
   </ul>
 </li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
@@ -139,7 +142,7 @@ or Parametrizing difficult networks" />
 
     <div class="ref-description">
     <p>This is a special case function which keeps the history of the network dynamics. It is useful for demonstrations. 
-or Parametrizing difficult networks</p>
+or parametrising difficult networks</p>
     </div>
 
     <pre class="usage"><span class='fu'>SETSe_expanded</span><span class='op'>(</span>
@@ -191,15 +194,15 @@ or Parametrizing difficult networks</p>
     </tr>
     <tr>
       <th>max_iter</th>
-      <td><p>An interger. The maximum nuber of iterations before terminating the simulation</p></td>
+      <td><p>An integer. The maximum number of iterations before terminating the simulation</p></td>
     </tr>
     <tr>
       <th>coef_drag</th>
-      <td><p>A numeric. A multplier used to tune the damping. Generally no need to twiddle</p></td>
+      <td><p>A numeric. A multiplier used to tune the damping. Generally no need to twiddle</p></td>
     </tr>
     <tr>
       <th>tol</th>
-      <td><p>A numeric. Early termination. If the dynamics of the nodes fall below this value the algortihm will be classed as 
+      <td><p>A numeric. Early termination. If the dynamics of the nodes fall below this value the algorithm will be classed as 
 "converged" and the simulation terminates.</p></td>
     </tr>
     <tr>
@@ -212,13 +215,13 @@ or Parametrizing difficult networks</p>
     </tr>
     <tr>
       <th>two_node_solution</th>
-      <td><p>Logical. The newton-raphson algo is used to find the correct angle</p></td>
+      <td><p>Logical. The Newton-Raphson algo is used to find the correct angle</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A list of four elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings, 
+    <p>A list of four elements. A dat frame with the height embedding of the network, a data frame of the edge embeddings, 
 the convergence dynamics dataframe for the network as well as the search history for convergence criteria of the network</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>

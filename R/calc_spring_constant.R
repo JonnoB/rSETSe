@@ -1,10 +1,10 @@
 #' Calculate the spring constant
 #' 
 #' This function adds the graph characteristic k which is the spring constant. When A and distance are both set to 1
-#' \code{k=E} and the spring constant is equivalent to youngs modulus.
+#' \code{k=E} and the spring constant is equivalent to Young's modulus.
 #' 
 #' @param g an igraph object. The graph representing the network
-#' @param youngs_mod a character string. The Youngs modulus of the edge. The default is E
+#' @param youngs_mod a character string. The Young's modulus of the edge. The default is E
 #' @param A a character string. The cross sectional area of the line. The default is A. see details on values of A
 #' @param distance A character string. See details on values of distance
 #' @return and edge attribute called k with value \code{EA/distance}
@@ -27,7 +27,7 @@
 #' set.seed(234)
 #' g_prep <- generate_peels_network("A") %>%
 #'  set.edge.attribute(., name = "edge_characteristic", value = rep(1:16, each = 10)) %>%
-#'  #set some pretend youngs modulus value
+#'  #set some pretend Young's modulus value
 #'  set.edge.attribute(., name = "E", value = rep(c(1e5, 5e5, 2e5, 3e5), each = 40)) %>%
 #'  #calculate the spring area from another edge characteristic
 #'  calc_spring_area(., value = "edge_characteristic", minimum_value = 10, range = 20) %>%

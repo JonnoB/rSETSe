@@ -13,14 +13,14 @@ generate_peels_network(
 \arguments{
 \item{type}{A character which is any of the capital letters A-E}
 
-\item{k_values}{An interger vector. The spring constant for the edge types within sub class, within class but not sub-class,
+\item{k_values}{An integer vector. The spring constant for the edge types within sub class, within class but not sub-class,
 between classes. The default value is 1000, 500, 100. This means the strongest connection is for nodes in the same
 sub-class and the weakest connection is for nodes in different classes}
 
-\item{single_component}{Logical. Guarentees a single component network. Set to TRUE as default}
+\item{single_component}{Logical. Guarantees a single component network. Set to TRUE as default}
 }
 \value{
-An igraph object that matches one of the 5 Peel's quintet types. The nodes are labelled with class and sub class.
+An igraph object that matches one of the 5 Peel's quintet types. The nodes are labeled with class and sub class.
 The edges have attribute k which is the spring constant of the edge given relationship between the nodes the edge connects to
 }
 \description{

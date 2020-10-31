@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 # Necessary packages
 
 ```{r setup, results = 'hide', message=FALSE}
-library(rSETSe)
+library(rsetse)
 library(igraph)
 library(dplyr)
 library(ggraph)

@@ -1,7 +1,7 @@
 #' SETSe embedding showing full convergence history
 #' 
 #' This is a special case function which keeps the history of the network dynamics. It is useful for demonstrations. 
-#' or Parametrizing difficult networks
+#' or parametrising difficult networks
 #' 
 #' @param g An igraph object. The network
 #' @param force A character string
@@ -10,15 +10,15 @@
 #' @param edge_name A character string. This is the edge attribute that contains the edge_name of the edges.
 #' @param k A character string. This is k for the moment don't change it.
 #' @param mass A numeric. The mass in kg of the nodes, this is arbitrary and commonly 1 is used. 
-#' @param max_iter An interger. The maximum nuber of iterations before terminating the simulation
-#' @param coef_drag A numeric. A multplier used to tune the damping. Generally no need to twiddle
-#' @param tol A numeric. Early termination. If the dynamics of the nodes fall below this value the algortihm will be classed as 
+#' @param max_iter An integer. The maximum number of iterations before terminating the simulation
+#' @param coef_drag A numeric. A multiplier used to tune the damping. Generally no need to twiddle
+#' @param tol A numeric. Early termination. If the dynamics of the nodes fall below this value the algorithm will be classed as 
 #' "converged" and the simulation terminates.
 #' @param sparse Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated
 #' @param verbose Logical value. Whether the function should output messages or run quietly.
-#' @param two_node_solution Logical. The newton-raphson algo is used to find the correct angle
+#' @param two_node_solution Logical. The Newton-Raphson algo is used to find the correct angle
 #' 
-#' @return A list of four elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings, 
+#' @return A list of four elements. A dat frame with the height embedding of the network, a data frame of the edge embeddings, 
 #' the convergence dynamics dataframe for the network as well as the search history for convergence criteria of the network
 #' 
 #' @examples
