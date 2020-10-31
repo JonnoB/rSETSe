@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Strain Elevation Tension Spring embedding • rSETSe</title>
+<title>Strain Elevation Tension Spring embedding • rsetse</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
 <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="apple-touch-icon.png">
@@ -42,8 +42,8 @@
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="index.html">rSETSe</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3</span>
+        <a class="navbar-link" href="index.html">rsetse</a>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4</span>
       </span>
     </div>
 
@@ -73,6 +73,9 @@
     </li>
   </ul>
 </li>
+<li>
+  <a href="news/index.html">Changelog</a>
+</li>
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
@@ -96,14 +99,14 @@
 
 <div id="rsetse-" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
-<a href="#rsetse-" class="anchor"></a>rSETSE <img src="reference/figures/SETSe_logo.png" align="right" height="300">
+<a href="#rsetse-" class="anchor"></a>rSETSe <img src="reference/figures/SETSe_logo.png" align="right" height="300">
 </h1></div>
 <!-- badges: start -->
 
 <div id="an-r-package-for-embedding-graphs-using-the-setse-algorithm" class="section level2">
 <h2 class="hasAnchor">
 <a href="#an-r-package-for-embedding-graphs-using-the-setse-algorithm" class="anchor"></a>An R package for embedding graphs using the SETSe algorithm</h2>
-<p>This is the R package for the Strain Elevation Tension Spring embeddgins (SETSe) algorithm. SETSe is a deterministic graph embeddings algorithm. It converts the node attributes of a graph into forces and the edge attributes into springs. The algorithm finds an equilibrium position when the forces of the nodes are balanced by the forces on the springs. A full description of the algorithm is given in my forthcoming paper “The spring bounces back: Introduction to Strain Elevation Tension Spring embedding for network representation” (<a href="https://arxiv.org/pdf/2007.09437.pdf">arxiv version here</a>). There is a website for the package at <a href="https://jonnob.github.io/rSETSe/index.html" class="uri">https://jonnob.github.io/rSETSe/index.html</a></p>
+<p>This is the R package for the Strain Elevation Tension Spring embeddings (SETSe) algorithm. SETSe is a deterministic graph embeddings algorithm. It converts the node attributes of a graph into forces and the edge attributes into springs. The algorithm finds an equilibrium position when the forces of the nodes are balanced by the forces on the springs. A full description of the algorithm is given in my forthcoming paper “The spring bounces back: Introduction to Strain Elevation Tension Spring embedding for network representation” (<a href="https://arxiv.org/pdf/2007.09437.pdf">arXiv version here</a>). There is a website for the package at <a href="https://jonnob.github.io/rSETSe/index.html" class="uri">https://jonnob.github.io/rSETSe/index.html</a></p>
 </div>
 </div>
 <div id="installation-instructions" class="section level1">
@@ -111,8 +114,8 @@
 <a href="#installation-instructions" class="anchor"></a>Installation instructions</h1>
 <ol>
 <li>Open R/Rstudio and ensure that devtools has been installed</li>
-<li>Run the following code library(devtools); install_github(“JonnoB/rSETSE”)</li>
-<li>Load the package normally using library(rSETSe)</li>
+<li>Run the following code library(devtools); install_github(“JonnoB/rSETSe”)</li>
+<li>Load the package normally using library(rsetse)</li>
 <li>All functions have help files e.g ?SETSe_auto</li>
 </ol>
 <p>The package can also be downloaded or cloned then installed locally using the install function from devtools.</p>
@@ -120,7 +123,7 @@
 <div id="basic-use" class="section level1">
 <h1 class="hasAnchor">
 <a href="#basic-use" class="anchor"></a>Basic use</h1>
-<pre><code><a href="https://github.com/JonnoB/rSETSe">library(rSETSe)
+<pre><code>library(rSETSe)
 
 #prepares a graph for embedding using SETSe
 set.seed(234) #set the random see for generating the network
@@ -137,7 +140,7 @@ embeddings &lt;- SETSe_bicomp(g,
                            hyper_tol = 0.1,
                            hyper_iters = 3000,
                            verbose = T)
-</a></code></pre>
+</code></pre>
 </div>
 <div id="cite" class="section level1">
 <h1 class="hasAnchor">

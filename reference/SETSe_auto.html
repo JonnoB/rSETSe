@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>SETSe embedding with automatic drag and timestep selection — SETSe_auto • rSETSe</title>
+<title>SETSe embedding with automatic drag and timestep selection — SETSe_auto • rsetse</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -79,8 +79,8 @@
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">rSETSe</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3</span>
+        <a class="navbar-link" href="../index.html">rsetse</a>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4</span>
       </span>
     </div>
 
@@ -109,6 +109,9 @@
       <a href="../articles/separate-peels-quintet.html">Analysing multiple networks</a>
     </li>
   </ul>
+</li>
+<li>
+  <a href="../news/index.html">Changelog</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -161,7 +164,7 @@
   static_limit <span class='op'>=</span> <span class='cn'>NULL</span>,
   verbose <span class='op'>=</span> <span class='cn'>FALSE</span>,
   include_edges <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  noisey_termination <span class='op'>=</span> <span class='cn'>TRUE</span>
+  noisy_termination <span class='op'>=</span> <span class='cn'>TRUE</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -217,7 +220,7 @@
     </tr>
     <tr>
       <th>hyper_max</th>
-      <td><p>integer. The maximum number of iterations that the setse will go through whilst searching for the minimum.</p></td>
+      <td><p>integer. The maximum number of iterations that SETSe will go through whilst searching for the minimum.</p></td>
     </tr>
     <tr>
       <th>drag_min</th>
@@ -244,15 +247,15 @@ If left blank the static limit is the system absolute mean force.</p></td>
     </tr>
     <tr>
       <th>verbose</th>
-      <td><p>Logical. This value sets whether messages generated during the process are supressed or not.</p></td>
+      <td><p>Logical. This value sets whether messages generated during the process are suppressed or not.</p></td>
     </tr>
     <tr>
       <th>include_edges</th>
-      <td><p>logical. An optional variable on wehther to calculate the edge tension and strain. Default is TRUE.
+      <td><p>logical. An optional variable on whether to calculate the edge tension and strain. Default is TRUE.
 included for ease of integration into the bicomponent functions.</p></td>
     </tr>
     <tr>
-      <th>noisey_termination</th>
+      <th>noisy_termination</th>
       <td><p>Stop the process if the static force does not monotonically decrease.</p></td>
     </tr>
     </table>
@@ -265,7 +268,7 @@ the convergence dynamics dataframe for the network as well as the search history
 
     <p>This is one of the most commonly used SETSe functions. It automatically selects the convergence time-step and drag values
 to ensure efficient convergence.</p>
-<p>The noisey_termination parameter is used as in some cases the convergenve process can get stuck in the noisey zone of SETSe space.
+<p>The noisy_termination parameter is used as in some cases the convergence process can get stuck in the noisy zone of SETSe space.
 To prevent this the process is stopped early if the static force does not monotonically decrease.  On large networks this 
 greatly speeds up the search for good parameter values. It increases the chance of successful convergence. 
 More detail on auto-SETSe can be found in the paper "The spring bounces back" (Bourne 2020).</p>
@@ -285,7 +288,7 @@ More detail on auto-SETSe can be found in the paper "The spring bounces back" (B
                      force_var <span class='op'>=</span> <span class='st'>"class"</span>, 
                      positive_value <span class='op'>=</span> <span class='st'>"A"</span><span class='op'>)</span>
                      
-<span class='co'>#embed the network using auto setse with default settings</span>
+<span class='co'>#embed the network using auto SETSe with default settings</span>
 <span class='va'>embeddings</span> <span class='op'>&lt;-</span> <span class='fu'>SETSe_auto</span><span class='op'>(</span><span class='va'>g_prep</span><span class='op'>)</span>
 
 </div></pre>
