@@ -6,4 +6,3 @@
 ^\.travis\.yml$
 ^\.github$
 ^cran-comments\.md$
-^NEWS\.md$
