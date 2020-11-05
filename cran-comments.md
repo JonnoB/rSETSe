@@ -1,9 +1,9 @@
 ## Resubmission
 
-* Converted the DESCRIPTION title to title case.
-* Added a doi to the DESCRIPTION.
-* Added a citation template
-* Improved the citation information in the readme
+* Converted the DESCRIPTION title to title case. A note was created suggesting "Bourne" is miss-spelled, it is spelled correctly
+* Added a reference and doi to the DESCRIPTION.
+* Added a citation template.
+* Improved the citation information in the readme.
 
 
 ## Test environments
