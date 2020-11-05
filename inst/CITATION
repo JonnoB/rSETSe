@@ -1,0 +1,16 @@
+citHeader("To cite rsetse in publications use:")
+
+citEntry(
+  entry    = "Article",
+  title    = "The spring bounces back: introducing the strain elevation tension spring embedding algorithm for network representation",
+  author   = "Bourne, Jonathan",
+  journal  = "Applied Network Science",
+  year     = 2020,
+  volume   = 5,
+  number   = 1,
+  pages    = 1-23,
+  url      = "https://doi.org/10.1007/s41109-020-00329-4",
+  textVersion = paste(
+  "Bourne, J. The spring bounces back: introducing the strain elevation tension spring embedding algorithm for network representation. Appl Netw Sci 5, 88 (2020). https://doi.org/10.1007/s41109-020-00329-4"
+  )
+)

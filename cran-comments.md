@@ -1,3 +1,11 @@
+## Resubmission
+
+* Converted the DESCRIPTION title to title case.
+* Added a doi to the DESCRIPTION.
+* Added a citation template
+* Improved the citation information in the readme
+
+
 ## Test environments
 * GitHub actions (ubuntu-20.04): release
 * GitHub actions (windows-latest): release, devel
