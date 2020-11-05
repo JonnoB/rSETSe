@@ -10,7 +10,7 @@ Authors@R:
            )
 Description: An R implementation for the Strain Elevation and
     Tension embedding algorithm from Bourne (2020)
-    <doi.org/10.1007/s41109-020-00329-4>. The package embeds graphs and
+    <doi:10.1007/s41109-020-00329-4>. The package embeds graphs and
     networks using the Strain Elevation and Tension embedding (SETSe)
     algorithm. SETSe represents the network as a physical system, where
     edges are elastic, and nodes exert a force either up or down based on

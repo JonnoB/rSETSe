@@ -1,3 +1,8 @@
+## Resubmission 2
+
+* The doi in the DESCRIPTION has been changed to "<doi:10.1007/s41109-020-00329-4>"
+* The doi in the readme.md has been fully specified as a URL
+
 ## Resubmission
 
 * Converted the DESCRIPTION title to title case. A note was created suggesting "Bourne" is miss-spelled, it is spelled correctly
