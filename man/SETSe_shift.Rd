@@ -72,17 +72,10 @@ There is little reason to use this function as \code{\link{SETSe_auto}} and \cod
 are faster and easier to use.
 }
 \examples{
-\dontrun{
-set.seed(234) #set the random see for generating the network
-g <- generate_peels_network(type = "E")
-embeddings <- g \%>\%
-#prepare the network for a binary embedding
-prepare_SETSe_binary(., node_names = "name", k = 1000, 
-                     force_var = "class", 
-                     positive_value = "A") \%>\%
+biconnected_network \%>\%
+prepare_SETSe_continuous(., node_names = "name", force_var = "force") \%>\%
 #embed the network using SETSe
-  SETSe_shift(., tstep = 0.002)
-  }
+SETSe_shift(., k = "weight", tstep = 0.000029)
 }
 \seealso{
 \code{\link{SETSe_auto}} \code{\link{SETSe_bicomp}}

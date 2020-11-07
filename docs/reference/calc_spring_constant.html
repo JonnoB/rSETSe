@@ -47,8 +47,7 @@
 
 
 <meta property="og:title" content="Calculate the spring constant — calc_spring_constant" />
-<meta property="og:description" content="This function adds the graph characteristic k which is the spring constant. When A and distance are both set to 1
-k=E and the spring constant is equivalent to Young's modulus." />
+<meta property="og:description" content="This function adds the graph characteristic k which is the spring constant for a given Area and Young's modulus." />
 <meta property="og:image" content="/logo.png" />
 
 
@@ -141,8 +140,7 @@ k=E and the spring constant is equivalent to Young's modulus." />
     </div>
 
     <div class="ref-description">
-    <p>This function adds the graph characteristic k which is the spring constant. When A and distance are both set to 1
-<code>k=E</code> and the spring constant is equivalent to Young's modulus.</p>
+    <p>This function adds the graph characteristic k which is the spring constant for a given Area and Young's modulus.</p>
     </div>
 
     <pre class="usage"><span class='fu'>calc_spring_constant</span><span class='op'>(</span><span class='va'>g</span>, youngs_mod <span class='op'>=</span> <span class='st'>"E"</span>, A <span class='op'>=</span> <span class='st'>"Area"</span>, distance <span class='op'>=</span> <span class='st'>"distance"</span><span class='op'>)</span></pre>
@@ -173,7 +171,9 @@ k=E and the spring constant is equivalent to Young's modulus." />
     <p>and edge attribute called k with value <code>EA/distance</code></p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>The values A and distance are edge attributes referring to the cross-sectional area of the edge and the horizontal distance of the edge,
+    <p>When A and distance are both set to 1 <code>k=E</code> and the spring constant is equivalent to Young's modulus. 
+In this case there is no need to call this function as the edge weight representing youngs modulus can be used for k instead.</p>
+<p>The values A and distance are edge attributes referring to the cross-sectional area of the edge and the horizontal distance of the edge,
 in other words the distance between the two nodes at each end of the edge. These values can be set to anything the user wishes, they may be
 constant or not. However, consider carefully setting the values to anything else other than 1. There needs to be a clear reasoning
 or the results will be meaningless.</p>
@@ -183,10 +183,10 @@ does not necessarily have an impact on the loading of the line and so the result
 metric to be some function of the line resistance may have meaning and be appropriate. As a general rule distance and area should be set to 1.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p>[calc_spring_youngs_modulus]</p></div>
+    <div class='dont-index'><p>[calc_spring_area]</p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
+    <pre class="examples"><div class='input'>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://igraph.org'>igraph</a></span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/base/Random.html'>set.seed</a></span><span class='op'>(</span><span class='fl'>234</span><span class='op'>)</span>
 <span class='va'>g_prep</span> <span class='op'>&lt;-</span> <span class='fu'><a href='generate_peels_network.html'>generate_peels_network</a></span><span class='op'>(</span><span class='st'>"A"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
@@ -195,13 +195,13 @@ metric to be some function of the line resistance may have meaning and be approp
  <span class='fu'><a href='https://rdrr.io/pkg/igraph/man/set_edge_attr.html'>set.edge.attribute</a></span><span class='op'>(</span><span class='va'>.</span>, name <span class='op'>=</span> <span class='st'>"E"</span>, value <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1e5</span>, <span class='fl'>5e5</span>, <span class='fl'>2e5</span>, <span class='fl'>3e5</span><span class='op'>)</span>, each <span class='op'>=</span> <span class='fl'>40</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
  <span class='co'>#calculate the spring area from another edge characteristic</span>
  <span class='fu'><a href='calc_spring_area.html'>calc_spring_area</a></span><span class='op'>(</span><span class='va'>.</span>, value <span class='op'>=</span> <span class='st'>"edge_characteristic"</span>, minimum_value <span class='op'>=</span> <span class='fl'>10</span>, range <span class='op'>=</span> <span class='fl'>20</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
- <span class='fu'><a href='prepare_SETSe_binary.html'>prepare_SETSe_binary</a></span><span class='op'>(</span><span class='va'>.</span>, node_names <span class='op'>=</span> <span class='st'>"name"</span>, k <span class='op'>=</span> <span class='fl'>1000</span>, 
+ <span class='fu'><a href='prepare_SETSe_binary.html'>prepare_SETSe_binary</a></span><span class='op'>(</span><span class='va'>.</span>, node_names <span class='op'>=</span> <span class='st'>"name"</span>, k <span class='op'>=</span> <span class='cn'>NULL</span>, 
                     force_var <span class='op'>=</span> <span class='st'>"class"</span>, 
                     positive_value <span class='op'>=</span> <span class='st'>"A"</span><span class='op'>)</span>
 
 <span class='va'>g</span> <span class='op'>&lt;-</span> <span class='fu'>calc_spring_constant</span><span class='op'>(</span><span class='va'>g_prep</span>, youngs_mod <span class='op'>=</span> <span class='st'>"E"</span>, A <span class='op'>=</span> <span class='st'>"Area"</span>, distance <span class='op'>=</span> <span class='st'>"distance"</span><span class='op'>)</span>
 
-<span class='op'>}</span>
+
 
 
 </div></pre>

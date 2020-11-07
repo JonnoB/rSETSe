@@ -15,7 +15,7 @@
 #' @return a igraph object with the new edge attribute "Area" for each edge
 #' 
 #' @examples  
-#' \dontrun{
+#' 
 #' library(igraph)
 #' set.seed(234)
 #' g_prep <- generate_peels_network("A") %>%
@@ -24,7 +24,7 @@
 #' g <- calc_spring_area(g_prep, value = "edge_characteristic", minimum_value = 10, range = 20)
 #'
 #' get.edge.attribute(g, "Area")
-#' }
+#' 
 #' @export
 
 calc_spring_area <- function(g, value, minimum_value, range){

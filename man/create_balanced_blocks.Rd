@@ -29,12 +29,12 @@ the subgraph. Therefore a node that is an articulation point has a force value e
 bi-connected component.
 }
 \examples{
-\dontrun{
+library(igraph)
 #create a list of balanced network using the biconnected_network dataset
 balanced_list <-create_balanced_blocks(biconnected_network, 
 bigraph = biconnected_components(biconnected_network))
 
 #count the edges in each of the bi-components
-sapply(balanced_list,ecount )
-}
+sapply(balanced_list, ecount)
+
 }

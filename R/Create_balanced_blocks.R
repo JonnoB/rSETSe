@@ -16,14 +16,14 @@
 #' @return A list containing all the bi connected component where each component is balanced to have a net force of 0.
 #' 
 #' @examples 
-#' \dontrun{
+#' library(igraph)
 #' #create a list of balanced network using the biconnected_network dataset
 #' balanced_list <-create_balanced_blocks(biconnected_network, 
 #' bigraph = biconnected_components(biconnected_network))
 #' 
 #' #count the edges in each of the bi-components
-#' sapply(balanced_list,ecount )
-#' }
+#' sapply(balanced_list, ecount)
+#' 
 #' @export
 
 create_balanced_blocks <- function(g, force = "force", bigraph = bigraph){

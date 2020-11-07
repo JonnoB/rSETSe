@@ -20,12 +20,12 @@ As SETSe only works on connected components this function removes all but the la
 This is a helper function to quickly project a network with SETSe.
 }
 \examples{
-
+library(igraph)
 set.seed(1284)
 #generate a random erdos renyi graph with 100 nodes and 150 edges
-g <- igraph::erdos.renyi.game(n=100, p.or.m = 150, type = "gnm" )
+g <- erdos.renyi.game(n=100, p.or.m = 150, type = "gnm" )
 #count the number of components
-igraph::components(g)$no
+components(g)$no
 
 #remove all but the largest component
 g2 <-remove_small_components(g)

@@ -19,7 +19,7 @@
 #' This function is called by default at the end of all SETSe functions
 #' 
 #' @examples 
-#' \dontrun{
+#' 
 #' set.seed(234) #set the random see for generating the network
 #' g <- generate_peels_network(type = "E") %>%
 #' #prepare the network for a binary embedding
@@ -27,12 +27,12 @@
 #'                      force_var = "class", 
 #'                      positive_value = "A") 
 #' #embed the network using auto setse
-#'  embeddings <- SETSe_auto()
+#'  embeddings <- SETSe_auto(g)
 #'   
 #'  edge_embeddings_df <- calc_tension_strain(g, embeddings$node_embeddings)
-#'  all_equal(embeddings$edge_embeddings, edge_embeddings_df) 
+#'  all.equal(embeddings$edge_embeddings, edge_embeddings_df) 
 #'  
-#'  }
+#'  
 #' @export
 
 calc_tension_strain <- function(g, height_embeddings_df, distance = "distance", edge_name = "edge_name", k = "k"){

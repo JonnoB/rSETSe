@@ -19,10 +19,12 @@ calc_spring_constant(g, youngs_mod = "E", A = "Area", distance = "distance")
 and edge attribute called k with value \code{EA/distance}
 }
 \description{
-This function adds the graph characteristic k which is the spring constant. When A and distance are both set to 1
-\code{k=E} and the spring constant is equivalent to Young's modulus.
+This function adds the graph characteristic k which is the spring constant for a given Area and Young's modulus.
 }
 \details{
+When A and distance are both set to 1 \code{k=E} and the spring constant is equivalent to Young's modulus. 
+In this case there is no need to call this function as the edge weight representing youngs modulus can be used for k instead.
+
 The values A and distance are edge attributes referring to the cross-sectional area of the edge and the horizontal distance of the edge,
 in other words the distance between the two nodes at each end of the edge. These values can be set to anything the user wishes, they may be
 constant or not. However, consider carefully setting the values to anything else other than 1. There needs to be a clear reasoning
@@ -34,7 +36,7 @@ does not necessarily have an impact on the loading of the line and so the result
 metric to be some function of the line resistance may have meaning and be appropriate. As a general rule distance and area should be set to 1.
 }
 \examples{
-\dontrun{
+
 library(igraph)
 set.seed(234)
 g_prep <- generate_peels_network("A") \%>\%
@@ -43,16 +45,16 @@ g_prep <- generate_peels_network("A") \%>\%
  set.edge.attribute(., name = "E", value = rep(c(1e5, 5e5, 2e5, 3e5), each = 40)) \%>\%
  #calculate the spring area from another edge characteristic
  calc_spring_area(., value = "edge_characteristic", minimum_value = 10, range = 20) \%>\%
- prepare_SETSe_binary(., node_names = "name", k = 1000, 
+ prepare_SETSe_binary(., node_names = "name", k = NULL, 
                     force_var = "class", 
                     positive_value = "A")
 
 g <- calc_spring_constant(g_prep, youngs_mod = "E", A = "Area", distance = "distance")
 
-}
+
 
 
 }
 \seealso{
-[calc_spring_youngs_modulus]
+[calc_spring_area]
 }

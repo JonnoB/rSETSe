@@ -31,8 +31,6 @@
 #'
 #' @seealso \code{\link{SETSe}}, \code{\link{SETSe_auto}}, \code{\link{prepare_SETSe_binary}}
 #' @examples 
-#' \dontrun{
-#' library(dplyr)
 #' embeddings <- biconnected_network %>%
 #' #prepare the network for a binary embedding
 #' #k is already present in the data so is left null in the preparation function
@@ -41,7 +39,6 @@
 #' #embed the network using auto setse
 #' #in the biconnected_network dataset the edge weights are used directly as k values
 #' SETSe_auto(k = "weight")
-#'  }
 #' @export
 
 prepare_SETSe_continuous <- function(g, node_names, k = NULL, force_var, sum_to_one = TRUE, distance = 1){

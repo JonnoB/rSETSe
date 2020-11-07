@@ -1,3 +1,8 @@
+##Resubmission 3
+
+* I discovered a bug in one of the functions that hadn't been detected due to `\dontrun` commands on the examples this has now been rectified
+* `\dontrun` commands have been removed from examples where possible to ensure maximum checks
+
 ## Resubmission 2
 
 * The doi in the DESCRIPTION has been changed to "<doi:10.1007/s41109-020-00329-4>"

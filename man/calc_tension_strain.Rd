@@ -39,7 +39,7 @@ necessary if the data frame will be merged with previously generated data as the
 This function is called by default at the end of all SETSe functions
 }
 \examples{
-\dontrun{
+
 set.seed(234) #set the random see for generating the network
 g <- generate_peels_network(type = "E") \%>\%
 #prepare the network for a binary embedding
@@ -47,10 +47,10 @@ prepare_SETSe_binary(., node_names = "name", k = 1000,
                      force_var = "class", 
                      positive_value = "A") 
 #embed the network using auto setse
- embeddings <- SETSe_auto()
+ embeddings <- SETSe_auto(g)
   
  edge_embeddings_df <- calc_tension_strain(g, embeddings$node_embeddings)
- all_equal(embeddings$edge_embeddings, edge_embeddings_df) 
+ all.equal(embeddings$edge_embeddings, edge_embeddings_df) 
  
- }
+ 
 }
