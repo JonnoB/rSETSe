@@ -32,10 +32,12 @@
 #' as well as the convergence dynamics dataframe for the network.
 #' 
 #' @examples
+#' \dontrun{
 #' biconnected_network %>%
 #' prepare_SETSe_continuous(., node_names = "name", force_var = "force") %>%
 #' #embed the network using SETSe
 #' SETSe_shift(., k = "weight", tstep = 0.000029)
+#' }
 #' @seealso \code{\link{SETSe_auto}} \code{\link{SETSe_bicomp}}
 #' @export
 

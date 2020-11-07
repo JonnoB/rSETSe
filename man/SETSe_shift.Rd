@@ -72,10 +72,12 @@ There is little reason to use this function as \code{\link{SETSe_auto}} and \cod
 are faster and easier to use.
 }
 \examples{
+\dontrun{
 biconnected_network \%>\%
 prepare_SETSe_continuous(., node_names = "name", force_var = "force") \%>\%
 #embed the network using SETSe
 SETSe_shift(., k = "weight", tstep = 0.000029)
+}
 }
 \seealso{
 \code{\link{SETSe_auto}} \code{\link{SETSe_bicomp}}
