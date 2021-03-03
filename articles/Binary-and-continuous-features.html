@@ -46,7 +46,7 @@
       <ul class="nav navbar-nav">
 <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -75,7 +75,7 @@
 <ul class="nav navbar-nav navbar-right">
 <li>
   <a href="https://github.com/JonnoB/rSETSe/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -89,8 +89,7 @@
 
       
 
-      </header><script src="Binary-and-continuous-features_files/accessible-code-block-0.0.1/empty-anchor.js"></script><link href="Binary-and-continuous-features_files/anchor-sections-1.0/anchor-sections.css" rel="stylesheet">
-<script src="Binary-and-continuous-features_files/anchor-sections-1.0/anchor-sections.js"></script><div class="row">
+      </header><script src="Binary-and-continuous-features_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Binary and continuous feature embedding</h1>
@@ -106,26 +105,26 @@
 <div id="necessary-packages" class="section level1">
 <h1 class="hasAnchor">
 <a href="#necessary-packages" class="anchor"></a>Necessary packages</h1>
-<div class="sourceCode" id="cb1"><pre class="downlit">
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/JonnoB/rSETSe">rsetse</a></span><span class="op">)</span>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/JonnoB/rSETSe">rsetse</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://igraph.org">igraph</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggraph.data-imaginist.com">ggraph</a></span><span class="op">)</span></pre></div>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggraph.data-imaginist.com">ggraph</a></span><span class="op">)</span></code></pre></div>
 <p>#Plot the data</p>
 <p>The biconnected_network is a simple network constructed of two groups of nodes that are linked by a single edge. This means the network is made of 3 bi-connected components hence the name. For more information type <code><a href="../reference/biconnected_network.html">?biconnected_network</a></code></p>
-<div class="sourceCode" id="cb2"><pre class="downlit">
-<span class="va">biconnected_network</span> <span class="op">%&gt;%</span>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">biconnected_network</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="https://ggraph.data-imaginist.com/reference/ggraph.html">ggraph</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> 
   <span class="fu"><a href="https://ggraph.data-imaginist.com/reference/geom_edge_link.html">geom_edge_link</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="https://ggraph.data-imaginist.com/reference/geom_node_point.html">geom_node_point</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>colour <span class="op">=</span> <span class="va">group</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">3</span><span class="op">)</span> </pre></div>
+  <span class="fu"><a href="https://ggraph.data-imaginist.com/reference/geom_node_point.html">geom_node_point</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>colour <span class="op">=</span> <span class="va">group</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">3</span><span class="op">)</span> </code></pre></div>
 <p><img src="Binary-and-continuous-features_files/figure-html/unnamed-chunk-2-1.png" width="700"></p>
 </div>
 <div id="continuous-embeddings" class="section level1">
 <h1 class="hasAnchor">
 <a href="#continuous-embeddings" class="anchor"></a>Continuous embeddings</h1>
 <p>Creating the embeddings using this dataset is very simple as it already has a force variable and the edge weights can be used as the spring constant.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit">
-<span class="va">embeddings_cont</span> <span class="op">&lt;-</span> <span class="va">biconnected_network</span> <span class="op">%&gt;%</span>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">embeddings_cont</span> <span class="op">&lt;-</span> <span class="va">biconnected_network</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/prepare_SETSe_continuous.html">prepare_SETSe_continuous</a></span><span class="op">(</span><span class="va">.</span>, node_names <span class="op">=</span> <span class="st">"name"</span>, force_var <span class="op">=</span> <span class="st">"force"</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/SETSe_auto.html">SETSe_auto</a></span><span class="op">(</span><span class="va">.</span>, k <span class="op">=</span> <span class="st">"weight"</span><span class="op">)</span>
 
@@ -134,20 +133,20 @@
   <span class="fu"><a href="../reference/prepare_SETSe_continuous.html">prepare_SETSe_continuous</a></span><span class="op">(</span><span class="va">.</span>, node_names <span class="op">=</span> <span class="st">"name"</span>, force_var <span class="op">=</span> <span class="st">"force"</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/SETSe_auto.html">SETSe_auto</a></span><span class="op">(</span><span class="va">.</span>, k <span class="op">=</span> <span class="st">"weight"</span><span class="op">)</span>
 
-<span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/create_node_edge_df.html">create_node_edge_df</a></span><span class="op">(</span><span class="va">embeddings_data</span>, function_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"mean"</span>, <span class="st">"mode"</span>, <span class="st">"sum"</span><span class="op">)</span><span class="op">)</span></pre></div>
+<span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/create_node_edge_df.html">create_node_edge_df</a></span><span class="op">(</span><span class="va">embeddings_data</span>, function_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"mean"</span>, <span class="st">"mode"</span>, <span class="st">"sum"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>However, for some reason we may want to reset the spring constant to something else, below we perform the embedding using a fixed k of 500.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit">
-
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R">
 <span class="va">embeddings_cont_fixed</span> <span class="op">&lt;-</span> <span class="va">biconnected_network</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/prepare_SETSe_continuous.html">prepare_SETSe_continuous</a></span><span class="op">(</span><span class="va">.</span>, node_names <span class="op">=</span> <span class="st">"name"</span>, force_var <span class="op">=</span> <span class="st">"force"</span>, k <span class="op">=</span> <span class="fl">500</span><span class="op">)</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="../reference/SETSe_auto.html">SETSe_auto</a></span><span class="op">(</span><span class="va">.</span>, k <span class="op">=</span> <span class="st">"k"</span><span class="op">)</span></pre></div>
+  <span class="fu"><a href="../reference/SETSe_auto.html">SETSe_auto</a></span><span class="op">(</span><span class="va">.</span>, k <span class="op">=</span> <span class="st">"k"</span><span class="op">)</span></code></pre></div>
 <div id="plot-the-resulting-embeddings" class="section level2">
 <h2 class="hasAnchor">
 <a href="#plot-the-resulting-embeddings" class="anchor"></a>plot the resulting embeddings</h2>
 <p>By aggregating the tension in each edge to node level using <code><a href="../reference/create_node_edge_df.html">create_node_edge_df()</a></code> for both the embeddings methods we can see how the different node are embedded. What we see is that the two most central node experience much more tension and also have a substantially higher elevation than the other nodes. This is expected as on the biconnected_network network the node force is the centrality of the nodes.</p>
 <p>We can also see that the embeddings are similar but having fixed or variable k-strength has a clear impact on the final embeddings.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit">
-
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R">
 <span class="va">continuous_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind.html">bind_rows</a></span><span class="op">(</span><span class="fu"><a href="../reference/create_node_edge_df.html">create_node_edge_df</a></span><span class="op">(</span><span class="va">embeddings_cont</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"variable k"</span><span class="op">)</span>,
           <span class="fu"><a href="../reference/create_node_edge_df.html">create_node_edge_df</a></span><span class="op">(</span><span class="va">embeddings_cont_fixed</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"fixed k"</span><span class="op">)</span>
  <span class="op">)</span> 
@@ -157,7 +156,7 @@
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">type</span><span class="op">)</span>  <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">type</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Continuous embeddings"</span>,
-       x <span class="op">=</span> <span class="st">"mean tension"</span><span class="op">)</span></pre></div>
+       x <span class="op">=</span> <span class="st">"mean tension"</span><span class="op">)</span></code></pre></div>
 <p><img src="Binary-and-continuous-features_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
 </div>
 </div>
@@ -166,8 +165,8 @@
 <a href="#binary-embeddings" class="anchor"></a>Binary embeddings</h1>
 <p>Now we will use the group identity as binary force variable. The network is made up of two groups A and B. We arbitrarily set A to be the positive force.</p>
 <p>As can be seen embeddings using the groups as force variables create very different embedded results, this is despite the fact that the networks are identical.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit">
-
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R">
 <span class="va">embeddings_binary</span> <span class="op">&lt;-</span> <span class="va">biconnected_network</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/prepare_SETSe_binary.html">prepare_SETSe_binary</a></span><span class="op">(</span><span class="va">.</span>, node_names <span class="op">=</span> <span class="st">"name"</span>, force_var <span class="op">=</span> <span class="st">"group"</span>, positive_value <span class="op">=</span> <span class="st">"A"</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="../reference/SETSe_auto.html">SETSe_auto</a></span><span class="op">(</span><span class="va">.</span>, k <span class="op">=</span> <span class="st">"weight"</span><span class="op">)</span>
@@ -186,7 +185,7 @@
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">tension_mean</span>, y <span class="op">=</span> <span class="va">elevation</span>, colour <span class="op">=</span> <span class="va">node</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_jitter.html">geom_jitter</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">type</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Binary embeddings"</span>,
-       x <span class="op">=</span> <span class="st">"mean tension"</span><span class="op">)</span></pre></div>
+       x <span class="op">=</span> <span class="st">"mean tension"</span><span class="op">)</span></code></pre></div>
 <p><img src="Binary-and-continuous-features_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
 </div>
 <div id="using-both-embeddings" class="section level1">
@@ -194,14 +193,14 @@
 <a href="#using-both-embeddings" class="anchor"></a>Using both embeddings</h1>
 <p>Because this network has two features both of them can be embedded. Currently the SETSe package only does single feature embedding. However we can combine these two different 1 dimensional feature embeddings and plot the results</p>
 <p>What we see is that there is very little relationship between the elevation of a node when it is embedded using different features.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit">
-
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R">
 <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html">left_join</a></span><span class="op">(</span><span class="va">continuous_results</span>, <span class="va">binary_results</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"node"</span>, <span class="st">"type"</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">elevation.x</span>, y <span class="op">=</span> <span class="va">elevation.y</span>, colour <span class="op">=</span> <span class="va">node</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_jitter.html">geom_jitter</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">type</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Node elevation for two different features"</span>,
        x <span class="op">=</span> <span class="st">"elevation with continuous embedding"</span>,
-       y <span class="op">=</span> <span class="st">"elevation with binary embedding"</span><span class="op">)</span></pre></div>
+       y <span class="op">=</span> <span class="st">"elevation with binary embedding"</span><span class="op">)</span></code></pre></div>
 <p><img src="Binary-and-continuous-features_files/figure-html/unnamed-chunk-7-1.png" width="700"></p>
 </div>
   </div>
