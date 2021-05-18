@@ -25,7 +25,7 @@ fix_elevation_to_origin <- function(relative_blocks, ArticulationVect){
   #They can be used to make subsequent blocks absolute
   queued_articulation_nodes <- as.numeric(list())
   
-  #This vector stors articulation nodes that have already been used,
+  #This vector stores articulation nodes that have already been used,
   #This stops the same node being recycled which causes errors
   #The vector begins as an empty vector
   used_articulation_nodes <- as.numeric(list())
@@ -54,8 +54,8 @@ fix_elevation_to_origin <- function(relative_blocks, ArticulationVect){
     #4 cannot be a node that has already been used
     
     #The removal of previously used articulation nodes is important as all articulation nodes are in the network at least twice.
-    # not removing later occurances can lead to levelling errors and crazy results
-    #The 4th logical constraint is becuase the target blocks from the previous round also contain the previous rounds
+    # not removing later occurrences can lead to leveling errors and crazy results
+    #The 4th logical constraint is because the target blocks from the previous round also contain the previous rounds
     #Art_n node (active node), this means it will be added in again.
     queued_articulation_nodes <- c(queued_articulation_nodes, node_vect[reference_id %in% target_blocks & 
                                                                           articulation_vect &
@@ -95,7 +95,7 @@ fix_elevation_to_origin <- function(relative_blocks, ArticulationVect){
       #2 the active articulation node
       local_origin <- elevation_vect[(reference_id %in% n) & node_vect == Art_n]
       
-      #The elevation of all nodes in the target block have the local origin remove to place everything relative to 0
+      #The elevation of all nodes in the target block have the local origin removed to place everything relative to 0
       #then the absolute height of the articulation node is added making the entire bi-connected component elevation absolute.
       elevation_vect[(reference_id %in% n)] <- elevation_vect[(reference_id %in% n)] - local_origin + elevation_adjust
       
@@ -108,7 +108,7 @@ fix_elevation_to_origin <- function(relative_blocks, ArticulationVect){
     queued_articulation_nodes <- queued_articulation_nodes[-1]
 
   }
-  #The elevation vector is now absolute and can be inserted back into the original datframe
+  #The elevation vector is now absolute and can be inserted back into the original dataframe
   relative_blocks$elevation <- elevation_vect
   
   return(relative_blocks)

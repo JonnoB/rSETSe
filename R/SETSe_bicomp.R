@@ -142,7 +142,8 @@ SETSe_bicomp <- function(g,
     total_force <- sum(abs(igraph::get.vertex.attribute(g, force)))
     
     if(!is.null(static_limit)){
-      #this if statement prevents an error if the static limit is null the below returns a numeric vector of 0 length
+      #If the static limit is NULL the below returns a numeric vector of 0 length. By embedding the expression in an if statement the
+      #error is prevented
       static_limit <- static_limit*sum(abs(igraph::get.vertex.attribute(balanced_blocks[[OriginBlock_number]], force)))/total_force
     }
     

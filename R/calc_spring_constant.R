@@ -51,7 +51,7 @@ calc_spring_constant <- function(g, youngs_mod = "E", A = "Area", distance = "di
  youngs_mod_vect <- igraph::get.edge.attribute(g, name = youngs_mod)*igraph::get.edge.attribute(g, name = A)/
    igraph::get.edge.attribute(g, name = distance)
 
-  g2 <- igraph::set.edge.attribute(g, "k", value = youngs_mod_vect
-                                   )
+  g2 <- igraph::set.edge.attribute(g, "k", 
+                                   value = youngs_mod_vect)
   return(g2)
 }

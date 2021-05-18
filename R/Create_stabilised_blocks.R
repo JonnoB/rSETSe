@@ -79,8 +79,11 @@ Create_stabilised_blocks <- function(g,
 
       #sub tol can be extremely small. if it is then I say that it is zero and effectively the nodes are left unconverged
       #again, it is worth considering the magnitude of force in the network
+      #previously .Machine$double.eps^0.5 was used, but as the sum of static_force is positive
+      #I am changing the value to .Machine$double.eps.
+      #I think the worst case is that the static limiti sums to 0. But in this case the values are so small it doesn't matter anyway
       sub_tol <- tol*sum(abs(igraph::get.vertex.attribute(balanced_blocks[[.x]], force)))/total_force
-      sub_tol_larger_than_limit <- sub_tol> .Machine$double.eps^0.5
+      sub_tol_larger_than_limit <- sub_tol> .Machine$double.eps
       sub_tol <- ifelse(sub_tol_larger_than_limit, sub_tol, tol)
       
       if(!is.null(static_limit)){

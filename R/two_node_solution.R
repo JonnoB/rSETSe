@@ -60,6 +60,8 @@ two_node_solution <- function(g, Prep = Prep, auto_setse_mode = FALSE){
                              -abs(Prep$node_embeddings$force[1]), 
                              abs(Prep$node_embeddings$force[1])
   )
+  #The static force needs to be set to 0 otherwise it can appear as if the network has not converged
+  temp$static_force <-0
 
   
   Out <- list(network_dynamics = tibble::tibble(t = 0, 
