@@ -25,7 +25,9 @@
 
 SETSe_data_prep  <-function(g, force, distance, mass, edge_name = edge_name, k = "k", sparse = FALSE){
   #this is a helper function that goes inside the the find network balance function to help make the code easier to read
-  
+  if(sum(get.edge.attribute(g, name = k)<0)>0){message("At least one edge has negative spring stiffness (k). This is likely to be a mistake. 
+Process will continue but failure to converge is likely. 
+If this was an error check spring stiffnesses values.")}
   #just calls distance 'distance' for simplicities sake
   g <- igraph::set.edge.attribute(g, "distance", value = igraph::get.edge.attribute(g, distance))
   

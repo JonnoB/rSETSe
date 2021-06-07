@@ -107,7 +107,7 @@ Create_stabilised_blocks <- function(g,
                                 force = force, 
                                 distance = distance, 
                                 mass = ifelse(is.null(mass), mass_adjuster(balanced_blocks[[.x]], 
-                                                                           force = "force", resolution_limit = TRUE), mass), 
+                                                                           force = force, resolution_limit = TRUE), mass), 
                                 k = k,
                                 edge_name = edge_name,
                                 sparse = sparse)
@@ -131,7 +131,7 @@ Create_stabilised_blocks <- function(g,
                           tol = sub_tol, #the force has to be scaled to the component                           
                           max_iter =  max_iter, 
                           mass =  ifelse(is.null(mass), mass_adjuster(balanced_blocks[[.x]], 
-                                                                      force = "force", resolution_limit = TRUE), mass), 
+                                                                      force = force, resolution_limit = TRUE), mass), 
                           sparse = sparse,
                           sample = sample,
                           static_limit = sub_static_limit,
@@ -164,7 +164,7 @@ Create_stabilised_blocks <- function(g,
                                 force = force, 
                                 distance = distance, 
                                 mass = ifelse(is.null(mass), mass_adjuster(balanced_blocks[[.x]], 
-                                                                           force = "force", resolution_limit = TRUE), mass), 
+                                                                           force = force, resolution_limit = TRUE), mass), 
                                 k = k,
                                 edge_name = edge_name,
                                 sparse = sparse)
@@ -211,10 +211,10 @@ Create_stabilised_blocks <- function(g,
   #extract the articulation nodes
   ArticulationVect <- igraph::get.vertex.attribute(g, "name", bigraph$articulation_points)
   
-  #place all nodes relative to the origin
+  #extracts the node embedding data by block and numbers all blocks in the order they were created by biconnected_components, but with the originblock as block=0
+  #Also tags articulation nodes
   relative_blocks <- 1:length(StabilModels) %>% 
     purrr::map_df(~{
-      #print(.x) #It is a bit annoying and pointless now
       temp <- StabilModels[[.x]]$node_embeddings
       temp$Reference_ID <- .x
       
@@ -278,7 +278,7 @@ Create_stabilised_blocks <- function(g,
       static_force = force + net_tension,
       net_force = NA,#static_force - friction,
       acceleration = net_force/ifelse(is.null(mass), mass_adjuster(balanced_blocks[[OriginBlock_number]], 
-                                                                   force = "force", resolution_limit = TRUE), mass),
+                                                                   force = force, resolution_limit = TRUE), mass),
       t = 1,
       t = tstep * Iter) %>%
     dplyr::arrange(node)

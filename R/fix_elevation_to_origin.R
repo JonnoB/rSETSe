@@ -4,7 +4,7 @@
 #' this allows easy use of bi-connected components This is a helper function only.
 #' 
 #' @param relative_blocks a data frame containing the outputs from the 
-#' @param ArticulationVect The articulation nodes of the network.
+#' @param ArticulationVect The names of the articulation nodes of the network. 
 #' 
 #' @details When a network is broken into bi-connected components the elevation of the nodes is relative to the
 #' local origin. This means all bi-connected components have there own "center of gravity". This function makes sure
@@ -34,7 +34,7 @@ fix_elevation_to_origin <- function(relative_blocks, ArticulationVect){
   reference_id <- relative_blocks$Reference_ID
   #The node IDs
   node_vect <- relative_blocks$node
-  #the aarticulation vectors
+  #A logical vector stating whether node is an articulation vector
   articulation_vect <- relative_blocks$Articulation_node
   #The node elevation vector. This is converted block by block from relative elevation to 
   #absolute elevation
@@ -57,6 +57,7 @@ fix_elevation_to_origin <- function(relative_blocks, ArticulationVect){
     # not removing later occurrences can lead to leveling errors and crazy results
     #The 4th logical constraint is because the target blocks from the previous round also contain the previous rounds
     #Art_n node (active node), this means it will be added in again.
+    #The first round adds the articulation nodes in the origin block to the queue
     queued_articulation_nodes <- c(queued_articulation_nodes, node_vect[reference_id %in% target_blocks & 
                                                                           articulation_vect &
                                                                           !(node_vect %in% queued_articulation_nodes) &
