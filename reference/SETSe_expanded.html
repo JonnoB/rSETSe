@@ -47,8 +47,8 @@
 
 
 <meta property="og:title" content="SETSe embedding showing full convergence history — SETSe_expanded" />
-<meta property="og:description" content="This is a special case function which keeps the history of the network dynamics. It is useful for demonstrations. 
-or parametrising difficult networks" />
+<meta property="og:description" content="This is a special case function of SETSe which keeps the history of all node movements during convergence0. It is useful for demonstrations,
+or parametrising difficult networks." />
 <meta property="og:image" content="/logo.png" />
 
 
@@ -141,8 +141,8 @@ or parametrising difficult networks" />
     </div>
 
     <div class="ref-description">
-    <p>This is a special case function which keeps the history of the network dynamics. It is useful for demonstrations. 
-or parametrising difficult networks</p>
+    <p>This is a special case function of SETSe which keeps the history of all node movements during convergence0. It is useful for demonstrations,
+or parametrising difficult networks.</p>
     </div>
 
     <pre class="usage"><span class='fu'>SETSe_expanded</span><span class='op'>(</span>
@@ -221,8 +221,16 @@ or parametrising difficult networks</p>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A list of four elements. A dat frame with the height embedding of the network, a data frame of the edge embeddings, 
-the convergence dynamics dataframe for the network as well as the search history for convergence criteria of the network</p>
+    <p>A dataframe equivalent to the node_embeddings dataframe for the other SETSe methods. However, the dataframe includes a 
+row for each node in each iteration of the simulation, as well as an additional column identifying the iteration number. 
+This dataframe can be very large as it contains nxm rows where n is the number of nodes and m is the number of iterations in the simulation.</p>
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <div class='dont-index'><p>Other SETSe: 
+<code><a href='SETSe_auto_hd.html'>SETSe_auto_hd</a>()</code>,
+<code><a href='SETSe_auto.html'>SETSe_auto</a>()</code>,
+<code><a href='SETSe_bicomp.html'>SETSe_bicomp</a>()</code>,
+<code><a href='SETSe.html'>SETSe</a>()</code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>

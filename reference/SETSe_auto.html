@@ -47,7 +47,7 @@
 
 
 <meta property="og:title" content="SETSe embedding with automatic drag and timestep selection — SETSe_auto" />
-<meta property="og:description" content="Uses a grid search and a binary search to find appropriate convergence conditions." />
+<meta property="og:description" content="Embeds/smooths a feature network using the SETSe algorithm automatically finding convergence parameters using a grid search." />
 <meta property="og:image" content="/logo.png" />
 
 
@@ -140,7 +140,7 @@
     </div>
 
     <div class="ref-description">
-    <p>Uses a grid search and a binary search to find appropriate convergence conditions.</p>
+    <p>Embeds/smooths a feature network using the SETSe algorithm automatically finding convergence parameters using a grid search.</p>
     </div>
 
     <pre class="usage"><span class='fu'>SETSe_auto</span><span class='op'>(</span>
@@ -262,8 +262,14 @@ included for ease of integration into the bicomponent functions.</p></td>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A list of four elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings, 
-the convergence dynamics dataframe for the network as well as the search history for convergence criteria of the network</p>
+    <p>A list containing 5 dataframes.</p><ol>
+<li><p>The network dynamics describing several key figures of the network during the convergence process, this includes the static_force</p></li>
+<li><p>The node embeddings. Includes all data on the nodes the forces exerted on them position and dynamics at simulation termination</p></li>
+<li><p>time taken. the amount of time taken per component, includes the edge and nodes of each component</p></li>
+<li><p>The edge embeddings. Includes all data on the edges as well as the strain and tension values.</p></li>
+<li><p>memory_df A dataframe recording the iteration history of the convergence of each component.</p></li>
+</ol>
+
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>This is one of the most commonly used SETSe functions. It automatically selects the convergence time-step and drag values
@@ -274,7 +280,11 @@ greatly speeds up the search for good parameter values. It increases the chance 
 More detail on auto-SETSe can be found in the paper "The spring bounces back" (Bourne 2020).</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><code><a href='SETSe.html'>SETSe</a></code> <code><a href='SETSe_bicomp.html'>SETSe_bicomp</a></code></p></div>
+    <div class='dont-index'><p>Other SETSe: 
+<code><a href='SETSe_auto_hd.html'>SETSe_auto_hd</a>()</code>,
+<code><a href='SETSe_bicomp.html'>SETSe_bicomp</a>()</code>,
+<code><a href='SETSe_expanded.html'>SETSe_expanded</a>()</code>,
+<code><a href='SETSe.html'>SETSe</a>()</code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
