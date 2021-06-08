@@ -2,9 +2,7 @@
 % Please edit documentation in R/SETSe.R
 \name{SETSe}
 \alias{SETSe}
-\title{SETSe algorithm
- 
-The basic SETSe function.}
+\title{Basic SETSe embedding}
 \usage{
 SETSe(
   g,
@@ -59,13 +57,16 @@ If left blank the static limit is twice the system absolute mean force.}
 \item{noisy_termination}{Stop the process if the static force does not monotonically decrease.}
 }
 \value{
-A list of three elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings
-as well as the convergence dynamics dataframe for the network.
+A list containing 4 dataframes.
+\enumerate{
+  \item The network dynamics describing several key figures of the network during the convergence process, this includes the static_force.
+  \item The node embeddings. Includes all data on the nodes the forces exerted on them position and dynamics at simulation termination.
+  \item time taken. the amount of time taken per component, includes the number of edges and nodes.
+  \item The edge embeddings. Includes all data on the edges as well as the strain and tension values.
+}
 }
 \description{
-SETSe algorithm
- 
-The basic SETSe function.
+Embeds/smooths a feature network using the basic SETSe algorithm. generally SETSe_auto or SETSe_bicomp is preffered.
 }
 \details{
 This is the basic SETS embeddings algorithm, it outputs all elements of the embeddings as well as convergence dynamics. It is a
@@ -85,5 +86,10 @@ prepare_SETSe_binary(., node_names = "name", k = 1000,
   SETSe()
 }
 \seealso{
-\code{\link{SETSe_auto}} \code{\link{SETSe_bicomp}}
+Other SETSe: 
+\code{\link{SETSe_auto_hd}()},
+\code{\link{SETSe_auto}()},
+\code{\link{SETSe_bicomp}()},
+\code{\link{SETSe_expanded}()}
 }
+\concept{SETSe}

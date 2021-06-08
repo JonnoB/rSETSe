@@ -78,26 +78,28 @@ A list containing 5 dataframes.
   \item The node embeddings. Includes all data on the nodes the forces exerted on them position and dynamics at simulation termination
   \item The network dynamics describing several key figures of the network during the convergence process, this includes the static_force
   \item memory_df A dataframe recording the iteration history of the convergence of each component.
-  \item A data frame giving the time taken for the simulation as well as the number of nodes and edges. Node and edge data is given
+  \item Time taken. A data frame giving the time taken for the simulation as well as the number of nodes and edges. Node and edge data is given
   as this may differ from the total number of nodes and edges in the network depending on the method used for convergence.
   For example if SETSe_bicomp is used then some simulations may contain as little as two nodes and 1 edge
-  \item time taken. the amount of time taken per component, includes the edge and nodes of each component
+  \item The edge embeddings. Includes all data on the edges as well as the strain and tension values.
 }
 }
 \description{
-Performs the SETS embedding on a network using the bi-connected component/block-tree method. This is the most reliable method to 
-perform SETSe embeddings and can be substantially quicker on certain network topologies.
+Embeds/smooths a feature network using the SETSe algorithm automatically finding convergence parameters using a grid search. In addition it breaks
+the network into bi-connected component solves each sub-component inidividually and re-assembles them back into a single network. 
+This is the most reliable method to perform SETSe embeddings and can be substantially quicker on certain network topologies.
 }
 \details{
-This approach can be faster for larger graphs or graphs with many nodes of degree 2, or networks with a low clustering coefficient.
-This is because although the algorithm is very efficient the topology of larger graphs make them more difficult to converge.
+Embedding the network by solving each bi-connected component then re-assembling can be faster for larger graphs, graphs with many nodes of degree 2, 
+or networks with a low clustering coefficient.
+This is because although SETSe is very efficient the topology of larger graphs make them more difficult to converge.
 Large graph tend to be made of 1 very large biconnected component and many very small biconnected components. As the mass of the 
-system is concentrated in the major biconnected component the small ones can be knocked around by minor movements of the major. This
-leads to long convergence times. By solving all biconnected components separately and then reassembling the block tree at the end,
-the system can be converged considerably faster. In addition the smaller biconnected components iterate faster than a single large one.
+system is concentrated in the major biconnected component smaller ones can be knocked around by minor movements of the largest component. This
+can lead to long convergence times. By solving all biconnected components separately and then reassembling the block tree at the end,
+the system can be converged considerably faster. 
 
 Setting mass to the absolute system force divided by the total nodes, often leads to faster convergence. As such
-When mass is left to the default of NULL, the mean force value is used.
+When mass is left to the default of NULL, the mean absolute force value is used.
 }
 \examples{
 set.seed(234) #set the random see for generating the network
@@ -111,5 +113,10 @@ prepare_SETSe_binary(., node_names = "name", k = 1000,
   SETSe_bicomp(tol = 0.02)
 }
 \seealso{
-\code{\link{SETSe_auto}} \code{\link{SETSe}}
+Other SETSe: 
+\code{\link{SETSe_auto_hd}()},
+\code{\link{SETSe_auto}()},
+\code{\link{SETSe_expanded}()},
+\code{\link{SETSe}()}
 }
+\concept{SETSe}

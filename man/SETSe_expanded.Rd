@@ -49,12 +49,13 @@ SETSe_expanded(
 \item{two_node_solution}{Logical. The Newton-Raphson algo is used to find the correct angle}
 }
 \value{
-A list of four elements. A dat frame with the height embedding of the network, a data frame of the edge embeddings, 
-the convergence dynamics dataframe for the network as well as the search history for convergence criteria of the network
+A dataframe equivalent to the node_embeddings dataframe for the other SETSe methods. However, the dataframe includes a 
+row for each node in each iteration of the simulation, as well as an additional column identifying the iteration number. 
+This dataframe can be very large as it contains nxm rows where n is the number of nodes and m is the number of iterations in the simulation.
 }
 \description{
-This is a special case function which keeps the history of the network dynamics. It is useful for demonstrations. 
-or parametrising difficult networks
+This is a special case function of SETSe which keeps the history of all node movements during convergence0. It is useful for demonstrations,
+or parametrising difficult networks.
 }
 \examples{
 
@@ -75,3 +76,11 @@ convergent_result \%>\%
 #replot with divergent_result to see what it looks like
 }
 }
+\seealso{
+Other SETSe: 
+\code{\link{SETSe_auto_hd}()},
+\code{\link{SETSe_auto}()},
+\code{\link{SETSe_bicomp}()},
+\code{\link{SETSe}()}
+}
+\concept{SETSe}

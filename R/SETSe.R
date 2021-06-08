@@ -1,7 +1,7 @@
-#' SETSe algorithm
-#'  
-#' The basic SETSe function.
-#'  
+#' Basic SETSe embedding
+#'
+#' Embeds/smooths a feature network using the basic SETSe algorithm. generally SETSe_auto or SETSe_bicomp is preffered.
+#' 
 #' @param g An igraph object
 #' @param force A character string. This is the node attribute that contains the force the nodes exert on the network.
 #' @param distance A character string. The edge attribute that contains the original/horizontal distance between nodes.
@@ -25,9 +25,15 @@
 #' wrapper around the core SETS algorithm which requires data preparation and only produces node embeddings and network dynamics. 
 #' There is little reason to use this function as \code{\link{SETSe_auto}} and \code{\link{SETSe_bicomp}} 
 #' are faster and easier to use.
-#' 
-#' @return A list of three elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings
-#' as well as the convergence dynamics dataframe for the network.
+#' @family SETSe
+# @seealso \code{\link{SETSe_auto}} \code{\link{SETSe}}
+#' @return A list containing 4 dataframes.
+#' \enumerate{
+#'   \item The network dynamics describing several key figures of the network during the convergence process, this includes the static_force.
+#'   \item The node embeddings. Includes all data on the nodes the forces exerted on them position and dynamics at simulation termination.
+#'   \item time taken. the amount of time taken per component, includes the number of edges and nodes.
+#'   \item The edge embeddings. Includes all data on the edges as well as the strain and tension values.
+#' }
 #' 
 #' @examples
 #' set.seed(234) #set the random see for generating the network
@@ -39,7 +45,6 @@
 #'                      positive_value = "A") %>%
 #' #embed the network using SETSe
 #'   SETSe()
-#' @seealso \code{\link{SETSe_auto}} \code{\link{SETSe_bicomp}}
 #' @export
 
 SETSe <- function(g, 

@@ -1,9 +1,10 @@
-#' SETSe embedding with automatic drag and timestep selection
+#' SETSe embedding with automatic drag and timestep selection for high-dimensional feature vectors
 #'
-#' Embeds/smooths a feature network using the SETSe algorithm automatically finding convergence parameters using a grid search.
+#' Uses a grid search and a binary search to find appropriate convergence conditions. It is the high dimensional equivalent
+#' of SETSe_auto. This function allows networks with high-dimensional node features to be embedded onto a high-dimensional manifold.
 #' 
 #' @param g An igraph object
-#' @param force A character string. This is the node attribute that contains the force the nodes exert on the network.
+#' @param force A character vector. These are the nodes attributes that contain the force the nodes exert on the network.
 #' @param distance A character string. The edge attribute that contains the original/horizontal distance between nodes.
 #' @param edge_name A character string. This is the edge attribute that contains the edge_name of the edges.
 #' @param k A character string. This is k for the moment don't change it.
@@ -21,32 +22,25 @@
 #' @param sample Integer. The dynamics will be stored only if the iteration number is a multiple of the sample. 
 #'  This can greatly reduce the size of the results file for large numbers of iterations. Must be a multiple of the max_iter
 #' @param static_limit Numeric. The maximum value the static force can reach before the algorithm terminates early. This
-#' prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
-#' If left blank the static limit is the system absolute mean force.
+#'  prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
+#'  If left blank the static limit is the system absolute mean force.
 #' @param verbose Logical. This value sets whether messages generated during the process are suppressed or not.
 #' @param include_edges logical. An optional variable on whether to calculate the edge tension and strain. Default is TRUE.
 #'  included for ease of integration into the bicomponent functions.
 #' @param noisy_termination Stop the process if the static force does not monotonically decrease.
 #' 
 #' @details This is one of the most commonly used SETSe functions. It automatically selects the convergence time-step and drag values
-#' to ensure efficient convergence.
+#'  to ensure efficient convergence.
 #' 
 #' The noisy_termination parameter is used as in some cases the convergence process can get stuck in the noisy zone of SETSe space.
 #' To prevent this the process is stopped early if the static force does not monotonically decrease.  On large networks this 
 #' greatly speeds up the search for good parameter values. It increases the chance of successful convergence. 
 #' More detail on auto-SETSe can be found in the paper "The spring bounces back" (Bourne 2020).
 #' 
-#' @return A list containing 5 dataframes.
-#' \enumerate{
-#'   \item The network dynamics describing several key figures of the network during the convergence process, this includes the static_force
-#'   \item The node embeddings. Includes all data on the nodes the forces exerted on them position and dynamics at simulation termination
-#'   \item time taken. the amount of time taken per component, includes the edge and nodes of each component
-#'   \item The edge embeddings. Includes all data on the edges as well as the strain and tension values.
-#'   \item memory_df A dataframe recording the iteration history of the convergence of each component.
-#' }
+#' @return A list of four elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings, 
+#' the convergence dynamics dataframe for the network as well as the search history for convergence criteria of the network
 #' 
 #' @family SETSe
-# @seealso \code{\link{SETSe_auto}} \code{\link{SETSe}}
 #' @examples
 #' 
 #' set.seed(234) #set the random see for generating the network
@@ -64,7 +58,7 @@
 #' 
 #' @export
 
-SETSe_auto <- function(g, 
+SETSe_auto_hd <- function(g, 
                        force ="force", 
                        distance = "distance", 
                        edge_name = "edge_name",
@@ -92,16 +86,19 @@ SETSe_auto <- function(g,
   
   if(verbose){print("prepping dataset")}
   #Prep the data before going into the converger
-  Prep <- SETSe_data_prep(g = g, 
+  Prep <- SETSe_data_prep_hd(g = g, 
                           force = force, 
                           distance = distance, 
                           mass = mass, 
                           edge_name = edge_name,
                           k = k,
                           sparse = sparse)
-  
+
+  #calculate the  default static limit if one is not provided.
+  #By default this is the absolute static_force at initiation
   if(is.null(static_limit)){
-    static_limit <- sum(abs(igraph::vertex_attr(g, force)))
+    static_limit <- force %>%
+      map(~igraph::vertex_attr(g, .x)) %>% unlist %>% {sum(abs(.))}
   }
   
   #This is a safety feature!
@@ -204,7 +201,7 @@ SETSe_auto <- function(g,
     } 
     
     # print( memory_df$common_drag_iter[drag_iter])
-    embeddings_data <- SETSe_core(
+    embeddings_data <- SETSe_core_hd(
       node_embeddings = Prep$node_embeddings, 
       ten_mat = Prep$ten_mat, 
       non_empty_matrix = Prep$non_empty_matrix, 
@@ -224,7 +221,7 @@ SETSe_auto <- function(g,
     
     memory_df$tstep[drag_iter] <- tstep_adapt
     
-    memory_df$res_stat[drag_iter] <- sum(abs(node_embeds$static_force))
+    memory_df$res_stat[drag_iter] <- sum(abs(node_embeds %>% select(starts_with("static_force_"))))
     #In certain circumstances SETSe core terminates straight away producing NA values.
     #The below line prevents NA values causing issues by ensureing that the params only produces a max res_stat
     memory_df$res_stat[drag_iter] <- ifelse(is.na(memory_df$res_stat[drag_iter]), res_stat_limit, memory_df$res_stat[drag_iter])
@@ -401,7 +398,7 @@ SETSe_auto <- function(g,
     
     
     print(paste0("Minimum tolerance not exceeded, running SETSe on best parameters, drag value ", signif(drag_val, 3)))
-    embeddings_data <- SETSe_core_time_shift(
+    embeddings_data <- SETSe_core_time_shift_hd(
       node_embeddings = Prep$node_embeddings, 
       ten_mat = Prep$ten_mat, 
       non_empty_matrix = Prep$non_empty_matrix, 
@@ -426,7 +423,7 @@ SETSe_auto <- function(g,
   #This is TRUE in almost all cases, but for bicomp is set to false.
   if(include_edges){  
     #Put in edge embeddings
-    embeddings_data$edge_embeddings <- calc_tension_strain(g = g,
+    embeddings_data$edge_embeddings <- calc_tension_strain_hd(g = g,
                                                            embeddings_data$node_embeddings,
                                                            distance = distance, 
                                                            edge_name = edge_name, 

@@ -264,21 +264,25 @@ Create_stabilised_blocks <- function(g,
   
   #The biconnected components are converted to absolute values from relative ones
   node_embeddings <- fix_elevation_to_origin(relative_blocks, ArticulationVect) 
-  
+
+  mass_value_temp <-ifelse(is.null(mass),
+               mass_adjuster(g,
+                             force = force,
+                             resolution_limit = TRUE),
+               mass)
   print("Removing multiple articulation nodes")
   #this bind rows takes place as, there are vastly more non-articulation nodes than 
   #articulation nodes, this can mean and absolutely massive number of groups which is very slow to summarise
   #by aggregating only the necessary nodes it will be much faster
   node_embeddings <- dplyr::bind_rows(node_embeddings[!(node_embeddings$node %in% ArticulationVect),],
                                remove_articulation_duplicates(node_embeddings, ArticulationVect))  %>%
-    #friction is different depending on the biconnected component so is meaningless in the overall analysis
-    #Poissibly could use the drag for the major biconn
+    #friction is different depending on the bi-connected component so is meaningless in the overall analysis
+    #Possibly could use the drag for the major bi-connected component?
     dplyr::mutate(
       friction = NA,#coef_drag * velocity,
       static_force = force + net_tension,
-      net_force = NA,#static_force - friction,
-      acceleration = net_force/ifelse(is.null(mass), mass_adjuster(balanced_blocks[[OriginBlock_number]], 
-                                                                   force = force, resolution_limit = TRUE), mass),
+      net_force = static_force,#static_force - friction,
+      acceleration = net_force/mass_value_temp,
       t = 1,
       t = tstep * Iter) %>%
     dplyr::arrange(node)
