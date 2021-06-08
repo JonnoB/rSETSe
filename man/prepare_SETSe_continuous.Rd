@@ -48,7 +48,7 @@ The network takes in an igraph object and produces an undirected igraph object t
   \item force: a vertex attribute representing the force produced by each node. The sum of this variable will be 0
   \item k: The spring constant representing the stiffness of the spring. 
   \item edge_name: the name of the edges. it takes the form "from_to" where "from" is the origin node and "to" is the destination node using the 
- \code{\link[igraph]{as_data_frame}} function from igraph
+ \link[igraph]{as_data_frame} function from igraph
 }
 }
 \examples{
@@ -62,5 +62,10 @@ prepare_SETSe_continuous(., node_names = "name", k = NULL,
 SETSe_auto(k = "weight")
 }
 \seealso{
-\code{\link{SETSe}}, \code{\link{SETSe_auto}}, \code{\link{prepare_SETSe_binary}}
+\link{SETSe}, \link{SETSe_auto}, \link{SETSe_bicomp}
+
+Other prepare_setse: 
+\code{\link{prepare_SETSe_binary}()},
+\code{\link{prepare_SETSe_continuous_hd}()}
 }
+\concept{prepare_setse}

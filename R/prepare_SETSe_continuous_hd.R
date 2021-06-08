@@ -24,12 +24,12 @@
 #'   \item force: a vertex attribute representing the force produced by each node. The sum of this variable will be 0
 #'   \item k: The spring constant representing the stiffness of the spring. 
 #'   \item edge_name: the name of the edges. it takes the form "from_to" where "from" is the origin node and "to" is the destination node using the 
-#'  \code{\link[igraph]{as_data_frame}} function from igraph
+#'  \link[igraph]{as_data_frame} function from igraph
 #' }
 #' 
 #' @return A network with the correct edge and node attributes for the embeddings process.
-#'
-#' @seealso \code{\code{\link{SETSe_auto_hd}}}
+#' @family prepare_setse
+#' @seealso \link{SETSe_auto_hd}
 #' @examples 
 #' embeddings <- biconnected_network %>%
 #' #prepare the network for a binary embedding
@@ -69,7 +69,7 @@ prepare_SETSe_continuous_hd <- function(g, node_names, k = NULL, force_var, sum_
   if(sum_to_one){
     
     vertices_df <- vertices_df %>%
-      dplyr::mutate(!!force_var[x] := force/(sum(abs(force))/2))
+      dplyr::mutate(rlang::`:=`(!!force_var[x],force/(sum(abs(force))/2)))
     
   }
   

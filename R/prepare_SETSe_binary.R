@@ -21,12 +21,12 @@
 #'   \item force: a vertex attribute representing the force produced by each node. The sum of this variable will be 0
 #'   \item k: The spring constant representing the stiffness of the spring. 
 #'   \item edge_name: the name of the edges. it takes the form "from_to" where "from" is the origin node and "to" is the destination node using the 
-#'  \code{\link[igraph]{as_data_frame}} function from igraph
+#'  \link[igraph]{as_data_frame} function from igraph
 #' }
 #' 
 #' @return A network with the correct edge and node attributes for the embeddings process.
-#' 
-#' @seealso \code{\link{SETSe}}, \code{\link{SETSe_auto}}, \code{\link{SETSe_bicomp}}, \code{\link{prepare_SETSe_continuous}}
+#' @family prepare_setse
+#' @seealso \link{SETSe}, \link{SETSe_auto}, \link{SETSe_bicomp}
 #' @examples
 #' set.seed(234) #set the random see for generating the network
 #' g <- generate_peels_network(type = "E")

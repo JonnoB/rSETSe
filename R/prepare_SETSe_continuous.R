@@ -24,12 +24,12 @@
 #'   \item force: a vertex attribute representing the force produced by each node. The sum of this variable will be 0
 #'   \item k: The spring constant representing the stiffness of the spring. 
 #'   \item edge_name: the name of the edges. it takes the form "from_to" where "from" is the origin node and "to" is the destination node using the 
-#'  \code{\link[igraph]{as_data_frame}} function from igraph
+#'  \link[igraph]{as_data_frame} function from igraph
 #' }
 #' 
 #' @return A network with the correct edge and node attributes for the embeddings process.
-#'
-#' @seealso \code{\link{SETSe}}, \code{\link{SETSe_auto}}, \code{\link{prepare_SETSe_binary}}
+#' @family prepare_setse
+#' @seealso \link{SETSe}, \link{SETSe_auto}, \link{SETSe_bicomp}
 #' @examples 
 #' embeddings <- biconnected_network %>%
 #' #prepare the network for a binary embedding

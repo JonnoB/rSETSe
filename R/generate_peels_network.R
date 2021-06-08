@@ -8,7 +8,7 @@
 #' sub-class and the weakest connection is for nodes in different classes
 #' @param single_component Logical. Guarantees a single component network. Set to TRUE as default
 #'  
-#' @details  This function generates networks matching the 5 types described in Peel et al 2019(\url{https://doi.org/10.1073/pnas.1713019115}). All networks have 40 nodes,
+#' @details  This function generates networks matching the 5 types described in Peel et al 2019(\doi{doi.org/10.1073/pnas.1713019115}). All networks have 40 nodes,
 #'  160 edges, two node classes and four node sub-classes. The connections between the are equal across all 5 types.
 #'  As a result all networks generated have identical assortativity. However, as the sub-classes have different connection
 #'  probability the structures produced by the networks are very different. When projected into SETSe space the network types

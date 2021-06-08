@@ -62,7 +62,7 @@ The function adds the node attribute 'force' and the edge attribute 'k' unless k
   \item force: a vertex attribute representing the force produced by each node. The sum of this variable will be 0
   \item k: The spring constant representing the stiffness of the spring. 
   \item edge_name: the name of the edges. it takes the form "from_to" where "from" is the origin node and "to" is the destination node using the 
- \code{\link[igraph]{as_data_frame}} function from igraph
+ \link[igraph]{as_data_frame} function from igraph
 }
 
 The network takes in an igraph object and produces an undirected igraph object that can be used with SETSe/SETSe_auto/SETSe_bicomp for embedding.
@@ -101,7 +101,12 @@ prepare_SETSe_binary(., node_names = "name", k = 1000,
 
 }
 \seealso{
-\code{\link{SETSe}}, \code{\link{SETSe_auto}}, \code{\link{SETSe_bicomp}}, \code{\link{prepare_SETSe_continuous}}
+\link{SETSe}, \link{SETSe_auto}, \link{SETSe_bicomp}
 
 \code{\code{\link{SETSe_auto_hd}}}
+
+Other prepare_setse: 
+\code{\link{prepare_SETSe_continuous_hd}()},
+\code{\link{prepare_SETSe_continuous}()}
 }
+\concept{prepare_setse}

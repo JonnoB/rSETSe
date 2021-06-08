@@ -80,8 +80,7 @@ A list of four elements. A data frame with the height embeddings of the network,
 the convergence dynamics dataframe for the network as well as the search history for convergence criteria of the network
 }
 \description{
-Uses a grid search and a binary search to find appropriate convergence conditions. It is the high dimensional equivalent
-of SETSe_auto. This function allows networks with high-dimensional node features to be embedded onto a high-dimensional manifold.
+Uses a grid search and a binary search to find appropriate convergence conditions.
 }
 \details{
 This is one of the most commonly used SETSe functions. It automatically selects the convergence time-step and drag values

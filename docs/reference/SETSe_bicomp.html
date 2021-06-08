@@ -47,8 +47,9 @@
 
 
 <meta property="og:title" content="SETSe embedding on each bi-connected component using SETSe_auto — SETSe_bicomp" />
-<meta property="og:description" content="Performs the SETS embedding on a network using the bi-connected component/block-tree method. This is the most reliable method to 
-perform SETSe embeddings and can be substantially quicker on certain network topologies." />
+<meta property="og:description" content="Embeds/smooths a feature network using the SETSe algorithm automatically finding convergence parameters using a grid search. In addition it breaks
+the network into bi-connected component solves each sub-component inidividually and re-assembles them back into a single network. 
+This is the most reliable method to perform SETSe embeddings and can be substantially quicker on certain network topologies." />
 <meta property="og:image" content="/logo.png" />
 
 
@@ -81,7 +82,7 @@ perform SETSe embeddings and can be substantially quicker on certain network top
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rsetse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.0</span>
       </span>
     </div>
 
@@ -89,7 +90,7 @@ perform SETSe embeddings and can be substantially quicker on certain network top
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -118,7 +119,7 @@ perform SETSe embeddings and can be substantially quicker on certain network top
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/JonnoB/rSETSe/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -141,8 +142,9 @@ perform SETSe embeddings and can be substantially quicker on certain network top
     </div>
 
     <div class="ref-description">
-    <p>Performs the SETS embedding on a network using the bi-connected component/block-tree method. This is the most reliable method to 
-perform SETSe embeddings and can be substantially quicker on certain network topologies.</p>
+    <p>Embeds/smooths a feature network using the SETSe algorithm automatically finding convergence parameters using a grid search. In addition it breaks
+the network into bi-connected component solves each sub-component inidividually and re-assembles them back into a single network. 
+This is the most reliable method to perform SETSe embeddings and can be substantially quicker on certain network topologies.</p>
     </div>
 
     <pre class="usage"><span class='fu'>SETSe_bicomp</span><span class='op'>(</span>
@@ -263,25 +265,30 @@ If left blank the static limit is the system absolute mean force.</p></td>
 <li><p>The node embeddings. Includes all data on the nodes the forces exerted on them position and dynamics at simulation termination</p></li>
 <li><p>The network dynamics describing several key figures of the network during the convergence process, this includes the static_force</p></li>
 <li><p>memory_df A dataframe recording the iteration history of the convergence of each component.</p></li>
-<li><p>A data frame giving the time taken for the simulation as well as the number of nodes and edges. Node and edge data is given
+<li><p>Time taken. A data frame giving the time taken for the simulation as well as the number of nodes and edges. Node and edge data is given
   as this may differ from the total number of nodes and edges in the network depending on the method used for convergence.
   For example if SETSe_bicomp is used then some simulations may contain as little as two nodes and 1 edge</p></li>
-<li><p>time taken. the amount of time taken per component, includes the edge and nodes of each component</p></li>
+<li><p>The edge embeddings. Includes all data on the edges as well as the strain and tension values.</p></li>
 </ol>
 
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>This approach can be faster for larger graphs or graphs with many nodes of degree 2, or networks with a low clustering coefficient.
-This is because although the algorithm is very efficient the topology of larger graphs make them more difficult to converge.
+    <p>Embedding the network by solving each bi-connected component then re-assembling can be faster for larger graphs, graphs with many nodes of degree 2, 
+or networks with a low clustering coefficient.
+This is because although SETSe is very efficient the topology of larger graphs make them more difficult to converge.
 Large graph tend to be made of 1 very large biconnected component and many very small biconnected components. As the mass of the 
-system is concentrated in the major biconnected component the small ones can be knocked around by minor movements of the major. This
-leads to long convergence times. By solving all biconnected components separately and then reassembling the block tree at the end,
-the system can be converged considerably faster. In addition the smaller biconnected components iterate faster than a single large one.</p>
+system is concentrated in the major biconnected component smaller ones can be knocked around by minor movements of the largest component. This
+can lead to long convergence times. By solving all biconnected components separately and then reassembling the block tree at the end,
+the system can be converged considerably faster.</p>
 <p>Setting mass to the absolute system force divided by the total nodes, often leads to faster convergence. As such
-When mass is left to the default of NULL, the mean force value is used.</p>
+When mass is left to the default of NULL, the mean absolute force value is used.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><code><a href='SETSe_auto.html'>SETSe_auto</a></code> <code><a href='SETSe.html'>SETSe</a></code></p></div>
+    <div class='dont-index'><p>Other SETSe: 
+<code><a href='SETSe_auto_hd.html'>SETSe_auto_hd</a>()</code>,
+<code><a href='SETSe_auto.html'>SETSe_auto</a>()</code>,
+<code><a href='SETSe_expanded.html'>SETSe_expanded</a>()</code>,
+<code><a href='SETSe.html'>SETSe</a>()</code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/Random.html'>set.seed</a></span><span class='op'>(</span><span class='fl'>234</span><span class='op'>)</span> <span class='co'>#set the random see for generating the network</span>
@@ -293,7 +300,7 @@ When mass is left to the default of NULL, the mean force value is used.</p>
                      positive_value <span class='op'>=</span> <span class='st'>"A"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
 <span class='co'>#embed the network using  SETSe_bicomp</span>
   <span class='fu'>SETSe_bicomp</span><span class='op'>(</span>tol <span class='op'>=</span> <span class='fl'>0.02</span><span class='op'>)</span>
-</div></pre>
+</div><div class='output co'>#&gt; <span class='message'>Joining, by = "node"</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

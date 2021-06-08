@@ -1,7 +1,6 @@
 #' SETSe embedding with automatic drag and timestep selection for high-dimensional feature vectors
 #'
-#' Uses a grid search and a binary search to find appropriate convergence conditions. It is the high dimensional equivalent
-#' of SETSe_auto. This function allows networks with high-dimensional node features to be embedded onto a high-dimensional manifold.
+#' Uses a grid search and a binary search to find appropriate convergence conditions.
 #' 
 #' @param g An igraph object
 #' @param force A character vector. These are the nodes attributes that contain the force the nodes exert on the network.
@@ -98,7 +97,7 @@ SETSe_auto_hd <- function(g,
   #By default this is the absolute static_force at initiation
   if(is.null(static_limit)){
     static_limit <- force %>%
-      map(~igraph::vertex_attr(g, .x)) %>% unlist %>% {sum(abs(.))}
+      purrr::map(~igraph::vertex_attr(g, .x)) %>% unlist %>% {sum(abs(.))}
   }
   
   #This is a safety feature!
@@ -221,7 +220,7 @@ SETSe_auto_hd <- function(g,
     
     memory_df$tstep[drag_iter] <- tstep_adapt
     
-    memory_df$res_stat[drag_iter] <- sum(abs(node_embeds %>% select(starts_with("static_force_"))))
+    memory_df$res_stat[drag_iter] <- sum(abs(node_embeds %>% dplyr::select(dplyr::starts_with("static_force_"))))
     #In certain circumstances SETSe core terminates straight away producing NA values.
     #The below line prevents NA values causing issues by ensureing that the params only produces a max res_stat
     memory_df$res_stat[drag_iter] <- ifelse(is.na(memory_df$res_stat[drag_iter]), res_stat_limit, memory_df$res_stat[drag_iter])

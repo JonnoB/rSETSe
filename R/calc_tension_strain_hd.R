@@ -49,7 +49,7 @@ calc_tension_strain_hd <- function(g, height_embeddings_df, distance = "distance
     tibble::as_tibble(.) 
   
   #get the embedded node elevation across all dimensions
-  elevation_df <- height_embeddings_df %>% dplyr::select(node, starts_with("elevation"))
+  elevation_df <- height_embeddings_df %>% dplyr::select(node, dplyr::starts_with("elevation"))
   
   #merge the edge list tand the node elevations for both the from and to nodes
   #The columns are also re-named for clarity

@@ -32,25 +32,25 @@ SETSe_data_prep_hd  <-function(g, force, distance, mass, edge_name = edge_name, 
   node_embeddings <-  data.frame(node = igraph::get.vertex.attribute(g, name = "name"))
   
   #create the matrix of forces
-  force_tib <- force %>% map(~{
+  force_tib <- force %>% purrr::map(~{
     igraph::get.vertex.attribute(g, name = .x)})
   names(force_tib) <- force
-  force_tib <- as_tibble(force_tib)
+  force_tib <- tibble::as_tibble(force_tib)
   
   #create an empty tibble so that the other SETSe elements can be added for each dimension
   empty_tib <- force_tib
   empty_tib[] <- 0
   
-  node_embeddings <- bind_cols(node_embeddings, force_tib%>% rename_with(., .fn = ~paste0("force_", .))) 
-  node_embeddings <- bind_cols(node_embeddings, empty_tib %>% rename_with(., .fn = ~paste0("elevation_", .)))
-  node_embeddings <- bind_cols(node_embeddings, empty_tib %>% rename_with(., .fn = ~paste0("net_tension_", .)))
-  node_embeddings <- bind_cols(node_embeddings, empty_tib %>% rename_with(., .fn = ~paste0("velocity_", .)))
-  node_embeddings <- bind_cols(node_embeddings, empty_tib %>% rename_with(., .fn = ~paste0("friction_", .)))
+  node_embeddings <- dplyr::bind_cols(node_embeddings, force_tib%>% dplyr::rename_with(., .fn = ~paste0("force_", .))) 
+  node_embeddings <- dplyr::bind_cols(node_embeddings, empty_tib %>% dplyr::rename_with(., .fn = ~paste0("elevation_", .)))
+  node_embeddings <- dplyr::bind_cols(node_embeddings, empty_tib %>% dplyr::rename_with(., .fn = ~paste0("net_tension_", .)))
+  node_embeddings <- dplyr::bind_cols(node_embeddings, empty_tib %>% dplyr::rename_with(., .fn = ~paste0("velocity_", .)))
+  node_embeddings <- dplyr::bind_cols(node_embeddings, empty_tib %>% dplyr::rename_with(., .fn = ~paste0("friction_", .)))
   
   
-  node_embeddings <- bind_cols(node_embeddings, force_tib %>% rename_with(., .fn = ~paste0("static_force_", .)))
-  node_embeddings <- bind_cols(node_embeddings, force_tib %>% rename_with(., .fn = ~paste0("net_force_", .)))
-  node_embeddings <- bind_cols(node_embeddings, {force_tib/mass} %>% rename_with(., .fn = ~paste0("acceleration_", .)))
+  node_embeddings <- dplyr::bind_cols(node_embeddings, force_tib %>% dplyr::rename_with(., .fn = ~paste0("static_force_", .)))
+  node_embeddings <- dplyr::bind_cols(node_embeddings, force_tib %>% dplyr::rename_with(., .fn = ~paste0("net_force_", .)))
+  node_embeddings <- dplyr::bind_cols(node_embeddings, {force_tib/mass} %>% dplyr::rename_with(., .fn = ~paste0("acceleration_", .)))
   node_embeddings$t <- 0
   node_embeddings$Iter <- 0
   

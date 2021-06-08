@@ -51,7 +51,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">rsetse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.0</span>
       </span>
     </div>
 
@@ -59,7 +59,7 @@
       <ul class="nav navbar-nav">
 <li>
   <a href="index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -88,7 +88,7 @@
 <ul class="nav navbar-nav navbar-right">
 <li>
   <a href="https://github.com/JonnoB/rSETSe/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -114,12 +114,13 @@
 <div id="an-r-package-for-embedding-graphs-using-the-setse-algorithm" class="section level2">
 <h2 class="hasAnchor">
 <a href="#an-r-package-for-embedding-graphs-using-the-setse-algorithm" class="anchor"></a>An R package for embedding graphs using the SETSe algorithm</h2>
-<p>This is the R package for the Strain Elevation Tension Spring embeddings (SETSe) algorithm. SETSe is a deterministic graph embeddings algorithm. It converts the node attributes of a graph into forces and the edge attributes into springs. The algorithm finds an equilibrium position when the forces of the nodes are balanced by the forces on the springs. A full description of the algorithm is given in “The spring bounces back: Introduction to Strain Elevation Tension Spring embedding for network representation” (<a href="https://doi.org/10.1007/s41109-020-00329-4">Bourne 2020</a>). There is a website for the package at <a href="https://jonnob.github.io/rSETSe/index.html" class="uri">https://jonnob.github.io/rSETSe/index.html</a></p>
+<p>This is the R package for the Strain Elevation Tension Spring embeddings (SETSe) algorithm. SETSe is a deterministic graph embeddings algorithm. It converts the node attributes of a graph into forces and the edge attributes into springs. The algorithm finds an equilibrium position when the forces of the nodes are balanced by the forces on the springs. A full description of the algorithm is given in “The spring bounces back: Introduction to Strain Elevation Tension Spring embedding for network representation” (<a href="https://doi.org/10.1007/s41109-020-00329-4">Bourne 2020</a>). There is a website for the package providing documentation and vignettes at <a href="https://jonnob.github.io/rSETSe/index.html" class="uri">https://jonnob.github.io/rSETSe/index.html</a> . This is a very niche package so please feel free to reach out to me on twitter or through email with questions.</p>
 </div>
 </div>
 <div id="installation-instructions" class="section level1">
 <h1 class="hasAnchor">
 <a href="#installation-instructions" class="anchor"></a>Installation instructions</h1>
+<p>The package is available on CRAN and can be installed by running <code><a href="https://rdrr.io/r/utils/install.packages.html">install.packages("rsetse")</a></code>.Alternatively it can be installed from github using the below method.</p>
 <ol>
 <li>Open R/Rstudio and ensure that devtools has been installed</li>
 <li>Run the following code library(devtools); install_github(“JonnoB/rSETSe”)</li>
@@ -131,7 +132,7 @@
 <div id="basic-use" class="section level1">
 <h1 class="hasAnchor">
 <a href="#basic-use" class="anchor"></a>Basic use</h1>
-<pre><code><a href="https://github.com/JonnoB/rSETSe">library(rSETSe)
+<pre><code><a href="https://rdrr.io/r/base/library.html">library(rSETSe)
 
 #prepares a graph for embedding using SETSe
 set.seed(234) #set the random see for generating the network
@@ -162,6 +163,8 @@ embeddings &lt;- SETSe_bicomp(g,
     <div class="links">
 <h2>Links</h2>
 <ul class="list-unstyled">
+<li>Download from CRAN at <br><a href="https://cloud.r-project.org/package=rsetse">https://​cloud.r-project.org/​package=rsetse</a>
+</li>
 <li>Browse source code at <br><a href="https://github.com/JonnoB/rSETSe/">https://​github.com/​JonnoB/​rSETSe/​</a>
 </li>
 <li>Report a bug at <br><a href="https://github.com/JonnoB/rSETSe/issues">https://​github.com/​JonnoB/​rSETSe/​issues</a>
@@ -191,6 +194,7 @@ embeddings &lt;- SETSe_bicomp(g,
   <div class="dev-status">
 <h2>Dev status</h2>
 <ul class="list-unstyled">
+<li><a href="https://cran.r-project.org/package=rsetse"><img src="https://www.r-pkg.org/badges/version/rsetse" alt="CRAN status"></a></li>
 <li><a href="https://github.com/JonnoB/rSETSe/actions"><img src="https://github.com/JonnoB/rSETSe/workflows/R-CMD-check/badge.svg" alt="R build status"></a></li>
 <li><a href="https://travis-ci.com/JonnoB/rSETSe"><img src="https://travis-ci.com/JonnoB/rSETSe.svg?branch=master" alt="Travis build status"></a></li>
 </ul>

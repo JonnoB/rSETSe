@@ -65,14 +65,14 @@ SETSe_core_time_shift_hd <- function(node_embeddings,
 
   #These have to be matrices if there is a mutli variable option
   NodeList <- node_embeddings[,-1]
-  force <- NodeList %>% select(starts_with("force_")) %>% as.matrix()
-  elevation <- NodeList %>% select(starts_with("elevation_")) %>% as.matrix()
-  net_tension <-NodeList %>% select(starts_with("net_tension_")) %>% as.matrix()
-  velocity <- NodeList %>% select(starts_with("velocity_")) %>% as.matrix()
-  friction <- NodeList %>% select(starts_with("friction_")) %>% as.matrix()
-  static_force <-NodeList %>% select(starts_with("static_force_")) %>% as.matrix()
-  net_force <- NodeList %>% select(starts_with("net_force_")) %>% as.matrix()
-  acceleration <- NodeList %>% select(starts_with("acceleration_")) %>% as.matrix()
+  force <- NodeList %>% dplyr::select(dplyr::starts_with("force_")) %>% as.matrix()
+  elevation <- NodeList %>% dplyr::select(dplyr::starts_with("elevation_")) %>% as.matrix()
+  net_tension <-NodeList %>% dplyr::select(dplyr::starts_with("net_tension_")) %>% as.matrix()
+  velocity <- NodeList %>% dplyr::select(dplyr::starts_with("velocity_")) %>% as.matrix()
+  friction <- NodeList %>% dplyr::select(dplyr::starts_with("friction_")) %>% as.matrix()
+  static_force <-NodeList %>% dplyr::select(dplyr::starts_with("static_force_")) %>% as.matrix()
+  net_force <- NodeList %>% dplyr::select(dplyr::starts_with("net_force_")) %>% as.matrix()
+  acceleration <- NodeList %>% dplyr::select(dplyr::starts_with("acceleration_")) %>% as.matrix()
   
   if(sparse){
     ten_mat <- methods::as(ten_mat, "dgTMatrix") # this is done as Dgt alllows direct insertion of tension without indexing. It 
@@ -265,8 +265,8 @@ SETSe_core_time_shift_hd <- function(node_embeddings,
                                                       velocity, friction, static_force, 
                                                       net_force, acceleration) %>%
                                                    do.call(what = cbind, args = .) %>%
-                                                   as_tibble() %>%
-                                                   mutate(t = tstep*(Iter-1),
+                                                   dplyr::as_tibble() %>%
+                                                   dplyr::mutate(t = tstep*(Iter-1),
                                                           Iter = Iter-1)
                                                  
               ),  #1 needs to be subtracted from the total as the final thing

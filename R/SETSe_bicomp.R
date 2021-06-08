@@ -242,7 +242,7 @@ SETSe_bicomp <- function(g,
   #SETSe bicomp returns the nodes in a different order to the original graph. This can cause stress if you are not aware
   #This left join ensures the correct ordering. it is relatively but only happens once and the cost is small compared to the overall operation
   #The correct edge order is returned by calc_tension_strain
-  embeddings_data$node_embeddings <- tibble::tibble(node = get.vertex.attribute(g, "name")) %>%
+  embeddings_data$node_embeddings <- tibble::tibble(node = igraph::get.vertex.attribute(g, "name")) %>%
     dplyr::left_join(embeddings_data$node_embeddings)
   
   return(embeddings_data)
