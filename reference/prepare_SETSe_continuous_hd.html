@@ -80,7 +80,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rsetse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.0</span>
       </span>
     </div>
 
@@ -170,7 +170,8 @@ the k value will not be added to the network. This is useful k is made through s
     </tr>
     <tr>
       <th>force_var</th>
-      <td><p>A node attribute. This is used as the force variable, it must be a numeric or integer value, it cannot have NA's</p></td>
+      <td><p>A character vector. This is the vector of node attributes to be used as the force variables.
+All the attributes must be a numeric or integer value, and cannot have NA's. On a single variable embedding this is usually "force"</p></td>
     </tr>
     <tr>
       <th>sum_to_one</th>
@@ -197,12 +198,15 @@ the k value will not be added to the network. This is useful k is made through s
 <li><p>force: a vertex attribute representing the force produced by each node. The sum of this variable will be 0</p></li>
 <li><p>k: The spring constant representing the stiffness of the spring.</p></li>
 <li><p>edge_name: the name of the edges. it takes the form "from_to" where "from" is the origin node and "to" is the destination node using the 
- <code><a href='https://rdrr.io/pkg/igraph/man/graph_from_data_frame.html'>as_data_frame</a></code> function from igraph</p></li>
+ <a href='https://rdrr.io/pkg/igraph/man/graph_from_data_frame.html'>as_data_frame</a> function from igraph</p></li>
 </ul>
 
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><code><code><a href='SETSe_auto_hd.html'>SETSe_auto_hd</a></code></code></p></div>
+    <div class='dont-index'><p><a href='SETSe_auto_hd.html'>SETSe_auto_hd</a></p>
+<p>Other prepare_setse: 
+<code><a href='prepare_SETSe_binary.html'>prepare_SETSe_binary</a>()</code>,
+<code><a href='prepare_SETSe_continuous.html'>prepare_SETSe_continuous</a>()</code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='va'>embeddings</span> <span class='op'>&lt;-</span> <span class='va'>biconnected_network</span> <span class='op'>%&gt;%</span>
