@@ -29,12 +29,12 @@ LazyData: true
 Imports: 
     dplyr,
     Matrix,
-    rlang,
+    rlang (>= 0.1.2),
     igraph,
     purrr,
     tibble,
     minpack.lm,
-    magrittr, 
+    magrittr,
     methods,
     stats
 RoxygenNote: 7.1.1
@@ -43,7 +43,8 @@ Suggests:
     rmarkdown,
     tidyr,
     ggplot2,
-    ggraph
+    ggraph,
+    roxygen2
 VignetteBuilder: knitr
 URL: https://github.com/JonnoB/rSETSe
 BugReports: https://github.com/JonnoB/rSETSe/issues

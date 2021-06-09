@@ -26,7 +26,7 @@
 #' 
 #' @return A network with the correct edge and node attributes for the embeddings process.
 #' 
-#' @seealso \code{\code{\link{SETSe_auto_hd}}}
+#' @seealso \link{SETSe_auto_hd}
 #' @examples
 #' set.seed(234) #set the random see for generating the network
 #' g <- generate_peels_network(type = "E")
@@ -40,7 +40,7 @@
 #'
 #' @export
 
-prepare_SETSe_binary <- function(g, node_names, k = NULL, force_var, positive_value, sum_to_one = TRUE, distance = 1){
+prepare_SETSe_binary_hd <- function(g, node_names, k = NULL, force_var, positive_value, sum_to_one = TRUE, distance = 1){
 
 g_list <-   igraph::as_data_frame(g, what = "both")
   
