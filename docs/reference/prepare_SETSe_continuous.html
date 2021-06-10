@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Prepare continuous network — prepare_SETSe_continuous • rsetse</title>
+<title>Prepare continuous features for embedding — prepare_SETSe_continuous • rsetse</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -46,8 +46,10 @@
 
 
 
-<meta property="og:title" content="Prepare continuous network — prepare_SETSe_continuous" />
-<meta property="og:description" content="This function prepares a continuous network for SETSe projection." />
+<meta property="og:title" content="Prepare continuous features for embedding — prepare_SETSe_continuous" />
+<meta property="og:description" content="This function prepares a continuous network for SETSe projection. The function works for networks with a single feature or
+high-dimensional features.
+The network takes in an igraph object and produces an undirected igraph object that can be used with the embedding functions." />
 <meta property="og:image" content="/logo.png" />
 
 
@@ -134,13 +136,15 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Prepare continuous network</h1>
+    <h1>Prepare continuous features for embedding</h1>
     <small class="dont-index">Source: <a href='https://github.com/JonnoB/rSETSe/blob/master/R/prepare_SETSe_continuous.R'><code>R/prepare_SETSe_continuous.R</code></a></small>
     <div class="hidden name"><code>prepare_SETSe_continuous.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>This function prepares a continuous network for SETSe projection.</p>
+    <p>This function prepares a continuous network for SETSe projection. The function works for networks with a single feature or
+high-dimensional features.
+The network takes in an igraph object and produces an undirected igraph object that can be used with the embedding functions.</p>
     </div>
 
     <pre class="usage"><span class='fu'>prepare_SETSe_continuous</span><span class='op'>(</span>
@@ -170,7 +174,8 @@ the k value will not be added to the network. This is useful k is made through s
     </tr>
     <tr>
       <th>force_var</th>
-      <td><p>A node attribute. This is used as the force variable, it must be a numeric or integer value, it cannot have NA's</p></td>
+      <td><p>A character vector. This is the vector of node attributes to be used as the force variables.
+All the attributes must be a numeric or integer value, and cannot have NA's. On a single variable embedding this is usually "force"</p></td>
     </tr>
     <tr>
       <th>sum_to_one</th>
@@ -187,9 +192,7 @@ the k value will not be added to the network. This is useful k is made through s
     <p>A network with the correct edge and node attributes for the embeddings process.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>The network takes in an igraph object and produces an undirected igraph object that can be used with SETSe/SETSe_auto for embedding.</p>
-
-<p>The function subtracts the mean from all the values so that the system is balanced. If sum_to_one is true then everything is divided by
+    <p>The function subtracts the mean from all the values so that the system is balanced. If sum_to_one is true then everything is divided by
  the absolute sum over two</p> 
 <p>The function adds the node attribute 'force' and the edge attribute 'k' unless k=NULL. The purpose of the function is to easily be able to 
  project continuous networks using SETSe.</p> 
@@ -202,10 +205,9 @@ the k value will not be added to the network. This is useful k is made through s
 
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><a href='SETSe.html'>SETSe</a>, <a href='SETSe_auto.html'>SETSe_auto</a>, <a href='SETSe_bicomp.html'>SETSe_bicomp</a></p>
+    <div class='dont-index'><p><a href='SETSe_auto_hd.html'>SETSe_auto_hd</a></p>
 <p>Other prepare_setse: 
-<code><a href='prepare_SETSe_binary.html'>prepare_SETSe_binary</a>()</code>,
-<code><a href='prepare_SETSe_continuous_hd.html'>prepare_SETSe_continuous_hd</a>()</code></p></div>
+<code><a href='prepare_SETSe_binary.html'>prepare_SETSe_binary</a>()</code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='va'>embeddings</span> <span class='op'>&lt;-</span> <span class='va'>biconnected_network</span> <span class='op'>%&gt;%</span>

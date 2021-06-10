@@ -1,72 +1,81 @@
-#' Binary network prepare
+#' Prepare categorical features for embedding
 #' 
 #' This function prepares a binary network for SETSe projection.
 #' 
-#' The network takes in an igraph object and produces an undirected igraph object that can be used with SETSe/SETSe_auto/SETSe_bicomp for embedding.
+#' The network takes in an igraph object and produces an undirected igraph object that can be used with the embedding functions.
 #'  
 #' @param g an igraph object
 #' @param node_names a character string. A vertex attribute which contains the node names.
-#' @param k The spring constant. This value is either a numeric value giving the spring constant for all edges or NULL. If NULL is used 
-#'  the k value will not be added to the network. This is useful k is made through some other process.
-#' @param force_var A node attribute. This is used as the force variable, it must be a character of factor
-#' @param positive_value The value in force var that will be counted as the positive value
+#' @param force_var A vector of force attributes. This describes all the categorical force attributes of the network. 
+#'  All named attributes must be either character or factor attributes.
 #' @param sum_to_one Logical. whether the total positive force sums to 1, if FALSE the total is the sum of the positive cases
-#' @param distance a positive numeric value. The default is 1
 #' 
-#' @details The function adds the node attribute 'force' and the edge attribute 'k' unless k=NULL. The purpose of the function is to easily be able to 
-#'  project binary networks using SETSe. 
+#' @details The purpose of the function is to easily be able to project categorical features using SETSe. The function creates new variables
+#'  where each variable represents one level of the categorical variables. For embedding only n-1 of the levels are needed.
 #'  
-#'  The function creates several variables
-#' \itemize{
-#'   \item force: a vertex attribute representing the force produced by each node. The sum of this variable will be 0
-#'   \item k: The spring constant representing the stiffness of the spring. 
-#'   \item edge_name: the name of the edges. it takes the form "from_to" where "from" is the origin node and "to" is the destination node using the 
-#'  \link[igraph]{as_data_frame} function from igraph
-#' }
+#'  The function creates several variables of the format "force_". Vertex attributes representing the force produced by each node 
+#'  for each categorical value, there will be n of these variables representing each level of the categorical values. The variable names 
+#'  will be the the name of the variable and the name of the level seperated by and underscore. For example, with a variable group and levels A and B, the created force variables will be
+#'  "group_A" and "group_B" The sum of these variables will be 0.
 #' 
-#' @return A network with the correct edge and node attributes for the embeddings process.
+#' @return A network with the correct node attributes for the embeddings process.
 #' @family prepare_setse
-#' @seealso \link{SETSe}, \link{SETSe_auto}, \link{SETSe_bicomp}
+#' @seealso \link{SETSe}, \link{SETSe_auto}, \link{SETSe_bicomp}, \link{SETSe_auto_hd}
 #' @examples
 #' set.seed(234) #set the random see for generating the network
 #' g <- generate_peels_network(type = "E")
 #' embeddings <- g %>%
+#' prepare_edges(k = 500, distance = 1) %>%
 #' #prepare the network for a binary embedding
-#' prepare_SETSe_binary(., node_names = "name", k = 1000, 
-#'                      force_var = "class", 
-#'                      positive_value = "A") %>%
+#' prepare_SETSe_binary(., node_names = "name",
+#'                      force_var = "class") %>%
 #' #embed the network using auto setse
-#'   SETSe_auto()
+#'   SETSe_auto(., force = "group_A")
 #'
 #' @export
 
-prepare_SETSe_binary <- function(g, node_names, k = NULL, force_var, positive_value, sum_to_one = TRUE, distance = 1){
+prepare_SETSe_binary <- function(g, node_names, k = NULL, force_var,  sum_to_one = TRUE, distance = 1){
 
-g_list <-   igraph::as_data_frame(g, what = "both")
+
   
-  edges_df <- g_list$edges %>%
-    dplyr::mutate(distance = distance,
-           edge_name = paste(from, to, sep ="-"))
-  
-  if(!is.null(k)){
-    edges_df <- edges_df %>% 
-    dplyr::mutate( k = k)
-  }
+  g_list <-   igraph::as_data_frame(g, what = "both")
   
   vertices_df <- g_list$vertices %>% tibble::tibble(.)
   
-  outcome_var <- vertices_df %>% dplyr::pull(force_var) %>% {.==positive_value}
+  #cycles through all the categorical force variables and converts them
+  one_hot_tibble<- 1:length(force_var) %>%
+    purrr::map(~{
+      
+      force_var_sym <- rlang::sym(force_var[.x])
+      
+      #create a one hot vector encoded tibble for all the categorical levels
+      one_hot_tibble <- vertices_df %>%
+        dplyr::select({{force_var_sym}}) %>% dplyr::mutate(value = 1,
+                                                           id = 1:n()) %>%
+        tidyr::pivot_wider(names_from = {{force_var}}, values_from = value, values_fill = 0) %>%
+        dplyr::select(-id) %>%
+        rlang::set_names(paste(force_var, names(.), sep = "_")) %>%
+        mutate(dplyr::across(.fns=~{.x-mean(.x)}))
+      
+      #adjust so that each side sums to one if desired
+      if(sum_to_one){
+        
+        one_hot_tibble <- one_hot_tibble %>%
+          dplyr::mutate(dplyr::across(.fns = ~{.x/(sum(abs(.x))/2)}))
+        
+      }
+      
+    }) %>%
+    dplyr::bind_cols(.)
+  
 
-  total_pos <- sum(outcome_var)
-  total_neg <- sum(!outcome_var)
   
-  #creates the force generated by each of the nodes weighted by the number of nodes in each of the binary classes
-  temp <- ifelse(outcome_var, 1/total_pos, -1/total_neg )
-  temp <- ifelse(rep(sum_to_one, nrow(vertices_df)), temp, temp*total_pos)
+  #bind the balanced one hot vector encoded variables back onto the node dataframe
+  vertices_df <- vertices_df %>% 
+    dplyr::bind_cols(one_hot_tibble)
   
-  vertices_df <- vertices_df %>% dplyr::mutate(force = temp)
-  
-  g_out  <- igraph::graph_from_data_frame(edges_df, directed = FALSE, 
+  #re-build the network
+  g_out  <- igraph::graph_from_data_frame(g_list$edges, directed = FALSE, 
                                   vertices = vertices_df %>%
                                     dplyr::select(node_names, 
                                            dplyr::everything())

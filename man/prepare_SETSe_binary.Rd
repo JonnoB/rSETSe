@@ -2,14 +2,13 @@
 % Please edit documentation in R/prepare_SETSe_binary.R
 \name{prepare_SETSe_binary}
 \alias{prepare_SETSe_binary}
-\title{Binary network prepare}
+\title{Prepare categorical features for embedding}
 \usage{
 prepare_SETSe_binary(
   g,
   node_names,
   k = NULL,
   force_var,
-  positive_value,
   sum_to_one = TRUE,
   distance = 1
 )
@@ -19,54 +18,45 @@ prepare_SETSe_binary(
 
 \item{node_names}{a character string. A vertex attribute which contains the node names.}
 
-\item{k}{The spring constant. This value is either a numeric value giving the spring constant for all edges or NULL. If NULL is used 
-the k value will not be added to the network. This is useful k is made through some other process.}
-
-\item{force_var}{A node attribute. This is used as the force variable, it must be a character of factor}
-
-\item{positive_value}{The value in force var that will be counted as the positive value}
+\item{force_var}{A vector of force attributes. This describes all the categorical force attributes of the network. 
+All named attributes must be either character or factor attributes.}
 
 \item{sum_to_one}{Logical. whether the total positive force sums to 1, if FALSE the total is the sum of the positive cases}
-
-\item{distance}{a positive numeric value. The default is 1}
 }
 \value{
-A network with the correct edge and node attributes for the embeddings process.
+A network with the correct node attributes for the embeddings process.
 }
 \description{
 This function prepares a binary network for SETSe projection.
 }
 \details{
-The network takes in an igraph object and produces an undirected igraph object that can be used with SETSe/SETSe_auto/SETSe_bicomp for embedding.
+The network takes in an igraph object and produces an undirected igraph object that can be used with the embedding functions.
 
-The function adds the node attribute 'force' and the edge attribute 'k' unless k=NULL. The purpose of the function is to easily be able to 
- project binary networks using SETSe. 
+The purpose of the function is to easily be able to project categorical features using SETSe. The function creates new variables
+ where each variable represents one level of the categorical variables. For embedding only n-1 of the levels are needed.
  
- The function creates several variables
-\itemize{
-  \item force: a vertex attribute representing the force produced by each node. The sum of this variable will be 0
-  \item k: The spring constant representing the stiffness of the spring. 
-  \item edge_name: the name of the edges. it takes the form "from_to" where "from" is the origin node and "to" is the destination node using the 
- \link[igraph]{as_data_frame} function from igraph
-}
+ The function creates several variables of the format "force_". Vertex attributes representing the force produced by each node 
+ for each categorical value, there will be n of these variables representing each level of the categorical values. The variable names 
+ will be the the name of the variable and the name of the level seperated by and underscore. For example, with a variable group and levels A and B, the created force variables will be
+ "group_A" and "group_B" The sum of these variables will be 0.
 }
 \examples{
 set.seed(234) #set the random see for generating the network
 g <- generate_peels_network(type = "E")
 embeddings <- g \%>\%
+prepare_edges(k = 500, distance = 1) \%>\%
 #prepare the network for a binary embedding
-prepare_SETSe_binary(., node_names = "name", k = 1000, 
-                     force_var = "class", 
-                     positive_value = "A") \%>\%
+prepare_SETSe_binary(., node_names = "name",
+                     force_var = "class") \%>\%
 #embed the network using auto setse
-  SETSe_auto()
+  SETSe_auto(., force = "group_A")
 
 }
 \seealso{
-\link{SETSe}, \link{SETSe_auto}, \link{SETSe_bicomp}
+\link{SETSe}, \link{SETSe_auto}, \link{SETSe_bicomp}, \link{SETSe_auto_hd}
 
 Other prepare_setse: 
-\code{\link{prepare_SETSe_continuous_hd}()},
-\code{\link{prepare_SETSe_continuous}()}
+\code{\link{prepare_SETSe_continuous}()},
+\code{\link{prepare_edges}()}
 }
 \concept{prepare_setse}

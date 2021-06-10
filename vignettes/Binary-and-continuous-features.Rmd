@@ -39,16 +39,14 @@ biconnected_network %>%
 
 Creating the embeddings using this dataset is very simple as it already has a force variable and the edge weights can be used as the spring constant.
 ```{r message=FALSE}
+
 embeddings_cont <- biconnected_network %>%
+  prepare_edges(.) %>%
   prepare_SETSe_continuous(., node_names = "name", force_var = "force") %>%
   SETSe_auto(., k = "weight")
 
 
-embeddings_data <- biconnected_network %>%
-  prepare_SETSe_continuous(., node_names = "name", force_var = "force") %>%
-  SETSe_auto(., k = "weight")
-
-out <- create_node_edge_df(embeddings_data, function_names = c("mean", "mode", "sum"))
+out <- create_node_edge_df(embeddings_cont, function_names = c("mean", "mode", "sum"))
 
 ```
 
@@ -57,7 +55,8 @@ However, for some reason we may want to reset the spring constant to something e
 ```{r message=FALSE}
 
 embeddings_cont_fixed <- biconnected_network %>%
-  prepare_SETSe_continuous(., node_names = "name", force_var = "force", k = 500) %>%
+  prepare_edges(., k = 500) %>%
+  prepare_SETSe_continuous(., node_names = "name", force_var = "force") %>%
   SETSe_auto(., k = "k")
 
 ```
@@ -83,23 +82,29 @@ continuous_results %>%
 
 ```
 
-# Binary embeddings
+# Categorical embeddings
 
 Now we will use the group identity as binary force variable. The network is made up of two groups A and B. We arbitrarily set A to be the positive force.
 
 As can be seen embeddings using the groups as force variables create very different embedded results, this is despite the fact that the networks are identical. 
 
+For factor levels of more than two, the high-dimensional SETSe should be used.
+
 ```{r message=FALSE}
 
 embeddings_binary <- biconnected_network %>%
-  prepare_SETSe_binary(., node_names = "name", force_var = "group", positive_value = "A") %>%
-  SETSe_auto(., k = "weight")
-
+  prepare_edges(.) %>%
+  prepare_SETSe_binary(., node_names = "name", force_var = "group") %>%
+  SETSe_auto(., 
+             force = "group_A",
+             k = "weight")
 
 embeddings_binary_fixed <- biconnected_network %>%
-  prepare_SETSe_binary(., node_names = "name", force_var = "group", positive_value = "A", k = 500) %>%
-  SETSe_auto(., k = "k")
-
+  prepare_edges(., k = 500) %>%
+  prepare_SETSe_binary(., node_names = "name", force_var = "group") %>%
+  SETSe_auto(., 
+             force = "group_A",
+             k = "k")
 
 binary_results <- bind_rows(create_node_edge_df(embeddings_binary) %>% mutate(type = "variable k"),
           create_node_edge_df(embeddings_binary_fixed) %>% mutate(type = "fixed k")
@@ -115,18 +120,41 @@ binary_results %>%
 
 # Using both embeddings
 
-Because this network has two features both of them can be embedded. Currently the SETSe package only does single feature embedding. However we can combine these two different 1 dimensional feature embeddings and plot the results
+Because this network has two features. We can embed this high dimensional network using the `SETSe_auto_hd` function.
 
-What we see is that there is very little relationship between the elevation of a node when it is embedded using different features.
+What we see is that in this case there is very little relationship between the elevation of a node when it is embedded using different features.
 
 ```{r message=FALSE}
 
-left_join(continuous_results, binary_results, by = c("node", "type")) %>%
-  ggplot(aes(x = elevation.x, y = elevation.y, colour = node)) + geom_jitter() +
+
+two_dimensional_embeddings <- biconnected_network %>%
+  prepare_edges(.) %>%
+  #prepare the continuous features as normal
+  prepare_SETSe_continuous(., node_names = "name", force_var = "force") %>%
+  #prepare the categorical features as normal
+  prepare_SETSe_binary(., node_names = "name", force_var = "group") %>%
+  #embed them using the high dimensional function
+  SETSe_auto_hd(., force = c("group_A", "force"), k = "weight")
+
+two_dimensional_embeddings_fixed <- biconnected_network %>%
+  prepare_edges(., k = 500) %>%
+  #prepare the continuous features as normal
+  prepare_SETSe_continuous(., node_names = "name", force_var = "force") %>%
+  #prepare the categorical features as normal
+  prepare_SETSe_binary(., node_names = "name", force_var = "group") %>%
+  #embed them using the high dimensional function
+  SETSe_auto_hd(., force = c("group_A", "force"), k = "k")
+
+bind_rows(two_dimensional_embeddings$node_embeddings %>% mutate(type = "variable k"),
+two_dimensional_embeddings_fixed$node_embeddings %>% mutate(type = "fixed k")) %>%
+  #The elevation variables are renamed for simplicity
+  rename(categorical = elevation_group_A,
+         continuous = elevation_force) %>%
+  ggplot(aes(x = categorical, y = continuous, colour = node)) + geom_jitter() +
   facet_wrap(~type) +
   labs(title = "Node elevation for two different features",
        x = "elevation with continuous embedding",
-       y = "elevation with binary embedding")
+       y = "elevation with categorical embedding")
 
 
 ```

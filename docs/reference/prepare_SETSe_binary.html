@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Binary network prepare — prepare_SETSe_binary • rsetse</title>
+<title>Prepare categorical features for embedding — prepare_SETSe_binary • rsetse</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -46,9 +46,8 @@
 
 
 
-<meta property="og:title" content="Binary network prepare — prepare_SETSe_binary" />
-<meta property="og:description" content="This function prepares a binary network for SETSe projection.
-This function prepares a binary network for SETSe projection." />
+<meta property="og:title" content="Prepare categorical features for embedding — prepare_SETSe_binary" />
+<meta property="og:description" content="This function prepares a binary network for SETSe projection." />
 <meta property="og:image" content="/logo.png" />
 
 
@@ -135,14 +134,13 @@ This function prepares a binary network for SETSe projection." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Binary network prepare</h1>
-    <small class="dont-index">Source: <a href='https://github.com/JonnoB/rSETSe/blob/master/R/prepare_SETSe_binary.R'><code>R/prepare_SETSe_binary.R</code></a>, <a href='https://github.com/JonnoB/rSETSe/blob/master/R/prepare_SETSe_binary_hd.R'><code>R/prepare_SETSe_binary_hd.R</code></a></small>
+    <h1>Prepare categorical features for embedding</h1>
+    <small class="dont-index">Source: <a href='https://github.com/JonnoB/rSETSe/blob/master/R/prepare_SETSe_binary.R'><code>R/prepare_SETSe_binary.R</code></a></small>
     <div class="hidden name"><code>prepare_SETSe_binary.Rd</code></div>
     </div>
 
     <div class="ref-description">
     <p>This function prepares a binary network for SETSe projection.</p>
-<p>This function prepares a binary network for SETSe projection.</p>
     </div>
 
     <pre class="usage"><span class='fu'>prepare_SETSe_binary</span><span class='op'>(</span>
@@ -150,17 +148,6 @@ This function prepares a binary network for SETSe projection." />
   <span class='va'>node_names</span>,
   k <span class='op'>=</span> <span class='cn'>NULL</span>,
   <span class='va'>force_var</span>,
-  <span class='va'>positive_value</span>,
-  sum_to_one <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  distance <span class='op'>=</span> <span class='fl'>1</span>
-<span class='op'>)</span>
-
-<span class='fu'>prepare_SETSe_binary</span><span class='op'>(</span>
-  <span class='va'>g</span>,
-  <span class='va'>node_names</span>,
-  k <span class='op'>=</span> <span class='cn'>NULL</span>,
-  <span class='va'>force_var</span>,
-  <span class='va'>positive_value</span>,
   sum_to_one <span class='op'>=</span> <span class='cn'>TRUE</span>,
   distance <span class='op'>=</span> <span class='fl'>1</span>
 <span class='op'>)</span></pre>
@@ -183,11 +170,7 @@ the k value will not be added to the network. This is useful k is made through s
     </tr>
     <tr>
       <th>force_var</th>
-      <td><p>A node attribute. This is used as the force variable, it must be a character of factor</p></td>
-    </tr>
-    <tr>
-      <th>positive_value</th>
-      <td><p>The value in force var that will be counted as the positive value</p></td>
+      <td><p>A node attribute. This is used as the force variable, it must be a character or factor</p></td>
     </tr>
     <tr>
       <th>sum_to_one</th>
@@ -202,35 +185,27 @@ the k value will not be added to the network. This is useful k is made through s
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>A network with the correct edge and node attributes for the embeddings process.</p>
-<p>A network with the correct edge and node attributes for the embeddings process.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>The network takes in an igraph object and produces an undirected igraph object that can be used with SETSe/SETSe_auto/SETSe_bicomp for embedding.</p>
-<p>The function adds the node attribute 'force' and the edge attribute 'k' unless k=NULL. The purpose of the function is to easily be able to 
- project binary networks using SETSe.</p> 
+    <p>The network takes in an igraph object and produces an undirected igraph object that can be used with the embedding functions.</p>
+<p>The function converts the attribute force_var to a numeric force value. It also creates the edge attribute 'k' unless k=NULL. 
+ The purpose of the function is to easily be able to project categorical features using SETSe. The function creates new variables
+ where each variable represents one level of the categorical variables. For embedding only n-1 of the levels are needed.</p> 
 <p>The function creates several variables</p><ul>
-<li><p>force: a vertex attribute representing the force produced by each node. The sum of this variable will be 0</p></li>
+<li><p>force_: Vertex attributes representing the force produced by each node for each categorical value, there will be n of these
+   variables representing each level of the categorical values. The variable names will be the the name of the variable and the name of
+   the level seperated by and underscore. For example, with a variable group and levels A and B, the created force variables will be
+   "group_A" and "group_B"
+    The sum of these variables will be 0</p></li>
 <li><p>k: The spring constant representing the stiffness of the spring.</p></li>
 <li><p>edge_name: the name of the edges. it takes the form "from_to" where "from" is the origin node and "to" is the destination node using the 
  <a href='https://rdrr.io/pkg/igraph/man/graph_from_data_frame.html'>as_data_frame</a> function from igraph</p></li>
 </ul>
 
-<p>The network takes in an igraph object and produces an undirected igraph object that can be used with SETSe/SETSe_auto/SETSe_bicomp for embedding.</p>
-<p>The function adds the node attribute 'force' and the edge attribute 'k' unless k=NULL. The purpose of the function is to easily be able to 
- project binary networks using SETSe.</p> 
-<p>The function creates several variables</p><ul>
-<li><p>force: a vertex attribute representing the force produced by each node. The sum of this variable will be 0</p></li>
-<li><p>k: The spring constant representing the stiffness of the spring.</p></li>
-<li><p>edge_name: the name of the edges. it takes the form "from_to" where "from" is the origin node and "to" is the destination node using the 
- <code><a href='https://rdrr.io/pkg/igraph/man/graph_from_data_frame.html'>as_data_frame</a></code> function from igraph</p></li>
-</ul>
-
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><a href='SETSe.html'>SETSe</a>, <a href='SETSe_auto.html'>SETSe_auto</a>, <a href='SETSe_bicomp.html'>SETSe_bicomp</a></p>
-<p><code><code><a href='SETSe_auto_hd.html'>SETSe_auto_hd</a></code></code></p>
 <p>Other prepare_setse: 
-<code><a href='prepare_SETSe_continuous_hd.html'>prepare_SETSe_continuous_hd</a>()</code>,
 <code><a href='prepare_SETSe_continuous.html'>prepare_SETSe_continuous</a>()</code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
@@ -239,21 +214,10 @@ the k value will not be added to the network. This is useful k is made through s
 <span class='va'>embeddings</span> <span class='op'>&lt;-</span> <span class='va'>g</span> <span class='op'>%&gt;%</span>
 <span class='co'>#prepare the network for a binary embedding</span>
 <span class='fu'>prepare_SETSe_binary</span><span class='op'>(</span><span class='va'>.</span>, node_names <span class='op'>=</span> <span class='st'>"name"</span>, k <span class='op'>=</span> <span class='fl'>1000</span>, 
-                     force_var <span class='op'>=</span> <span class='st'>"class"</span>, 
-                     positive_value <span class='op'>=</span> <span class='st'>"A"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+                     force_var <span class='op'>=</span> <span class='st'>"class"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
 <span class='co'>#embed the network using auto setse</span>
-  <span class='fu'><a href='SETSe_auto.html'>SETSe_auto</a></span><span class='op'>(</span><span class='op'>)</span>
-
-<span class='fu'><a href='https://rdrr.io/r/base/Random.html'>set.seed</a></span><span class='op'>(</span><span class='fl'>234</span><span class='op'>)</span> <span class='co'>#set the random see for generating the network</span>
-<span class='va'>g</span> <span class='op'>&lt;-</span> <span class='fu'><a href='generate_peels_network.html'>generate_peels_network</a></span><span class='op'>(</span>type <span class='op'>=</span> <span class='st'>"E"</span><span class='op'>)</span>
-<span class='va'>embeddings</span> <span class='op'>&lt;-</span> <span class='va'>g</span> <span class='op'>%&gt;%</span>
-<span class='co'>#prepare the network for a binary embedding</span>
-<span class='fu'>prepare_SETSe_binary</span><span class='op'>(</span><span class='va'>.</span>, node_names <span class='op'>=</span> <span class='st'>"name"</span>, k <span class='op'>=</span> <span class='fl'>1000</span>, 
-                     force_var <span class='op'>=</span> <span class='st'>"class"</span>, 
-                     positive_value <span class='op'>=</span> <span class='st'>"A"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-<span class='co'>#embed the network using auto setse</span>
-  <span class='fu'><a href='SETSe_auto.html'>SETSe_auto</a></span><span class='op'>(</span><span class='op'>)</span>
-
+  <span class='fu'><a href='SETSe_auto.html'>SETSe_auto</a></span><span class='op'>(</span><span class='va'>.</span>, force <span class='op'>=</span> <span class='st'>"group_A"</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in mutate(., dplyr::across(.fns = ~{    .x - mean(.x)})): could not find function "mutate"</span></div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

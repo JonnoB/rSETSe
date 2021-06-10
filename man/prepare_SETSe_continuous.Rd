@@ -2,7 +2,7 @@
 % Please edit documentation in R/prepare_SETSe_continuous.R
 \name{prepare_SETSe_continuous}
 \alias{prepare_SETSe_continuous}
-\title{Prepare continuous network}
+\title{Prepare continuous features for embedding}
 \usage{
 prepare_SETSe_continuous(
   g,
@@ -21,7 +21,8 @@ prepare_SETSe_continuous(
 \item{k}{The spring constant. This value is either a numeric value giving the spring constant for all edges or NULL. If NULL is used 
 the k value will not be added to the network. This is useful k is made through some other process.}
 
-\item{force_var}{A node attribute. This is used as the force variable, it must be a numeric or integer value, it cannot have NA's}
+\item{force_var}{A character vector. This is the vector of node attributes to be used as the force variables.
+All the attributes must be a numeric or integer value, and cannot have NA's. On a single variable embedding this is usually "force"}
 
 \item{sum_to_one}{Logical. whether the total positive force sums to 1, if FALSE the total is the sum of the positive cases}
 
@@ -31,13 +32,12 @@ the k value will not be added to the network. This is useful k is made through s
 A network with the correct edge and node attributes for the embeddings process.
 }
 \description{
-This function prepares a continuous network for SETSe projection.
+This function prepares a continuous network for SETSe projection. The function works for networks with a single feature or
+high-dimensional features.
+The network takes in an igraph object and produces an undirected igraph object that can be used with the embedding functions.
 }
 \details{
-The network takes in an igraph object and produces an undirected igraph object that can be used with SETSe/SETSe_auto for embedding.
-
-
- The function subtracts the mean from all the values so that the system is balanced. If sum_to_one is true then everything is divided by
+The function subtracts the mean from all the values so that the system is balanced. If sum_to_one is true then everything is divided by
  the absolute sum over two 
  
  The function adds the node attribute 'force' and the edge attribute 'k' unless k=NULL. The purpose of the function is to easily be able to 
@@ -55,17 +55,17 @@ The network takes in an igraph object and produces an undirected igraph object t
 embeddings <- biconnected_network \%>\%
 #prepare the network for a binary embedding
 #k is already present in the data so is left null in the preparation function
-prepare_SETSe_continuous(., node_names = "name", k = NULL, 
-                        force_var = "force") \%>\%
+prepare_edges(k = NULL, distance = 1) \%>\%
+prepare_SETSe_continuous(., node_names = "name", force_var = "force") \%>\%
 #embed the network using auto setse
 #in the biconnected_network dataset the edge weights are used directly as k values
 SETSe_auto(k = "weight")
 }
 \seealso{
-\link{SETSe}, \link{SETSe_auto}, \link{SETSe_bicomp}
+\link{SETSe_auto_hd}
 
 Other prepare_setse: 
 \code{\link{prepare_SETSe_binary}()},
-\code{\link{prepare_SETSe_continuous_hd}()}
+\code{\link{prepare_edges}()}
 }
 \concept{prepare_setse}
