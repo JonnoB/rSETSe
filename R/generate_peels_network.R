@@ -11,7 +11,7 @@
 #' @details  This function generates networks matching the 5 types described in Peel et al 2019(\url{doi.org/10.1073/pnas.1713019115}). All networks have 40 nodes,
 #'  160 edges, two node classes and four node sub-classes. The connections between the are equal across all 5 types.
 #'  As a result all networks generated have identical assortativity. However, as the sub-classes have different connection
-#'  probability the structures produced by the networks are very different. When projected into SETSe space the network types
+#'  probability the structures produced by the networks are very different. When projected into setse space the network types
 #'  occupy there own area, see Bourne 2020 for details
 #'  
 #' @return An igraph object that matches one of the 5 Peel's quintet types. The nodes are labeled with class and sub class.
@@ -25,7 +25,7 @@ generate_peels_network <- function(type, k_values = c(1000, 500, 100), single_co
 
   if(single_component){
   
-  #Common with other node embeddings methods SETSe only works on a single connected component
+  #Common with other node embeddings methods setse only works on a single connected component
   #The below code ensures that the network created has a single component
   num_components <- 2
   

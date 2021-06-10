@@ -21,17 +21,17 @@
 #'  \link[igraph]{as_data_frame} function from igraph
 #' }
 #' @family prepare_setse
-#' @seealso \link{SETSe}, \link{SETSe_auto}, \link{SETSe_bicomp}, \link{SETSe_auto_hd}
+#' @seealso \link{setse}, \link{setse_auto}, \link{setse_bicomp}, \link{setse_auto_hd}
 #' @examples
 #' set.seed(234) #set the random see for generating the network
 #' g <- generate_peels_network(type = "E")
 #' embeddings <- g %>%
 #' prepare_edges(k = 500, distance = 1) %>%
 #' #prepare the network for a binary embedding
-#' prepare_SETSe_binary(., node_names = "name",
+#' prepare_categorical_force(., node_names = "name",
 #'                      force_var = "class") %>%
 #' #embed the network using auto setse
-#'   SETSe_auto(., force = "group_A")
+#'   setse_auto(., force = "class_A")
 #' @export
 #' 
 prepare_edges <- function(g, k = NULL, distance = 1, create_edge_name = TRUE){
@@ -58,7 +58,7 @@ if(create_edge_name){
 } 
   
   #re-construct the network with the prepared edge data
-  g2 <- graph_from_data_frame(edges_df, directed = FALSE, vertices = g_list$vertices)
+  g2 <- igraph::graph_from_data_frame(edges_df, directed = FALSE, vertices = g_list$vertices)
   
   return(g2)
   

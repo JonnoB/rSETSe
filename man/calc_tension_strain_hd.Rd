@@ -33,24 +33,25 @@ This function calculates the line tension and strain characteristics for the edg
 It is called by default by all the embedding functions (SETSe_*) but is included here for completeness.
 }
 \details{
-Whilst the node embeddings dataframe contains the elevation of the SETSe algorithm this function produces a data frame that contains the Tension
+Whilst the node embeddings dataframe contains the elevation of the setse algorithm this function produces a data frame that contains the Tension
 and Strain. The dataframe that is returned contains a substantial amount of line information so reducing the number of variables may be
 necessary if the data frame will be merged with previously generated data as there could be multiple columns of the same value.
-This function is called by default at the end of all SETSe functions
+This function is called by default at the end of all setse functions
 }
 \examples{
 
-set.seed(234) #set the random see for generating the network
-g <- generate_peels_network(type = "E") \%>\%
-#prepare the network for a binary embedding
-prepare_SETSe_binary(., node_names = "name", k = 1000, 
-                     force_var = "class", 
-                     positive_value = "A") 
-#embed the network using auto setse
- embeddings <- SETSe_auto(g)
+g <- biconnected_network \%>\%
+ prepare_edges(., k = 1000) \%>\%
+ #prepare the continuous features as normal
+ prepare_continuous_force(., node_names = "name", force_var = "force") \%>\%
+ #prepare the categorical features as normal
+ prepare_categorical_force(., node_names = "name", force_var = "group")
   
- edge_embeddings_df <- calc_tension_strain(g, embeddings$node_embeddings)
- all.equal(embeddings$edge_embeddings, edge_embeddings_df) 
+ #embed them using the high dimensional function
+ two_dimensional_embeddings <- setse_auto_hd(g, force = c("group_A", "force"), k = "weight")
+  
+ edge_embeddings_df <- calc_tension_strain_hd(g, two_dimensional_embeddings$node_embeddings)
+ all.equal(two_dimensional_embeddings$edge_embeddings, edge_embeddings_df) 
  
  
 }

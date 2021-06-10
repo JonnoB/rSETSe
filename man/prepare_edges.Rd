@@ -38,16 +38,16 @@ g <- generate_peels_network(type = "E")
 embeddings <- g \%>\%
 prepare_edges(k = 500, distance = 1) \%>\%
 #prepare the network for a binary embedding
-prepare_SETSe_binary(., node_names = "name",
+prepare_categorical_force(., node_names = "name",
                      force_var = "class") \%>\%
 #embed the network using auto setse
-  SETSe_auto(., force = "group_A")
+  setse_auto(., force = "class_A")
 }
 \seealso{
-\link{SETSe}, \link{SETSe_auto}, \link{SETSe_bicomp}, \link{SETSe_auto_hd}
+\link{setse}, \link{setse_auto}, \link{setse_bicomp}, \link{setse_auto_hd}
 
 Other prepare_setse: 
-\code{\link{prepare_SETSe_binary}()},
-\code{\link{prepare_SETSe_continuous}()}
+\code{\link{prepare_categorical_force}()},
+\code{\link{prepare_continuous_force}()}
 }
 \concept{prepare_setse}

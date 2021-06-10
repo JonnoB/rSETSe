@@ -12,5 +12,5 @@
 #'   \item{group}{The group each node is in. This can be used to generate force if required}
 #' }
 #' @examples
-#' plot(biconnected_network)
+#' \dontrun{plot(biconnected_network)}
 "biconnected_network"

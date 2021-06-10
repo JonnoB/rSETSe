@@ -13,21 +13,21 @@
 #' the change in elevation, The final distance between the two nodes (the hypotenuse of the original distance and the vertical distance), 
 #' the spring constant k, the edge tension, the edge strain, and the mean elevation.
 #
-#' @details Whilst the node embeddings dataframe contains the elevation of the SETSe algorithm this function produces a data frame that contains the Tension
+#' @details Whilst the node embeddings dataframe contains the elevation of the setse algorithm this function produces a data frame that contains the Tension
 #' and Strain. The dataframe that is returned contains a substantial amount of line information so reducing the number of variables may be
 #' necessary if the data frame will be merged with previously generated data as there could be multiple columns of the same value.
-#' This function is called by default at the end of all SETSe functions
+#' This function is called by default at the end of all setse functions
 #' 
 #' @examples 
 #' 
 #' set.seed(234) #set the random see for generating the network
-#' g <- generate_peels_network(type = "E") %>%
+#' g <- generate_peels_network(type = "E")%>%
+#' prepare_edges(k = 500, distance = 1) %>%
 #' #prepare the network for a binary embedding
-#' prepare_SETSe_binary(., node_names = "name", k = 1000, 
-#'                      force_var = "class", 
-#'                      positive_value = "A") 
+#' prepare_categorical_force(., node_names = "name",
+#'                      force_var = "class") 
 #' #embed the network using auto setse
-#'  embeddings <- SETSe_auto(g)
+#' embeddings <- setse_auto(g, force = "class_A")
 #'   
 #'  edge_embeddings_df <- calc_tension_strain(g, embeddings$node_embeddings)
 #'  all.equal(embeddings$edge_embeddings, edge_embeddings_df) 

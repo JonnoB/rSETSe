@@ -4,8 +4,8 @@
 #' 
 #' @param g An igraph object of the graph to embed.
 #' 
-#' @details As SETSe only works on connected components this function removes all but the largest component. 
-#' This is a helper function to quickly project a network with SETSe.
+#' @details As setse only works on connected components this function removes all but the largest component. 
+#' This is a helper function to quickly project a network with setse.
 #' 
 #' @return An igraph object.
 #' @examples 

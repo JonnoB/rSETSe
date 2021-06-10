@@ -2,13 +2,14 @@ reference:
 - title: Embedding
   desc:  Perform the embedding using one of the SETSe function
 - contents:
-  - SETSe
-  - starts_with("SETSe_")
+  - setse
+  - starts_with("setse_")
 - title: Pre-embedding
   desc: Functions used before the network has been embedded
 - contents:
-  - prepare_SETSe_binary
-  - prepare_SETSe_continuous
+  - prepare_categorical_force
+  - prepare_continuous_force
+  - prepare_edges
   - remove_small_components
   - calc_spring_area
   - calc_spring_constant
@@ -18,7 +19,9 @@ reference:
   desc: Functions used after the network has been embedded
 - contents:
   - create_node_edge_df
+  - create_node_edge_df_hd
   - calc_tension_strain
+  - calc_tension_strain_hd
 - title: Networks
   desc: Data to use for embedding
 - contents:

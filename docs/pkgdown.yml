@@ -2,7 +2,7 @@ pandoc: 2.11.4
 pkgdown: 1.6.1
 pkgdown_sha: ~
 articles:
-  Binary-and-continuous-features: Binary-and-continuous-features.html
+  Categorical-and-continuous-features: Categorical-and-continuous-features.html
   separate-peels-quintet: separate-peels-quintet.html
-last_built: 2021-06-09T18:42Z
+last_built: 2021-06-10T18:36Z
 

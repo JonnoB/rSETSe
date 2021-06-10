@@ -2,12 +2,12 @@
 #'
 #' Aggregates edge strain and tension to node level
 #' 
-#' @param embeddings_data A list. The output of any of the SETSe embedding functions
+#' @param embeddings_data A list. The output of any of the setse embedding functions
 #' @param function_names A string vector. the names of the aggregation methods to be used
 #'
 #' @details Often if can be useful to have edge data at node level, an example of this would be plotting
 #' the node and tension or strain. To do this requires that the edge embeddings are aggregated somehow to node level
-#' and joined to the appropriate node. This function takes as an argument the output of the SETSe embedding functions
+#' and joined to the appropriate node. This function takes as an argument the output of the setse embedding functions
 #' and any number of aggregation functions to produce a dataframe that is convenient to use.
 #' 
 #' @return A dataframe with node names, node force, node elevation and strain and tension aggregated using the named functions.
@@ -16,11 +16,18 @@
 #' 
 #' @examples
 #' 
-#' embeddings_data <- biconnected_network %>%
-#'prepare_SETSe_continuous(., node_names = "name", force_var = "force") %>%
-#'  SETSe_auto(., k = "weight")
+#' g <- biconnected_network %>%
+#'  prepare_edges(.) %>%
+#'  #prepare the continuous features as normal
+#'  prepare_continuous_force(., node_names = "name", force_var = "force") %>%
+#'  #prepare the categorical features as normal
+#'  prepare_categorical_force(., node_names = "name", force_var = "group")
+#'   
+#'  #embed them using the high dimensional function
+#'  two_dimensional_embeddings <- setse_auto_hd(g, force = c("group_A", "force"), k = "weight")
 #'
-#'out <- create_node_edge_df(embeddings_data, function_names = c("mean", "mode", "sum"))
+#'  out <- create_node_edge_df_hd(two_dimensional_embeddings , 
+#'   function_names = c("mean", "mode", "sum"))
 #' 
 #' @export
 

@@ -13,24 +13,25 @@
 #' the change in elevation, The final distance between the two nodes (the hypotenuse of the original distance and the vertical distance), 
 #' the spring constant k, the edge tension, the edge strain, and the mean elevation.
 #
-#' @details Whilst the node embeddings dataframe contains the elevation of the SETSe algorithm this function produces a data frame that contains the Tension
+#' @details Whilst the node embeddings dataframe contains the elevation of the setse algorithm this function produces a data frame that contains the Tension
 #' and Strain. The dataframe that is returned contains a substantial amount of line information so reducing the number of variables may be
 #' necessary if the data frame will be merged with previously generated data as there could be multiple columns of the same value.
-#' This function is called by default at the end of all SETSe functions
+#' This function is called by default at the end of all setse functions
 #' 
 #' @examples 
 #' 
-#' set.seed(234) #set the random see for generating the network
-#' g <- generate_peels_network(type = "E") %>%
-#' #prepare the network for a binary embedding
-#' prepare_SETSe_binary(., node_names = "name", k = 1000, 
-#'                      force_var = "class", 
-#'                      positive_value = "A") 
-#' #embed the network using auto setse
-#'  embeddings <- SETSe_auto(g)
+#' g <- biconnected_network %>%
+#'  prepare_edges(., k = 1000) %>%
+#'  #prepare the continuous features as normal
+#'  prepare_continuous_force(., node_names = "name", force_var = "force") %>%
+#'  #prepare the categorical features as normal
+#'  prepare_categorical_force(., node_names = "name", force_var = "group")
 #'   
-#'  edge_embeddings_df <- calc_tension_strain(g, embeddings$node_embeddings)
-#'  all.equal(embeddings$edge_embeddings, edge_embeddings_df) 
+#'  #embed them using the high dimensional function
+#'  two_dimensional_embeddings <- setse_auto_hd(g, force = c("group_A", "force"), k = "weight")
+#'   
+#'  edge_embeddings_df <- calc_tension_strain_hd(g, two_dimensional_embeddings$node_embeddings)
+#'  all.equal(two_dimensional_embeddings$edge_embeddings, edge_embeddings_df) 
 #'  
 #'  
 #' @export
@@ -51,7 +52,7 @@ calc_tension_strain_hd <- function(g, height_embeddings_df, distance = "distance
   #get the embedded node elevation across all dimensions
   elevation_df <- height_embeddings_df %>% dplyr::select(node, dplyr::starts_with("elevation"))
   
-  #merge the edge list tand the node elevations for both the from and to nodes
+  #merge the edge list and the node elevations for both the from and to nodes
   #The columns are also re-named for clarity
   #This is a very slow way of doing this. Match would be much faster however I can't be bothered right now
   #and I will change if this becomes a speed choke point

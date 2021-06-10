@@ -22,6 +22,6 @@ biconnected_network
 The data set can be used to explore simple different embeddings methods on a very simple graph
 }
 \examples{
-plot(biconnected_network)
+\dontrun{plot(biconnected_network)}
 }
 \keyword{datasets}

@@ -124,22 +124,21 @@
 <a href="#continuous-embeddings" class="anchor"></a>Continuous embeddings</h1>
 <p>Creating the embeddings using this dataset is very simple as it already has a force variable and the edge weights can be used as the spring constant.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">embeddings_cont</span> <span class="op">&lt;-</span> <span class="va">biconnected_network</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="../reference/prepare_SETSe_continuous.html">prepare_SETSe_continuous</a></span><span class="op">(</span><span class="va">.</span>, node_names <span class="op">=</span> <span class="st">"name"</span>, force_var <span class="op">=</span> <span class="st">"force"</span><span class="op">)</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="../reference/SETSe_auto.html">SETSe_auto</a></span><span class="op">(</span><span class="va">.</span>, k <span class="op">=</span> <span class="st">"weight"</span><span class="op">)</span>
+<code class="sourceCode R">
+<span class="va">embeddings_cont</span> <span class="op">&lt;-</span> <span class="va">biconnected_network</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/prepare_edges.html">prepare_edges</a></span><span class="op">(</span><span class="va">.</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/prepare_continuous_force.html">prepare_continuous_force</a></span><span class="op">(</span><span class="va">.</span>, node_names <span class="op">=</span> <span class="st">"name"</span>, force_var <span class="op">=</span> <span class="st">"force"</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/setse_auto.html">setse_auto</a></span><span class="op">(</span><span class="va">.</span>, k <span class="op">=</span> <span class="st">"weight"</span><span class="op">)</span>
 
 
-<span class="va">embeddings_data</span> <span class="op">&lt;-</span> <span class="va">biconnected_network</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="../reference/prepare_SETSe_continuous.html">prepare_SETSe_continuous</a></span><span class="op">(</span><span class="va">.</span>, node_names <span class="op">=</span> <span class="st">"name"</span>, force_var <span class="op">=</span> <span class="st">"force"</span><span class="op">)</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="../reference/SETSe_auto.html">SETSe_auto</a></span><span class="op">(</span><span class="va">.</span>, k <span class="op">=</span> <span class="st">"weight"</span><span class="op">)</span>
-
-<span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/create_node_edge_df.html">create_node_edge_df</a></span><span class="op">(</span><span class="va">embeddings_data</span>, function_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"mean"</span>, <span class="st">"mode"</span>, <span class="st">"sum"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/create_node_edge_df.html">create_node_edge_df</a></span><span class="op">(</span><span class="va">embeddings_cont</span>, function_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"mean"</span>, <span class="st">"mode"</span>, <span class="st">"sum"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>However, for some reason we may want to reset the spring constant to something else, below we perform the embedding using a fixed k of 500.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R">
 <span class="va">embeddings_cont_fixed</span> <span class="op">&lt;-</span> <span class="va">biconnected_network</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="../reference/prepare_SETSe_continuous.html">prepare_SETSe_continuous</a></span><span class="op">(</span><span class="va">.</span>, node_names <span class="op">=</span> <span class="st">"name"</span>, force_var <span class="op">=</span> <span class="st">"force"</span>, k <span class="op">=</span> <span class="fl">500</span><span class="op">)</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="../reference/SETSe_auto.html">SETSe_auto</a></span><span class="op">(</span><span class="va">.</span>, k <span class="op">=</span> <span class="st">"k"</span><span class="op">)</span></code></pre></div>
+  <span class="fu"><a href="../reference/prepare_edges.html">prepare_edges</a></span><span class="op">(</span><span class="va">.</span>, k <span class="op">=</span> <span class="fl">500</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/prepare_continuous_force.html">prepare_continuous_force</a></span><span class="op">(</span><span class="va">.</span>, node_names <span class="op">=</span> <span class="st">"name"</span>, force_var <span class="op">=</span> <span class="st">"force"</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/setse_auto.html">setse_auto</a></span><span class="op">(</span><span class="va">.</span>, k <span class="op">=</span> <span class="st">"k"</span><span class="op">)</span></code></pre></div>
 <div id="plot-the-resulting-embeddings" class="section level2">
 <h2 class="hasAnchor">
 <a href="#plot-the-resulting-embeddings" class="anchor"></a>plot the resulting embeddings</h2>
@@ -160,26 +159,27 @@
 <p><img src="Binary-and-continuous-features_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
 </div>
 </div>
-<div id="binary-embeddings" class="section level1">
+<div id="categorical-embeddings" class="section level1">
 <h1 class="hasAnchor">
-<a href="#binary-embeddings" class="anchor"></a>Binary embeddings</h1>
+<a href="#categorical-embeddings" class="anchor"></a>Categorical embeddings</h1>
 <p>Now we will use the group identity as binary force variable. The network is made up of two groups A and B. We arbitrarily set A to be the positive force.</p>
 <p>As can be seen embeddings using the groups as force variables create very different embedded results, this is despite the fact that the networks are identical.</p>
+<p>For factor levels of more than two, the high-dimensional setse should be used.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R">
 <span class="va">embeddings_binary</span> <span class="op">&lt;-</span> <span class="va">biconnected_network</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="../reference/prepare_SETSe_binary.html">prepare_SETSe_binary</a></span><span class="op">(</span><span class="va">.</span>, node_names <span class="op">=</span> <span class="st">"name"</span>, force_var <span class="op">=</span> <span class="st">"group"</span><span class="op">)</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="../reference/SETSe_auto.html">SETSe_auto</a></span><span class="op">(</span><span class="va">.</span>, 
+  <span class="fu"><a href="../reference/prepare_edges.html">prepare_edges</a></span><span class="op">(</span><span class="va">.</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/prepare_categorical_force.html">prepare_categorical_force</a></span><span class="op">(</span><span class="va">.</span>, node_names <span class="op">=</span> <span class="st">"name"</span>, force_var <span class="op">=</span> <span class="st">"group"</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/setse_auto.html">setse_auto</a></span><span class="op">(</span><span class="va">.</span>, 
              force <span class="op">=</span> <span class="st">"group_A"</span>,
              k <span class="op">=</span> <span class="st">"weight"</span><span class="op">)</span>
 
-
 <span class="va">embeddings_binary_fixed</span> <span class="op">&lt;-</span> <span class="va">biconnected_network</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="../reference/prepare_SETSe_binary.html">prepare_SETSe_binary</a></span><span class="op">(</span><span class="va">.</span>, node_names <span class="op">=</span> <span class="st">"name"</span>, force_var <span class="op">=</span> <span class="st">"group"</span>, k <span class="op">=</span> <span class="fl">500</span><span class="op">)</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="../reference/SETSe_auto.html">SETSe_auto</a></span><span class="op">(</span><span class="va">.</span>, 
+  <span class="fu"><a href="../reference/prepare_edges.html">prepare_edges</a></span><span class="op">(</span><span class="va">.</span>, k <span class="op">=</span> <span class="fl">500</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/prepare_categorical_force.html">prepare_categorical_force</a></span><span class="op">(</span><span class="va">.</span>, node_names <span class="op">=</span> <span class="st">"name"</span>, force_var <span class="op">=</span> <span class="st">"group"</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/setse_auto.html">setse_auto</a></span><span class="op">(</span><span class="va">.</span>, 
              force <span class="op">=</span> <span class="st">"group_A"</span>,
              k <span class="op">=</span> <span class="st">"k"</span><span class="op">)</span>
-
 
 <span class="va">binary_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind.html">bind_rows</a></span><span class="op">(</span><span class="fu"><a href="../reference/create_node_edge_df.html">create_node_edge_df</a></span><span class="op">(</span><span class="va">embeddings_binary</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"variable k"</span><span class="op">)</span>,
           <span class="fu"><a href="../reference/create_node_edge_df.html">create_node_edge_df</a></span><span class="op">(</span><span class="va">embeddings_binary_fixed</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"fixed k"</span><span class="op">)</span>
@@ -195,26 +195,28 @@
 <div id="using-both-embeddings" class="section level1">
 <h1 class="hasAnchor">
 <a href="#using-both-embeddings" class="anchor"></a>Using both embeddings</h1>
-<p>Because this network has two features. We can embed this high dimensional network using the <code>SETSe_auto_hd</code> function.</p>
+<p>Because this network has two features. We can embed this high dimensional network using the <code>setse_auto_hd</code> function.</p>
 <p>What we see is that in this case there is very little relationship between the elevation of a node when it is embedded using different features.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R">
 
 <span class="va">two_dimensional_embeddings</span> <span class="op">&lt;-</span> <span class="va">biconnected_network</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/prepare_edges.html">prepare_edges</a></span><span class="op">(</span><span class="va">.</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="co">#prepare the continuous features as normal</span>
-  <span class="fu"><a href="../reference/prepare_SETSe_continuous.html">prepare_SETSe_continuous</a></span><span class="op">(</span><span class="va">.</span>, node_names <span class="op">=</span> <span class="st">"name"</span>, force_var <span class="op">=</span> <span class="st">"force"</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/prepare_continuous_force.html">prepare_continuous_force</a></span><span class="op">(</span><span class="va">.</span>, node_names <span class="op">=</span> <span class="st">"name"</span>, force_var <span class="op">=</span> <span class="st">"force"</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="co">#prepare the categorical features as normal</span>
-  <span class="fu"><a href="../reference/prepare_SETSe_binary.html">prepare_SETSe_binary</a></span><span class="op">(</span><span class="va">.</span>, node_names <span class="op">=</span> <span class="st">"name"</span>, force_var <span class="op">=</span> <span class="st">"group"</span>, k <span class="op">=</span> <span class="st">"weight"</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/prepare_categorical_force.html">prepare_categorical_force</a></span><span class="op">(</span><span class="va">.</span>, node_names <span class="op">=</span> <span class="st">"name"</span>, force_var <span class="op">=</span> <span class="st">"group"</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="co">#embed them using the high dimensional function</span>
-  <span class="fu"><a href="../reference/SETSe_auto_hd.html">SETSe_auto_hd</a></span><span class="op">(</span><span class="va">.</span>, force <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"group_A"</span>, <span class="st">"force"</span><span class="op">)</span>, k <span class="op">=</span> <span class="st">"weight"</span><span class="op">)</span>
+  <span class="fu"><a href="../reference/setse_auto_hd.html">setse_auto_hd</a></span><span class="op">(</span><span class="va">.</span>, force <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"group_A"</span>, <span class="st">"force"</span><span class="op">)</span>, k <span class="op">=</span> <span class="st">"weight"</span><span class="op">)</span>
 
 <span class="va">two_dimensional_embeddings_fixed</span> <span class="op">&lt;-</span> <span class="va">biconnected_network</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/prepare_edges.html">prepare_edges</a></span><span class="op">(</span><span class="va">.</span>, k <span class="op">=</span> <span class="fl">500</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="co">#prepare the continuous features as normal</span>
-  <span class="fu"><a href="../reference/prepare_SETSe_continuous.html">prepare_SETSe_continuous</a></span><span class="op">(</span><span class="va">.</span>, node_names <span class="op">=</span> <span class="st">"name"</span>, force_var <span class="op">=</span> <span class="st">"force"</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/prepare_continuous_force.html">prepare_continuous_force</a></span><span class="op">(</span><span class="va">.</span>, node_names <span class="op">=</span> <span class="st">"name"</span>, force_var <span class="op">=</span> <span class="st">"force"</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="co">#prepare the categorical features as normal</span>
-  <span class="fu"><a href="../reference/prepare_SETSe_binary.html">prepare_SETSe_binary</a></span><span class="op">(</span><span class="va">.</span>, node_names <span class="op">=</span> <span class="st">"name"</span>, force_var <span class="op">=</span> <span class="st">"group"</span>, k <span class="op">=</span> <span class="fl">500</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/prepare_categorical_force.html">prepare_categorical_force</a></span><span class="op">(</span><span class="va">.</span>, node_names <span class="op">=</span> <span class="st">"name"</span>, force_var <span class="op">=</span> <span class="st">"group"</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="co">#embed them using the high dimensional function</span>
-  <span class="fu"><a href="../reference/SETSe_auto_hd.html">SETSe_auto_hd</a></span><span class="op">(</span><span class="va">.</span>, force <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"group_A"</span>, <span class="st">"force"</span><span class="op">)</span>, k <span class="op">=</span> <span class="st">"k"</span><span class="op">)</span>
+  <span class="fu"><a href="../reference/setse_auto_hd.html">setse_auto_hd</a></span><span class="op">(</span><span class="va">.</span>, force <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"group_A"</span>, <span class="st">"force"</span><span class="op">)</span>, k <span class="op">=</span> <span class="st">"k"</span><span class="op">)</span>
 
 <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind.html">bind_rows</a></span><span class="op">(</span><span class="va">two_dimensional_embeddings</span><span class="op">$</span><span class="va">node_embeddings</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"variable k"</span><span class="op">)</span>,
 <span class="va">two_dimensional_embeddings_fixed</span><span class="op">$</span><span class="va">node_embeddings</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"fixed k"</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>

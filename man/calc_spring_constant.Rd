@@ -45,9 +45,9 @@ g_prep <- generate_peels_network("A") \%>\%
  set.edge.attribute(., name = "E", value = rep(c(1e5, 5e5, 2e5, 3e5), each = 40)) \%>\%
  #calculate the spring area from another edge characteristic
  calc_spring_area(., value = "edge_characteristic", minimum_value = 10, range = 20) \%>\%
- prepare_SETSe_binary(., node_names = "name", k = NULL, 
-                    force_var = "class", 
-                    positive_value = "A")
+ prepare_edges() \%>\%
+ prepare_categorical_force(., node_names = "name", 
+                    force_var = "class")
 
 g <- calc_spring_constant(g_prep, youngs_mod = "E", A = "Area", distance = "distance")
 

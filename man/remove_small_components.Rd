@@ -16,8 +16,8 @@ An igraph object.
 keep only the largest component of graph
 }
 \details{
-As SETSe only works on connected components this function removes all but the largest component. 
-This is a helper function to quickly project a network with SETSe.
+As setse only works on connected components this function removes all but the largest component. 
+This is a helper function to quickly project a network with setse.
 }
 \examples{
 library(igraph)

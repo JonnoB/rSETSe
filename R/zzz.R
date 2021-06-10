@@ -23,8 +23,8 @@ utils::globalVariables(c("from",
                          "strain",
                          "position.x",
                          "position.y",
-                         "rows", #in SETSe_data_prep
-                         "cols", #in SETSe_data_prep
+                         "rows", #in setse_data_prep
+                         "cols", #in setse_data_prep
                          "A", #the area variable in calc_spring_area
                          "value_2", #calc_spring_area
                          "edge_name", #create_node_edge_df

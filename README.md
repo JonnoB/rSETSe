@@ -19,7 +19,7 @@ The package is available on CRAN and can be installed by running `install.packag
  1. Open R/Rstudio and ensure that devtools has been installed
  1. Run the following code library(devtools); install_github("JonnoB/rSETSe")
  1. Load the package normally using library(rsetse)
- 1. All functions have help files e.g ?SETSe_auto
+ 1. All functions have help files e.g ?setse_auto
 
 The package can also be downloaded or cloned then installed locally using the install function from devtools.
 
@@ -31,15 +31,16 @@ library(rSETSe)
 #prepares a graph for embedding using SETSe
 set.seed(234) #set the random see for generating the network
 g <- generate_peels_network(type = "E") %>%
-  #prepare the network for a binary embedding
-  prepare_SETSe_binary(., node_names = "name", k = 1000, 
-                       force_var = "class", 
-                       positive_value = "A") 
+prepare_edges(k = 500, distance = 1) %>%
+#prepare the network for a binary embedding
+prepare_categorical_force(., node_names = "name",
+                     force_var = "class") 
                        
 #Embedds using the bi-connected auto-parametrization algorithm.
 #This method is strongly reccomended, it tends to be much faster and almost always converges
-embeddings <- SETSe_bicomp(g,
-                           tol = sum(abs(vertex_attr(g, "force")))/1000,
+embeddings <- setse_bicomp(g,
+                           force = "class_A",
+                           tol = sum(abs(vertex_attr(g, "class_A")))/1000,
                            hyper_tol = 0.1,
                            hyper_iters = 3000,
                            verbose = T)

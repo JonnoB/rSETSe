@@ -29,17 +29,19 @@ if force and mass are not well parametrised.
 This function means that if the network were reduced to two nodes where each node contained all the mass and all the force of
 one of the two directions, then each node would have an acceleration of 1ms^-2
 
-The function can become important when using SETSe_bicomp as the force mass ratio of biconnection components can vary widely from
+The function can become important when using setse_bicomp as the force mass ratio of biconnection components can vary widely from
 the total force mass ratio of the network.
 }
 \examples{
 set.seed(234) #set the random see for generating the network
 
+set.seed(234) #set the random see for generating the network
 g <- generate_peels_network(type = "E") \%>\%
-prepare_SETSe_binary(., node_names = "name", k = 1000, 
-                     force_var = "class", 
-                     positive_value = "A")
+prepare_edges(k = 500, distance = 1) \%>\%
+#prepare the network for a binary embedding
+prepare_categorical_force(., node_names = "name",
+                     force_var = "class") 
 
-mass_adjuster(g, force = "force", resolution_limit = TRUE)
+mass_adjuster(g, force = "class_B", resolution_limit = TRUE)
 
 }
