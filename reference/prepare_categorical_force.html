@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Pipe operator — %&gt;% • rsetse</title>
+<title>Prepare categorical features for embedding — prepare_categorical_force • rsetse</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -46,8 +46,8 @@
 
 
 
-<meta property="og:title" content="Pipe operator — %&gt;%" />
-<meta property="og:description" content="See magrittr::%&amp;gt;% for details." />
+<meta property="og:title" content="Prepare categorical features for embedding — prepare_categorical_force" />
+<meta property="og:description" content="This function prepares a binary network for SETSe projection." />
 <meta property="og:image" content="/logo.png" />
 
 
@@ -134,19 +134,70 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Pipe operator</h1>
-    <small class="dont-index">Source: <a href='https://github.com/JonnoB/rSETSe/blob/master/R/utils_pipe.R'><code>R/utils_pipe.R</code></a></small>
-    <div class="hidden name"><code>pipe.Rd</code></div>
+    <h1>Prepare categorical features for embedding</h1>
+    <small class="dont-index">Source: <a href='https://github.com/JonnoB/rSETSe/blob/master/R/prepare_categorical_force.R'><code>R/prepare_categorical_force.R</code></a></small>
+    <div class="hidden name"><code>prepare_categorical_force.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>See <code>magrittr::%&gt;%</code> for details.</p>
+    <p>This function prepares a binary network for SETSe projection.</p>
     </div>
 
-    <pre class="usage"><span class='va'>lhs</span> <span class='op'>%&gt;%</span> <span class='va'>rhs</span></pre>
+    <pre class="usage"><span class='fu'>prepare_categorical_force</span><span class='op'>(</span><span class='va'>g</span>, <span class='va'>node_names</span>, <span class='va'>force_var</span>, sum_to_one <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></pre>
 
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>g</th>
+      <td><p>an igraph object</p></td>
+    </tr>
+    <tr>
+      <th>node_names</th>
+      <td><p>a character string. A vertex attribute which contains the node names.</p></td>
+    </tr>
+    <tr>
+      <th>force_var</th>
+      <td><p>A vector of force attributes. This describes all the categorical force attributes of the network. 
+All named attributes must be either character or factor attributes.</p></td>
+    </tr>
+    <tr>
+      <th>sum_to_one</th>
+      <td><p>Logical. whether the total positive force sums to 1, if FALSE the total is the sum of the positive cases</p></td>
+    </tr>
+    </table>
 
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
+    <p>A network with the correct node attributes for the embeddings process.</p>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>The network takes in an igraph object and produces an undirected igraph object that can be used with the embedding functions.</p>
+<p>The purpose of the function is to easily be able to project categorical features using SETSe. The function creates new variables
+ where each variable represents one level of the categorical variables. For embedding only n-1 of the levels are needed.</p> 
+<p>The function creates several variables of the format "force_". Vertex attributes representing the force produced by each node 
+ for each categorical value, there will be n of these variables representing each level of the categorical values. The variable names 
+ will be the the name of the variable and the name of the level seperated by and underscore. For example, with a variable group and levels A and B, the created force variables will be
+ "group_A" and "group_B" The sum of these variables will be 0.</p>
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <div class='dont-index'><p><a href='setse.html'>setse</a>, <a href='setse_auto.html'>setse_auto</a>, <a href='setse_bicomp.html'>setse_bicomp</a>, <a href='setse_auto_hd.html'>setse_auto_hd</a></p>
+<p>Other prepare_setse: 
+<code><a href='prepare_continuous_force.html'>prepare_continuous_force</a>()</code>,
+<code><a href='prepare_edges.html'>prepare_edges</a>()</code></p></div>
+
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/Random.html'>set.seed</a></span><span class='op'>(</span><span class='fl'>234</span><span class='op'>)</span> <span class='co'>#set the random see for generating the network</span>
+<span class='va'>g</span> <span class='op'>&lt;-</span> <span class='fu'><a href='generate_peels_network.html'>generate_peels_network</a></span><span class='op'>(</span>type <span class='op'>=</span> <span class='st'>"E"</span><span class='op'>)</span>
+<span class='va'>embeddings</span> <span class='op'>&lt;-</span> <span class='va'>g</span> <span class='op'>%&gt;%</span>
+<span class='fu'><a href='prepare_edges.html'>prepare_edges</a></span><span class='op'>(</span>k <span class='op'>=</span> <span class='fl'>500</span>, distance <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+<span class='co'>#prepare the network for a binary embedding</span>
+<span class='fu'>prepare_categorical_force</span><span class='op'>(</span><span class='va'>.</span>, node_names <span class='op'>=</span> <span class='st'>"name"</span>,
+                     force_var <span class='op'>=</span> <span class='st'>"class"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+<span class='co'>#embed the network using auto_setse</span>
+  <span class='fu'><a href='setse_auto.html'>setse_auto</a></span><span class='op'>(</span><span class='va'>.</span>, force <span class='op'>=</span> <span class='st'>"class_A"</span><span class='op'>)</span>
+
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

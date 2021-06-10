@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>SETSe algorithm with automatic timestep adjustment — SETSe_shift • rsetse</title>
+<title>setse algorithm with automatic timestep adjustment — setse_shift • rsetse</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -46,8 +46,8 @@
 
 
 
-<meta property="og:title" content="SETSe algorithm with automatic timestep adjustment — SETSe_shift" />
-<meta property="og:description" content="The basic SETSe function with added timestep adjustment. 
+<meta property="og:title" content="setse algorithm with automatic timestep adjustment — setse_shift" />
+<meta property="og:description" content="The basic setse function with added timestep adjustment. 
 The time shift functionality automatically adjusts the timestep if the convergence process is noisy" />
 <meta property="og:image" content="/logo.png" />
 
@@ -104,7 +104,7 @@ The time shift functionality automatically adjusts the timestep if the convergen
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/Binary-and-continuous-features.html">Binary and continuous feature embedding</a>
+      <a href="../articles/Categorical-and-continuous-features.html">Categorical and continuous feature embedding</a>
     </li>
     <li>
       <a href="../articles/separate-peels-quintet.html">Analysing multiple networks</a>
@@ -135,17 +135,17 @@ The time shift functionality automatically adjusts the timestep if the convergen
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>SETSe algorithm with automatic timestep adjustment</h1>
-    <small class="dont-index">Source: <a href='https://github.com/JonnoB/rSETSe/blob/master/R/SETSe_shift.R'><code>R/SETSe_shift.R</code></a></small>
-    <div class="hidden name"><code>SETSe_shift.Rd</code></div>
+    <h1>setse algorithm with automatic timestep adjustment</h1>
+    <small class="dont-index">Source: <a href='https://github.com/JonnoB/rSETSe/blob/master/R/setse_shift.R'><code>R/setse_shift.R</code></a></small>
+    <div class="hidden name"><code>setse_shift.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>The basic SETSe function with added timestep adjustment. 
+    <p>The basic setse function with added timestep adjustment. 
 The time shift functionality automatically adjusts the timestep if the convergence process is noisy</p>
     </div>
 
-    <pre class="usage"><span class='fu'>SETSe_shift</span><span class='op'>(</span>
+    <pre class="usage"><span class='fu'>setse_shift</span><span class='op'>(</span>
   <span class='va'>g</span>,
   force <span class='op'>=</span> <span class='st'>"force"</span>,
   distance <span class='op'>=</span> <span class='st'>"distance"</span>,
@@ -240,18 +240,18 @@ as well as the convergence dynamics dataframe for the network.</p>
 
     <p>This is the basic SETS embeddings algorithm, it outputs all elements of the embeddings as well as convergence dynamics. It is a
 wrapper around the core SETS algorithm which requires data preparation and only produces node embeddings and network dynamics. 
-There is little reason to use this function as <code><a href='SETSe_auto.html'>SETSe_auto</a></code> and <code><a href='SETSe_bicomp.html'>SETSe_bicomp</a></code> 
+There is little reason to use this function as <code><a href='setse_auto.html'>setse_auto</a></code> and <code><a href='setse_bicomp.html'>setse_bicomp</a></code> 
 are faster and easier to use.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><code><a href='SETSe_auto.html'>SETSe_auto</a></code> <code><a href='SETSe_bicomp.html'>SETSe_bicomp</a></code></p></div>
+    <div class='dont-index'><p><code><a href='setse_auto.html'>setse_auto</a></code> <code><a href='setse_bicomp.html'>setse_bicomp</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
 <span class='va'>biconnected_network</span> <span class='op'>%&gt;%</span>
-<span class='fu'><a href='prepare_SETSe_continuous.html'>prepare_SETSe_continuous</a></span><span class='op'>(</span><span class='va'>.</span>, node_names <span class='op'>=</span> <span class='st'>"name"</span>, force_var <span class='op'>=</span> <span class='st'>"force"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-<span class='co'>#embed the network using SETSe</span>
-<span class='fu'>SETSe_shift</span><span class='op'>(</span><span class='va'>.</span>, k <span class='op'>=</span> <span class='st'>"weight"</span>, tstep <span class='op'>=</span> <span class='fl'>0.000029</span><span class='op'>)</span>
+<span class='fu'><a href='prepare_continuous_force.html'>prepare_continuous_force</a></span><span class='op'>(</span><span class='va'>.</span>, node_names <span class='op'>=</span> <span class='st'>"name"</span>, force_var <span class='op'>=</span> <span class='st'>"force"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+<span class='co'>#embed the network using setse</span>
+<span class='fu'>setse_shift</span><span class='op'>(</span><span class='va'>.</span>, k <span class='op'>=</span> <span class='st'>"weight"</span>, tstep <span class='op'>=</span> <span class='fl'>0.000029</span><span class='op'>)</span>
 <span class='op'>}</span>
 </div></pre>
   </div>

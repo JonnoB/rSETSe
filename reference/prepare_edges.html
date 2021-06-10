@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Pipe operator — %&gt;% • rsetse</title>
+<title>Prepare network edges — prepare_edges • rsetse</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -46,8 +46,8 @@
 
 
 
-<meta property="og:title" content="Pipe operator — %&gt;%" />
-<meta property="og:description" content="See magrittr::%&amp;gt;% for details." />
+<meta property="og:title" content="Prepare network edges — prepare_edges" />
+<meta property="og:description" content="This function helps prepare the network edges for embedding" />
 <meta property="og:image" content="/logo.png" />
 
 
@@ -134,19 +134,67 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Pipe operator</h1>
-    <small class="dont-index">Source: <a href='https://github.com/JonnoB/rSETSe/blob/master/R/utils_pipe.R'><code>R/utils_pipe.R</code></a></small>
-    <div class="hidden name"><code>pipe.Rd</code></div>
+    <h1>Prepare network edges</h1>
+    <small class="dont-index">Source: <a href='https://github.com/JonnoB/rSETSe/blob/master/R/prepare_edges.R'><code>R/prepare_edges.R</code></a></small>
+    <div class="hidden name"><code>prepare_edges.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>See <code>magrittr::%&gt;%</code> for details.</p>
+    <p>This function helps prepare the network edges for embedding</p>
     </div>
 
-    <pre class="usage"><span class='va'>lhs</span> <span class='op'>%&gt;%</span> <span class='va'>rhs</span></pre>
+    <pre class="usage"><span class='fu'>prepare_edges</span><span class='op'>(</span><span class='va'>g</span>, k <span class='op'>=</span> <span class='cn'>NULL</span>, distance <span class='op'>=</span> <span class='fl'>1</span>, create_edge_name <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></pre>
 
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>g</th>
+      <td><p>an igraph object</p></td>
+    </tr>
+    <tr>
+      <th>k</th>
+      <td><p>The spring constant. This value is either a numeric value giving the spring constant for all edges or NULL. If NULL is used 
+the k value will not be added to the network. This is useful k is made through some other process.</p></td>
+    </tr>
+    <tr>
+      <th>distance</th>
+      <td><p>The spring constant. This value is either a numeric value giving the spring constant for all edges or NULL. If NULL is used 
+the distance value will not be added to the network. This is useful distance is made through some other process.</p></td>
+    </tr>
+    <tr>
+      <th>create_edge_name</th>
+      <td><p>Logical. Whether to create and edge name attribute or not.</p> 
+<p>@details 
+ The function prepares the edge characteristics of the network so that they can be embedded using the SETSe_ family of functions.</p> 
+<p>@return 
+ The function creates several variables</p><ul>
+<li><p>k: The spring constant representing the stiffness of the spring.</p></li>
+<li><p>distance: The minimum distance between nodes. This is the distance between the parallel planes/hyper-planes.</p></li>
+<li><p>edge_name: the name of the edges. it takes the form "from_to" where "from" is the origin node and "to" is the destination node using the 
+ <a href='https://rdrr.io/pkg/igraph/man/graph_from_data_frame.html'>as_data_frame</a> function from igraph</p></li>
+</ul></td>
+    </tr>
+    </table>
 
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
+    <div class='dont-index'><p><a href='setse.html'>setse</a>, <a href='setse_auto.html'>setse_auto</a>, <a href='setse_bicomp.html'>setse_bicomp</a>, <a href='setse_auto_hd.html'>setse_auto_hd</a></p>
+<p>Other prepare_setse: 
+<code><a href='prepare_categorical_force.html'>prepare_categorical_force</a>()</code>,
+<code><a href='prepare_continuous_force.html'>prepare_continuous_force</a>()</code></p></div>
+
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/Random.html'>set.seed</a></span><span class='op'>(</span><span class='fl'>234</span><span class='op'>)</span> <span class='co'>#set the random see for generating the network</span>
+<span class='va'>g</span> <span class='op'>&lt;-</span> <span class='fu'><a href='generate_peels_network.html'>generate_peels_network</a></span><span class='op'>(</span>type <span class='op'>=</span> <span class='st'>"E"</span><span class='op'>)</span>
+<span class='va'>embeddings</span> <span class='op'>&lt;-</span> <span class='va'>g</span> <span class='op'>%&gt;%</span>
+<span class='fu'>prepare_edges</span><span class='op'>(</span>k <span class='op'>=</span> <span class='fl'>500</span>, distance <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+<span class='co'>#prepare the network for a binary embedding</span>
+<span class='fu'><a href='prepare_categorical_force.html'>prepare_categorical_force</a></span><span class='op'>(</span><span class='va'>.</span>, node_names <span class='op'>=</span> <span class='st'>"name"</span>,
+                     force_var <span class='op'>=</span> <span class='st'>"class"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+<span class='co'>#embed the network using auto setse</span>
+  <span class='fu'><a href='setse_auto.html'>setse_auto</a></span><span class='op'>(</span><span class='va'>.</span>, force <span class='op'>=</span> <span class='st'>"class_A"</span><span class='op'>)</span>
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

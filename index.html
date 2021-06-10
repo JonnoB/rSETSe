@@ -74,7 +74,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="articles/Binary-and-continuous-features.html">Binary and continuous feature embedding</a>
+      <a href="articles/Categorical-and-continuous-features.html">Categorical and continuous feature embedding</a>
     </li>
     <li>
       <a href="articles/separate-peels-quintet.html">Analysing multiple networks</a>
@@ -125,7 +125,7 @@
 <li>Open R/Rstudio and ensure that devtools has been installed</li>
 <li>Run the following code library(devtools); install_github(“JonnoB/rSETSe”)</li>
 <li>Load the package normally using library(rsetse)</li>
-<li>All functions have help files e.g ?SETSe_auto</li>
+<li>All functions have help files e.g ?setse_auto</li>
 </ol>
 <p>The package can also be downloaded or cloned then installed locally using the install function from devtools.</p>
 </div>
@@ -137,15 +137,16 @@
 #prepares a graph for embedding using SETSe
 set.seed(234) #set the random see for generating the network
 g &lt;- generate_peels_network(type = "E") %&gt;%
-  #prepare the network for a binary embedding
-  prepare_SETSe_binary(., node_names = "name", k = 1000, 
-                       force_var = "class", 
-                       positive_value = "A") 
+prepare_edges(k = 500, distance = 1) %&gt;%
+#prepare the network for a binary embedding
+prepare_categorical_force(., node_names = "name",
+                     force_var = "class") 
                        
 #Embedds using the bi-connected auto-parametrization algorithm.
 #This method is strongly reccomended, it tends to be much faster and almost always converges
-embeddings &lt;- SETSe_bicomp(g,
-                           tol = sum(abs(vertex_attr(g, "force")))/1000,
+embeddings &lt;- setse_bicomp(g,
+                           force = "class_A",
+                           tol = sum(abs(vertex_attr(g, "class_A")))/1000,
                            hyper_tol = 0.1,
                            hyper_iters = 3000,
                            verbose = T)

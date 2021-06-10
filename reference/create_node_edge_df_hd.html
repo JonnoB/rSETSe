@@ -103,7 +103,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/Binary-and-continuous-features.html">Binary and continuous feature embedding</a>
+      <a href="../articles/Categorical-and-continuous-features.html">Categorical and continuous feature embedding</a>
     </li>
     <li>
       <a href="../articles/separate-peels-quintet.html">Analysing multiple networks</a>
@@ -150,7 +150,7 @@
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>embeddings_data</th>
-      <td><p>A list. The output of any of the SETSe embedding functions</p></td>
+      <td><p>A list. The output of any of the setse embedding functions</p></td>
     </tr>
     <tr>
       <th>function_names</th>
@@ -167,16 +167,23 @@ to aggregate. The total number of columns is dependent on the number of aggregat
 
     <p>Often if can be useful to have edge data at node level, an example of this would be plotting
 the node and tension or strain. To do this requires that the edge embeddings are aggregated somehow to node level
-and joined to the appropriate node. This function takes as an argument the output of the SETSe embedding functions
+and joined to the appropriate node. This function takes as an argument the output of the setse embedding functions
 and any number of aggregation functions to produce a dataframe that is convenient to use.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
-<span class='va'>embeddings_data</span> <span class='op'>&lt;-</span> <span class='va'>biconnected_network</span> <span class='op'>%&gt;%</span>
-<span class='fu'><a href='prepare_SETSe_continuous.html'>prepare_SETSe_continuous</a></span><span class='op'>(</span><span class='va'>.</span>, node_names <span class='op'>=</span> <span class='st'>"name"</span>, force_var <span class='op'>=</span> <span class='st'>"force"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
- <span class='fu'><a href='SETSe_auto.html'>SETSe_auto</a></span><span class='op'>(</span><span class='va'>.</span>, k <span class='op'>=</span> <span class='st'>"weight"</span><span class='op'>)</span>
+<span class='va'>g</span> <span class='op'>&lt;-</span> <span class='va'>biconnected_network</span> <span class='op'>%&gt;%</span>
+ <span class='fu'><a href='prepare_edges.html'>prepare_edges</a></span><span class='op'>(</span><span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+ <span class='co'>#prepare the continuous features as normal</span>
+ <span class='fu'><a href='prepare_continuous_force.html'>prepare_continuous_force</a></span><span class='op'>(</span><span class='va'>.</span>, node_names <span class='op'>=</span> <span class='st'>"name"</span>, force_var <span class='op'>=</span> <span class='st'>"force"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+ <span class='co'>#prepare the categorical features as normal</span>
+ <span class='fu'><a href='prepare_categorical_force.html'>prepare_categorical_force</a></span><span class='op'>(</span><span class='va'>.</span>, node_names <span class='op'>=</span> <span class='st'>"name"</span>, force_var <span class='op'>=</span> <span class='st'>"group"</span><span class='op'>)</span>
+  
+ <span class='co'>#embed them using the high dimensional function</span>
+ <span class='va'>two_dimensional_embeddings</span> <span class='op'>&lt;-</span> <span class='fu'><a href='setse_auto_hd.html'>setse_auto_hd</a></span><span class='op'>(</span><span class='va'>g</span>, force <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"group_A"</span>, <span class='st'>"force"</span><span class='op'>)</span>, k <span class='op'>=</span> <span class='st'>"weight"</span><span class='op'>)</span>
 
-<span class='va'>out</span> <span class='op'>&lt;-</span> <span class='fu'><a href='create_node_edge_df.html'>create_node_edge_df</a></span><span class='op'>(</span><span class='va'>embeddings_data</span>, function_names <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"mean"</span>, <span class='st'>"mode"</span>, <span class='st'>"sum"</span><span class='op'>)</span><span class='op'>)</span>
+ <span class='va'>out</span> <span class='op'>&lt;-</span> <span class='fu'>create_node_edge_df_hd</span><span class='op'>(</span><span class='va'>two_dimensional_embeddings</span> , 
+  function_names <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"mean"</span>, <span class='st'>"mode"</span>, <span class='st'>"sum"</span><span class='op'>)</span><span class='op'>)</span>
 
 </div></pre>
   </div>

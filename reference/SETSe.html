@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Basic SETSe embedding — SETSe • rsetse</title>
+<title>Basic SETSe embedding — setse • rsetse</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -46,8 +46,8 @@
 
 
 
-<meta property="og:title" content="Basic SETSe embedding — SETSe" />
-<meta property="og:description" content="Embeds/smooths a feature network using the basic SETSe algorithm. generally SETSe_auto or SETSe_bicomp is preffered." />
+<meta property="og:title" content="Basic SETSe embedding — setse" />
+<meta property="og:description" content="Embeds/smooths a feature network using the basic SETSe algorithm. generally setse_auto or setse_bicomp is preferred." />
 <meta property="og:image" content="/logo.png" />
 
 
@@ -103,7 +103,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/Binary-and-continuous-features.html">Binary and continuous feature embedding</a>
+      <a href="../articles/Categorical-and-continuous-features.html">Categorical and continuous feature embedding</a>
     </li>
     <li>
       <a href="../articles/separate-peels-quintet.html">Analysing multiple networks</a>
@@ -135,15 +135,15 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Basic SETSe embedding</h1>
-    <small class="dont-index">Source: <a href='https://github.com/JonnoB/rSETSe/blob/master/R/SETSe.R'><code>R/SETSe.R</code></a></small>
-    <div class="hidden name"><code>SETSe.Rd</code></div>
+    <small class="dont-index">Source: <a href='https://github.com/JonnoB/rSETSe/blob/master/R/setse.R'><code>R/setse.R</code></a></small>
+    <div class="hidden name"><code>setse.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Embeds/smooths a feature network using the basic SETSe algorithm. generally SETSe_auto or SETSe_bicomp is preffered.</p>
+    <p>Embeds/smooths a feature network using the basic SETSe algorithm. generally setse_auto or setse_bicomp is preferred.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>SETSe</span><span class='op'>(</span>
+    <pre class="usage"><span class='fu'>setse</span><span class='op'>(</span>
   <span class='va'>g</span>,
   force <span class='op'>=</span> <span class='st'>"force"</span>,
   distance <span class='op'>=</span> <span class='st'>"distance"</span>,
@@ -242,26 +242,26 @@ If left blank the static limit is twice the system absolute mean force.</p></td>
 
     <p>This is the basic SETS embeddings algorithm, it outputs all elements of the embeddings as well as convergence dynamics. It is a
 wrapper around the core SETS algorithm which requires data preparation and only produces node embeddings and network dynamics. 
-There is little reason to use this function as <code><a href='SETSe_auto.html'>SETSe_auto</a></code> and <code><a href='SETSe_bicomp.html'>SETSe_bicomp</a></code> 
+There is little reason to use this function as <code><a href='setse_auto.html'>setse_auto</a></code> and <code><a href='setse_bicomp.html'>setse_bicomp</a></code> 
 are faster and easier to use.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p>Other SETSe: 
-<code><a href='SETSe_auto_hd.html'>SETSe_auto_hd</a>()</code>,
-<code><a href='SETSe_auto.html'>SETSe_auto</a>()</code>,
-<code><a href='SETSe_bicomp.html'>SETSe_bicomp</a>()</code>,
-<code><a href='SETSe_expanded.html'>SETSe_expanded</a>()</code></p></div>
+    <div class='dont-index'><p>Other setse: 
+<code><a href='setse_auto_hd.html'>setse_auto_hd</a>()</code>,
+<code><a href='setse_auto.html'>setse_auto</a>()</code>,
+<code><a href='setse_bicomp.html'>setse_bicomp</a>()</code>,
+<code><a href='setse_expanded.html'>setse_expanded</a>()</code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/Random.html'>set.seed</a></span><span class='op'>(</span><span class='fl'>234</span><span class='op'>)</span> <span class='co'>#set the random see for generating the network</span>
 <span class='va'>g</span> <span class='op'>&lt;-</span> <span class='fu'><a href='generate_peels_network.html'>generate_peels_network</a></span><span class='op'>(</span>type <span class='op'>=</span> <span class='st'>"E"</span><span class='op'>)</span>
 <span class='va'>embeddings</span> <span class='op'>&lt;-</span> <span class='va'>g</span> <span class='op'>%&gt;%</span>
+<span class='fu'><a href='prepare_edges.html'>prepare_edges</a></span><span class='op'>(</span>k <span class='op'>=</span> <span class='fl'>500</span>, distance <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
 <span class='co'>#prepare the network for a binary embedding</span>
-<span class='fu'><a href='prepare_SETSe_binary.html'>prepare_SETSe_binary</a></span><span class='op'>(</span><span class='va'>.</span>, node_names <span class='op'>=</span> <span class='st'>"name"</span>, k <span class='op'>=</span> <span class='fl'>1000</span>, 
-                     force_var <span class='op'>=</span> <span class='st'>"class"</span>, 
-                     positive_value <span class='op'>=</span> <span class='st'>"A"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-<span class='co'>#embed the network using SETSe</span>
-  <span class='fu'>SETSe</span><span class='op'>(</span><span class='op'>)</span>
+<span class='fu'><a href='prepare_categorical_force.html'>prepare_categorical_force</a></span><span class='op'>(</span><span class='va'>.</span>, node_names <span class='op'>=</span> <span class='st'>"name"</span>,
+                     force_var <span class='op'>=</span> <span class='st'>"class"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+<span class='co'>#embed the network using auto_setse</span>
+  <span class='fu'>setse</span><span class='op'>(</span><span class='va'>.</span>, force <span class='op'>=</span> <span class='st'>"class_A"</span><span class='op'>)</span>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

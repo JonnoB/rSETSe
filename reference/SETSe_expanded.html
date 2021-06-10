@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>SETSe embedding showing full convergence history — SETSe_expanded • rsetse</title>
+<title>SETSe embedding showing full convergence history — setse_expanded • rsetse</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -46,7 +46,7 @@
 
 
 
-<meta property="og:title" content="SETSe embedding showing full convergence history — SETSe_expanded" />
+<meta property="og:title" content="SETSe embedding showing full convergence history — setse_expanded" />
 <meta property="og:description" content="This is a special case function of SETSe which keeps the history of all node movements during convergence0. It is useful for demonstrations,
 or parametrising difficult networks." />
 <meta property="og:image" content="/logo.png" />
@@ -104,7 +104,7 @@ or parametrising difficult networks." />
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/Binary-and-continuous-features.html">Binary and continuous feature embedding</a>
+      <a href="../articles/Categorical-and-continuous-features.html">Categorical and continuous feature embedding</a>
     </li>
     <li>
       <a href="../articles/separate-peels-quintet.html">Analysing multiple networks</a>
@@ -136,8 +136,8 @@ or parametrising difficult networks." />
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>SETSe embedding showing full convergence history</h1>
-    <small class="dont-index">Source: <a href='https://github.com/JonnoB/rSETSe/blob/master/R/SETSe_expanded.R'><code>R/SETSe_expanded.R</code></a></small>
-    <div class="hidden name"><code>SETSe_expanded.Rd</code></div>
+    <small class="dont-index">Source: <a href='https://github.com/JonnoB/rSETSe/blob/master/R/setse_expanded.R'><code>R/setse_expanded.R</code></a></small>
+    <div class="hidden name"><code>setse_expanded.Rd</code></div>
     </div>
 
     <div class="ref-description">
@@ -145,7 +145,7 @@ or parametrising difficult networks." />
 or parametrising difficult networks.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>SETSe_expanded</span><span class='op'>(</span>
+    <pre class="usage"><span class='fu'>setse_expanded</span><span class='op'>(</span>
   <span class='va'>g</span>,
   force <span class='op'>=</span> <span class='st'>"force"</span>,
   distance <span class='op'>=</span> <span class='st'>"distance"</span>,
@@ -226,29 +226,30 @@ row for each node in each iteration of the simulation, as well as an additional 
 This dataframe can be very large as it contains nxm rows where n is the number of nodes and m is the number of iterations in the simulation.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p>Other SETSe: 
-<code><a href='SETSe_auto_hd.html'>SETSe_auto_hd</a>()</code>,
-<code><a href='SETSe_auto.html'>SETSe_auto</a>()</code>,
-<code><a href='SETSe_bicomp.html'>SETSe_bicomp</a>()</code>,
-<code><a href='SETSe.html'>SETSe</a>()</code></p></div>
+    <div class='dont-index'><p>Other setse: 
+<code><a href='setse_auto_hd.html'>setse_auto_hd</a>()</code>,
+<code><a href='setse_auto.html'>setse_auto</a>()</code>,
+<code><a href='setse_bicomp.html'>setse_bicomp</a>()</code>,
+<code><a href='setse.html'>setse</a>()</code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
-<span class='va'>g_prep</span> <span class='op'>&lt;-</span> <span class='va'>biconnected_network</span> <span class='op'>%&gt;%</span>
- <span class='fu'><a href='prepare_SETSe_continuous.html'>prepare_SETSe_continuous</a></span><span class='op'>(</span><span class='va'>.</span>, node_names <span class='op'>=</span> <span class='st'>"name"</span>, force_var <span class='op'>=</span> <span class='st'>"force"</span>, k <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span>
+<span class='va'>g_prep</span> <span class='op'>&lt;-</span> <span class='va'>biconnected_network</span><span class='op'>%&gt;%</span>
+<span class='fu'><a href='prepare_edges.html'>prepare_edges</a></span><span class='op'>(</span><span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+<span class='fu'><a href='prepare_continuous_force.html'>prepare_continuous_force</a></span><span class='op'>(</span><span class='va'>.</span>, node_names <span class='op'>=</span> <span class='st'>"name"</span>, force_var <span class='op'>=</span> <span class='st'>"force"</span>, k <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span> 
 
 <span class='co'>#the base configuration does not work</span>
-<span class='va'>divergent_result</span> <span class='op'>&lt;-</span> <span class='fu'>SETSe_expanded</span><span class='op'>(</span><span class='va'>g_prep</span>, k <span class='op'>=</span> <span class='st'>"weight"</span>, tstep <span class='op'>=</span> <span class='fl'>0.1</span><span class='op'>)</span>
+<span class='va'>divergent_result</span> <span class='op'>&lt;-</span> <span class='fu'>setse_expanded</span><span class='op'>(</span><span class='va'>g_prep</span>, k <span class='op'>=</span> <span class='st'>"weight"</span>, tstep <span class='op'>=</span> <span class='fl'>0.1</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; <span class='message'>System has diverged. Process terminating</span></div><div class='input'>
 <span class='co'>#with a smaller timestep the algorithm converges</span>
-<span class='va'>convergent_result</span> <span class='op'>&lt;-</span> <span class='fu'>SETSe_expanded</span><span class='op'>(</span><span class='va'>g_prep</span>, k <span class='op'>=</span> <span class='st'>"weight"</span>, tstep <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
+<span class='va'>convergent_result</span> <span class='op'>&lt;-</span> <span class='fu'>setse_expanded</span><span class='op'>(</span><span class='va'>g_prep</span>, k <span class='op'>=</span> <span class='st'>"weight"</span>, tstep <span class='op'>=</span> <span class='fl'>0.01</span><span class='op'>)</span>
 
 <span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span>
 <span class='co'>#plot the results for a given node</span>
 <span class='va'>convergent_result</span> <span class='op'>%&gt;%</span>
  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>t</span>, y <span class='op'>=</span> <span class='va'>net_force</span>, colour <span class='op'>=</span> <span class='va'>node</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span><span class='op'>)</span>
-<span class='co'>#replot with divergent_result to see what it looks like</span>
+<span class='co'>#re-plot with divergent_result to see what it looks like</span>
 <span class='op'>}</span>
 </div></pre>
   </div>
