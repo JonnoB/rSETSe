@@ -1,3 +1,9 @@
+# Resubmission 1 of resete 0.5.0
+
+doi in function generate_peels_network has been changed as recommended to doi{10.1073/pnas.1713019115}
+an additional doi has been added in the same function referencing the original SETSe paper. 
+
+#First submission of resete 0.5.0
 
 ## Test environments
 * GitHub actions (ubuntu-20.04): release, devel
