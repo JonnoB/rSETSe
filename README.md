@@ -7,8 +7,12 @@
 [![Travis build status](https://travis-ci.com/JonnoB/rSETSe.svg?branch=master)](https://travis-ci.com/JonnoB/rSETSe)
 <!-- badges: end -->
 
+# Importnant note
 
-## An R package for embedding graphs using the SETSe algorithm
+The github version of R setse has been updated so that setse_auto_hd has been re-written in c++ using Rcpp Armadillo. This makes it much faster (between 36 -350 times) than the version on CRAN. If you have larger networks I would definately advise using installing from github not CRAN. 
+  
+
+# An R package for embedding graphs using the SETSe algorithm
 
 This is the R package for the Strain Elevation Tension Spring embeddings (SETSe) algorithm. SETSe is a deterministic graph embeddings algorithm. It converts the node attributes of a graph into forces and the edge attributes into springs. The algorithm finds an equilibrium position when the forces of the nodes are balanced by the forces on the springs. A full description of the algorithm is given in "The spring bounces back: Introduction to Strain Elevation Tension Spring embedding for network representation" ([Bourne 2020](https://doi.org/10.1007/s41109-020-00329-4)). There is a website for the package  providing documentation and vignettes at https://jonnob.github.io/rSETSe/index.html . This is a very niche package so please feel free to reach out to me on twitter or through email with questions.
 

@@ -2,15 +2,15 @@
 #These variables are usually values that are created by functions and then referenced by other functions
 #This leads R to think there might be an error when the R CMD checks are being performed.
 #By adding these variables to the global functions this becomes clear there is no error
-utils::globalVariables(c("from", 
-                         "to", 
+utils::globalVariables(c("from",
+                         "to",
                          "node",
                          "Iter",
                          "elevation",
                          "elevation.x",
                          "elevation.y",
                          "velocity",
-                         "static_force", 
+                         "static_force",
                          "friction",
                          "net_force",
                          "net_tension",
@@ -29,3 +29,4 @@ utils::globalVariables(c("from",
                          "value_2", #calc_spring_area
                          "edge_name", #create_node_edge_df
                          "."))
+

@@ -16,7 +16,7 @@ setse_auto_hd(
   tol = 0.002,
   sparse = FALSE,
   hyper_iters = 100,
-  hyper_tol = 0.01,
+  hyper_tol = 0.1,
   hyper_max = 30000,
   drag_min = 0.01,
   drag_max = 100,
@@ -45,13 +45,17 @@ setse_auto_hd(
 
 \item{max_iter}{An integer. The maximum number of iterations before stopping. Larger networks usually need more iterations.}
 
-\item{tol}{A numeric. The tolerance factor for early stopping.}
+\item{tol}{A numeric. The tolerance factor for early stopping.
+Setting this value to be 0.1% of the initial static force is usually a good idea}
 
 \item{sparse}{Logical. Whether or not the function should be run using sparse matrices. must match the actual matrix, this could prob be automated}
 
 \item{hyper_iters}{integer. The hyper parameter that determines the number of iterations allowed to find an acceptable convergence value.}
 
-\item{hyper_tol}{numeric. The convergence tolerance when trying to find the minimum value}
+\item{hyper_tol}{numeric. The convergence tolerance when trying to find the minimum value. When the ratio between the current static
+force and the previous static force is smaller than this value the search terminates.
+values between 0.1-0.3 seem to be often ok, too small and you waste time fine tuning the parameters instead of converging
+to big and you have poorly parametrised values.}
 
 \item{hyper_max}{integer. The maximum number of iterations that SETSe will go through whilst searching for the minimum.}
 
@@ -61,14 +65,15 @@ setse_auto_hd(
 
 \item{tstep_change}{numeric. A value between 0 and 1 that determines how much the time step will be reduced by default value is 0.5}
 
-\item{sample}{Integer. The dynamics will be stored only if the iteration number is a multiple of the sample. 
+\item{sample}{Integer. The dynamics will be stored only if the iteration number is a multiple of the sample.
 This can greatly reduce the size of the results file for large numbers of iterations. Must be a multiple of the max_iter}
 
 \item{static_limit}{Numeric. The maximum value the static force can reach before the algorithm terminates early. This
 prevents calculation in a diverging system. The value should be set to some multiple greater than one of the force in the system.
 If left blank the static limit is the system absolute mean force.}
 
-\item{verbose}{Logical. This value sets whether messages generated during the process are suppressed or not.}
+\item{verbose}{Logical. This value sets whether messages generated during the process are suppressed or not.
+This is useful for large networks which can take a long time to converge, but for smaller ones can be turned off.}
 
 \item{include_edges}{logical. An optional variable on whether to calculate the edge tension and strain. Default is TRUE.
 included for ease of integration into the bicomponent functions.}
@@ -76,7 +81,7 @@ included for ease of integration into the bicomponent functions.}
 \item{noisy_termination}{Stop the process if the static force does not monotonically decrease.}
 }
 \value{
-A list of four elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings, 
+A list of four elements. A data frame with the height embeddings of the network, a data frame of the edge embeddings,
 the convergence dynamics dataframe for the network as well as the search history for convergence criteria of the network
 }
 \description{
@@ -87,8 +92,8 @@ This is one of the most commonly used SETSe functions. It automatically selects 
  to ensure efficient convergence.
 
 The noisy_termination parameter is used as in some cases the convergence process can get stuck in the noisy zone of SETSe space.
-To prevent this the process is stopped early if the static force does not monotonically decrease.  On large networks this 
-greatly speeds up the search for good parameter values. It increases the chance of successful convergence. 
+To prevent this the process is stopped early if the static force does not monotonically decrease.  On large networks this
+greatly speeds up the search for good parameter values. It increases the chance of successful convergence.
 More detail on auto-SETSe can be found in the paper "The spring bounces back" (Bourne 2020).
 }
 \examples{
@@ -99,10 +104,10 @@ g <- biconnected_network \%>\%
  prepare_continuous_force(., node_names = "name", force_var = "force") \%>\%
  #prepare the categorical features as normal
  prepare_categorical_force(., node_names = "name", force_var = "group")
-  
+
  #embed them using the high dimensional function
  two_dimensional_embeddings <- setse_auto_hd(g, force = c("group_A", "force"), k = "weight")
-                     
+
 
 }
 \seealso{
